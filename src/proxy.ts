@@ -1,8 +1,19 @@
+import { isAdminRoot } from "@/lib/domain-routing";
 import { getSupabaseConfig } from "@/lib/supabase/config";
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
 export async function proxy(request: NextRequest) {
+  if (request.nextUrl.pathname === "/") {
+    if (isAdminRoot(request.headers.get("host"), request.nextUrl.pathname)) {
+      const destination = request.nextUrl.clone();
+      destination.pathname = "/login";
+      const response = NextResponse.redirect(destination);
+      response.headers.set("Cache-Control", "private, no-store");
+      return response;
+    }
+    return NextResponse.next();
+  }
   let response = NextResponse.next({ request });
   try {
     const { url, key } = getSupabaseConfig();
@@ -24,4 +35,4 @@ export async function proxy(request: NextRequest) {
   response.headers.set("Expires", "0");
   return response;
 }
-export const config = { matcher: ["/admin/:path*", "/login"] };
+export const config = { matcher: ["/", "/admin/:path*", "/login"] };
