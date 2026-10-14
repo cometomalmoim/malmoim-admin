@@ -88,7 +88,9 @@ CRUD, 검색·필터 데이터 처리, 파일 업로드, 문자 발송, 수료�
 - 390px 모바일: Enter 메뉴 열기, 모집 메뉴 이동, 메뉴 닫힘, 가로 넘침 없음.
 - 페이지 params의 Suspense 누락 경고를 발견해 수정했다.
 - 기존 인증·로그아웃·공개 홈페이지·도메인 routing 소스: 변경 없음.
-- 운영 빌드: Codex Turbopack 포트 바인딩 Operation not permitted. 권한 확장 재시도 동일. 빌드 성공으로 간주하지 않음.
+- 로컬 운영 빌드: Codex Turbopack 포트 바인딩 Operation not permitted. 권한 확장 재시도 동일. 로컬 성공으로 간주하지 않음.
+- Vercel 미리보기 빌드: e0d1ec4 배포 성공 확인. https://malmoim-admin-f70jrnxza-malmoim.vercel.app
+- 배포 preview 경로는 외부 비인증 요청에서 302 응답이므로 앱의 404는 직접 검증하지 못함.
 - 실제 계정 로그인·등록된 관리자 접근·로그아웃, 역할 조회 실패, 운영 preview 404: 통합 테스트 미검증.
 - 운영 preview 차단 조건: NODE_ENV !== development면 notFound 유지. Vercel 미리보기도 production 모드라 404가 의도된 결과다.
 
