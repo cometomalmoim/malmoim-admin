@@ -1,4 +1,5 @@
 import "server-only";
+import { connection } from "next/server";
 import { notFound, redirect } from "next/navigation";
 import { getAdminAccess } from "@/lib/auth";
 import { adminPages } from "@/lib/admin-navigation";
@@ -6,6 +7,7 @@ import { RecruitmentView } from "./recruitment-view";
 import { AdminView } from "./admin-view";
 import { LogoutForm } from "../logout-form";
 export async function ProtectedAdmin({ segments = [], page }: { segments?: string[]; page?: number }) {
+  await connection();
   const access = await getAdminAccess();
   if (access.status === "anonymous") redirect("/login");
   if (access.status !== "admin") return <main className="login-page"><section className="login-card"><span className="eyebrow">접근 제한</span><h1>관리자 접근 거부</h1><p className="notice">{access.status === "error" ? "관리자 권한을 확인할 수 없습니다. 잠시 후 다시 시도해주세요." : "이 계정은 관리자로 등록되어 있지 않습니다."}</p><div className="account"><LogoutForm /></div></section></main>;
