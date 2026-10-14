@@ -13,5 +13,6 @@ export function PublicHeader() {
     <nav id="public-navigation" className={open ? "public-navigation is-open" : "public-navigation"} aria-label="주 메뉴" onKeyDown={(event) => { if (event.key === "Escape") { setOpen(false); document.querySelector<HTMLButtonElement>(".public-menu-toggle")?.focus(); } }}>
       {publicPages.map((page) => <Link key={page.slug} href={`/${page.slug}`} aria-current={pathname === `/${page.slug}` ? "page" : undefined} onClick={() => setOpen(false)}>{page.title}</Link>)}
     </nav>
+    <Link className="public-login" href="/login" onClick={() => setOpen(false)}>로그인</Link>
   </header>;
 }
