@@ -1,6 +1,3 @@
 import { notFound } from "next/navigation";
-import { AdminPreview } from "@/components/admin-preview";
-export default function PreviewPage() {
-  if (process.env.NODE_ENV !== "development") notFound();
-  return <AdminPreview />;
-}
+import { AdminView } from "@/components/admin/admin-view";
+export default function Page() { if (process.env.NODE_ENV !== "development") notFound(); return <AdminView preview />; }
