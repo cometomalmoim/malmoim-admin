@@ -18,14 +18,15 @@ export function SuggestionCreateForm() {
   const [mode, setMode] = useState<'anonymous' | 'named'>('anonymous');
   const [state, action, pending] = useActionState(createSuggestionAction, initialState);
   return <form action={action} className="sg-form sg-create-form">
-    <div className="sg-form-heading"><div><span className="ops-tag">운영진 전용</span><h2>새 건의 작성</h2></div><p>작성한 건의는 모든 관리자에게 공유됩니다.</p></div>
+    <div className="sg-form-heading"><div><span className="ops-tag">운영진 전용</span><h2>새 건의 작성</h2></div><p>공유 관리자 계정으로 등록합니다. 작성자 본인 확인은 하지 않으며, 모든 관리자에게 공유됩니다.</p></div>
     <label className="sg-field">제목<input name="title" required maxLength={150} placeholder="건의 제목을 입력하세요" /></label>
     <label className="sg-field">내용<textarea name="content" required maxLength={10000} rows={5} placeholder="건의 내용을 입력하세요" /></label>
-    <fieldset className="sg-identity"><legend>작성자 표시</legend>
-      <label><input type="radio" name="mode" value="anonymous" checked={mode === 'anonymous'} onChange={() => setMode('anonymous')} /> 익명</label>
-      <label><input type="radio" name="mode" value="named" checked={mode === 'named'} onChange={() => setMode('named')} /> 실명 공개</label>
+    <fieldset className="sg-identity"><legend>작성자 표시 방식</legend>
+      <label><input type="radio" name="mode" value="anonymous" checked={mode === 'anonymous'} onChange={() => setMode('anonymous')} /> 익명으로 표시</label>
+      <label><input type="radio" name="mode" value="named" checked={mode === 'named'} onChange={() => setMode('named')} /> 내 이름을 직접 입력해 공개</label>
     </fieldset>
-    {mode === 'named' && <label className="sg-field">공개 이름<input name="public_name" required maxLength={100} placeholder="표시할 이름" /></label>}
+    {mode === 'named' ? <label className="sg-field">공개할 이름<input name="public_name" required maxLength={100} placeholder="공개할 이름을 직접 입력하세요" /></label> : <p className="ops-muted">익명을 선택하면 이름이나 관리자 계정 정보는 건의 내용과 연결해 저장하지 않습니다.</p>}
+    {mode === 'named' && <p className="ops-muted">입력한 이름은 계정 정보와 대조하지 않습니다.</p>}
     <FormMessage state={state} />
     <button className="sg-primary" type="submit" disabled={pending}>{pending ? '등록 중…' : '건의 등록'}</button>
   </form>;
