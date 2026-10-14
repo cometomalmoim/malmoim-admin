@@ -5,7 +5,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export type AuthState = { message: string };
-export async function login(_state: AuthState, formData: FormData): Promise<AuthState> {
+async function signIn(formData: FormData, destination: "/admin" | "/"): Promise<AuthState> {
   const email = formData.get("email");
   const password = formData.get("password");
   if (typeof email !== "string" || typeof password !== "string" || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim()) || !password) {
@@ -25,13 +25,25 @@ export async function login(_state: AuthState, formData: FormData): Promise<Auth
     if (error instanceof SupabaseConfigError) return { message: "Supabase 연결 설정이 누락되었거나 올바르지 않습니다. .env.local의 Project URL과 Publishable key를 확인해주세요." };
     return { message: "로그인 처리 중 오류가 발생했습니다. 연결 상태와 서버 설정을 확인해주세요." };
   }
-  redirect("/admin");
+  redirect(destination);
 }
-export async function logout(): Promise<AuthState> {
+export async function login(_state: AuthState, formData: FormData): Promise<AuthState> {
+  return signIn(formData, "/admin");
+}
+export async function memberLogin(_state: AuthState, formData: FormData): Promise<AuthState> {
+  return signIn(formData, "/");
+}
+async function signOut(destination: "/login" | "/"): Promise<AuthState> {
   try {
     const supabase = await createClient();
     const { error } = await supabase.auth.signOut({ scope: "local" });
     if (error) return { message: "로그아웃하지 못했습니다. 다시 시도해주세요." };
   } catch { return { message: "로그아웃하지 못했습니다. 다시 시도해주세요." }; }
-  redirect("/login");
+  redirect(destination);
+}
+export async function logout(): Promise<AuthState> {
+  return signOut("/login");
+}
+export async function memberLogout(): Promise<AuthState> {
+  return signOut("/");
 }

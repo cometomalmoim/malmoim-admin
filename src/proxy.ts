@@ -12,7 +12,6 @@ export async function proxy(request: NextRequest) {
       response.headers.set("Cache-Control", "private, no-store");
       return response;
     }
-    return NextResponse.next();
   }
   let response = NextResponse.next({ request });
   try {
@@ -35,4 +34,4 @@ export async function proxy(request: NextRequest) {
   response.headers.set("Expires", "0");
   return response;
 }
-export const config = { matcher: ["/", "/admin/:path*", "/login"] };
+export const config = { matcher: ["/", "/admin/:path*", "/login", "/auth/login", "/signup", "/about", "/events", "/exchange", "/board", "/history"] };
