@@ -71,3 +71,10 @@ SQL은 resources, resource_files, 인덱스·작성자/수정일·파일 개수 
 - 운영 dependencies npm audit 취약점0. 전체 설치 audit에는 기존 개발 의존성 high5가 남아 있으며 force fix 미실행.
 - `supabase/tests/resources_access.sql`: 테스트 환경용 관리자 CRUD 기초·파일 개수·RLS 검사, rollback. 작성만 했으며 미실행.
 - 권한 요청 후 빌드도 같은 Turbopack 포트 바인딩 권한 오류로 실패. 로컬 운영 빌드 미통과. Mac 터미널에서 `cd ~/Projects/malmoim-admin && npm run build` 종료 코드0 확인 필요. Vercel CI 빌드는 push 후 별도 확인한다.
+
+## SQL 적용 후 확인
+
+- 사용자 SQL Editor 성공 캡처 확인. 실제 로그인 관리자 `/admin/resources` 재조회 성공: 자료0건, 연결 이벤트 말모임9기 표시. SQL005 설정 미확인 gate는 해소했지만 실제 Storage 파일 CRUD와 일반 회원 차단은 여전히 미검증이다.
+- 구현 commit caa1ded의 Vercel Preview build success 확인. 주소 https://malmoim-admin-2e6mk1i7a-malmoim.vercel.app . 로컬 권한 빌드 실패와 구분한다.
+- 기존 draft PR5에는 SQL004 신청 활성화 준비도 함께 있으므로 별도 접수 검증 gate를 유지한다. SQL005 성공만으로 신청 활성화를 완료했다고 간주하거나 main 병합하지 않는다.
+- 비로그인 파일 API POST403 확인.
