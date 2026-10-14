@@ -1,0 +1,65 @@
+# 9기 랜딩 초안 — 2026-10-14
+
+## 이번 단계
+
+사용자의 '초안, 실제 접수 비활성화' 승인에 따른 화면 구현이다.
+/season9(한국어), /season9/en(영어)를 기존 공개 그룹 밖에 배치해 전체 홈페이지 메뉴를 반복하지 않는다.
+두 페이지가 같은 SeasonLanding과 season9 설정을 사용한다. 모집 인원·후기·성과는 표시하지 않는다.
+초안임을 표시하고 noindex/nofollow를 유지한다. main 병합·실제 게시·접수 활성화는 하지 않는다.
+
+신청 항목은 사용자 지정 기존 8기 폼 기준이다. 전체 fieldset과 제출 버튼을 비활성화했다.
+form 제출 endpoint, Server Action, DB 쓰기, 광고 스크립트, 전환 이벤트는 없다.
+개인정보를 입력·전송하거나 가짜 완료를 표시할 수 없다.
+사진 동의와 다음 기수 안내 선택 동의를 접수 필수 동의에서 분리하는 배치를 준비했다.
+
+## 실제 접수 연결의 다음 단계 (미구현)
+
+공통 main의 저장소에는 admin_users 이외 이벤트·모집·신청 migration이 없다.
+운영 DB와 1조 이벤트 담당 작업은 먼저 확인해야 하며, 기존 스키마가 있으면 재사용한다.
+없으면 최소 event / landing / application 구조를 설계한다.
+- 하나의 9기 event에 ko/en landing을 연결하고 신청에는 event ID와 language를 기록.
+- 이벤트/랜딩의 draft, published, closed와 신청 허용 여부를 URL 생성과 분리.
+- 서버에서 공개·접수 허용·한국시간 마감·최종 개인정보 문구 설정을 확인.
+- 신청 제출은 한정된 서버 경로로만 처리. anon의 신청자 SELECT/UPDATE/DELETE는 금지.
+- 관리자 SELECT는 기존 관리자 등록과 DB 권한 모두 확인. 관리자 목록 조회를 브라우저 표시만으로 대체하지 않음.
+- 원자적인 저장에서 제출 식별자와 연락처 기준 중복을 처리. 식별자 재요청은 기존 결과로 처리.
+- 남용 방지 공급자와 설정을 결정해 서버 검증 및 속도 제한 적용. 설정 없으면 접수 비활성화 유지.
+- 동의 문구 버전·시간·필수 동의·선택 동의를 함께 기록. 민감 답변을 로그나 광고 이벤트에 넣지 않음.
+- UTM은 source/medium/campaign/term/content 허용 목록과 길이 제한으로만 저장.
+- 광고 플랫폼/동의 설정 확인 전 픽셀 연결 없음. 성공한 application ID 기준 전환은 한번만 처리.
+- 어드민 모집 카드와 이벤트 신청자 탭은 실제 event/application 조회가 가능한 이후 연결.
+
+개인정보 보유기간·삭제 기준, 필수 입력 여부, 남용 방지 방법과 운영 스키마가 미확정이다.
+이 단계에서는 migration을 작성·실행하지 않았으며 운영 DB는 변경하지 않았다.
+사진 재사용 승인과 기록은 season9-content.md에 있다. 후기 재사용 승인은 받지 않았으므로 생략했다.
+
+## 사진 출처
+
+레퍼런스 https://cometomalmoim.zaemit.kr/ 에서 브라우저로 확인한 활동 사진.
+사용자가 9기 랜딩과 광고 재사용을 승인했다. 외부 JS·추적 코드는 복사하지 않았다.
+- activity-01.jpg: image.zaemit.kr/weven_data/cometomalmoim/file_manager/13.jpg
+- activity-02.jpg: 같은 경로의 １１３.jpg
+- activity-03.jpg: 같은 경로의 １１２.jpg
+모든 사진은 과거 활동으로 명시하며 9기 실제 현장 사진으로 표시하지 않는다.
+
+## 검증
+
+- lint·Next 타입 생성·TypeScript: 통과.
+- 두 페이지 HTTP 200 및 한/영 제목·noindex 확인.
+- 390px 한국어·영어 화면: 가로 넘침 없음. 고정 신청 링크 이동 확인.
+- 신청 영역 링크 3개: 모두 실제 #application 대상 존재.
+- 모든 입력·제출: 비활성 확인. 저장 성공 메시지 없음.
+- 기존 / 공개 홈페이지 index와 /login noindex 유지, 쿠키 없는 /admin 로그인 이동 확인.
+- 실제 관리자 로그인·로그아웃 통합 테스트: 미검증.
+- 신청 저장/오류/중복/마감/권한/RLS 테스트: 미구현이므로 미검증.
+- Codex npm run build: Turbopack CSS 처리의 포트 바인딩 권한 오류. 권한 확장 재시도 동일. 로컬 성공으로 간주하지 않음.
+
+Mac 새 터미널:
+
+```sh
+cd /Users/masonsmacbookair/Projects/malmoim-admin
+npm run build
+echo "빌드 종료 코드: $?"
+```
+
+기존 개발 서버는 유지했다. main에 병합하기 전 Vercel 미리보기 빌드와 초안을 검토한다.
