@@ -4,7 +4,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import { season9, type SeasonLocale } from "@/lib/season9";
 export function SeasonLanding({ locale }: { locale: SeasonLocale }) {
  const en = locale === "en";
- const applyHref = en ? "/season9/en/apply" : "/season9/apply";
+ const applyHref = "/season9/apply";
  const t = (ko:string,english:string) => en ? english : ko;
  const faq = [
  [t("언어 실력이 부족해도 괜찮나요?","Can I join as a beginner?"),t("말모임은 언어 실력보다 소통과 참여를 중심으로 합니다. 서로의 언어를 배우며 함께 대화해요.","MALMOIM focuses on communication and participation. Learn from one another and practise through conversation.")],
