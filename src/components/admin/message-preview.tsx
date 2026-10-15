@@ -3,6 +3,13 @@ import {useState} from 'react';
 import {demoEvents,demoApplicants,demoRefunds} from '@/lib/message-fixtures';
 import {paymentCandidates,renderMessage,messageTemplates,type MessageEvent} from '@/lib/message-preview';
 import './message-preview.css';
+import Link from 'next/link';
+export type RegisteredMessageEvent={id:string;slug:string;title:string;fee_notice:string;starts_at:string|null;location:string;status:string};
+export function RegisteredMessagePreview({events}:{events:RegisteredMessageEvent[]}){
+ const [eventId,setEventId]=useState('');
+ const event=events.find(e=>e.id===eventId);
+ return <div className="msg-preparation"><section className="ops-panel"><h2>등록된 이벤트 연결</h2><p>이벤트 관리에서 등록한 목록입니다. 새 이벤트나 수정한 정보는 이 페이지를 새로고침하면 반영됩니다.</p><label className="msg-label">이벤트 선택<select value={eventId} onChange={e=>setEventId(e.target.value)}><option value="">이벤트를 선택해주세요</option>{events.map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label>{!events.length&&<p>등록된 이벤트가 없습니다. <Link href="/admin/events/new">이벤트 등록</Link></p>}</section>{event&&<section key={event.id} className="ops-panel"><h2>{event.title}</h2><dl><dt>행사 일시</dt><dd>{event.starts_at?new Intl.DateTimeFormat('ko-KR',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Seoul'}).format(new Date(event.starts_at))+' (한국 시간)':'미정'}</dd><dt>장소</dt><dd>{event.location||'미정'}</dd><dt>참가비 안내</dt><dd style={{whiteSpace:'pre-wrap'}}>{event.fee_notice||'등록된 안내 없음'}</dd></dl><div className="msg-controls"><Link className="ops-link" href={`/admin/events/${encodeURIComponent(event.slug)}/information`}>이벤트 정보</Link><Link className="ops-link" href={`/admin/events/${encodeURIComponent(event.slug)}/applicants`}>이 이벤트 신청자 관리</Link></div><p>현재는 이벤트 정보 연결 단계입니다. 실제 신청자 대상 선정·입금 안내 미리보기는 납부·환불 기능 검증 후 연결합니다. 아래 가상 연습 데이터는 이 이벤트의 신청자가 아닙니다.</p><button type="button" disabled>실제 발송 불가 — 문자 서비스 미연결</button></section>}</div>;
+}
 function EventMessagePreview({event}:{event:MessageEvent}){
  const [template,setTemplate]=useState(messageTemplates.basic);const [selected,setSelected]=useState<string[]>([]);const [filter,setFilter]=useState('all');const [search,setSearch]=useState('');
  const rows=paymentCandidates(event,demoApplicants,demoRefunds);const eligible=rows.filter(a=>a.eligible);const chosen=rows.filter(a=>a.eligible&&selected.includes(a.key));
