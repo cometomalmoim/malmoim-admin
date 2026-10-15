@@ -26,8 +26,8 @@ export const adminGroups = [
       },
       {
         "slug": "messages",
-        "title": "문자 발송",
-        "description": "전체 이벤트의 안내 문자와 발송 내역을 관리합니다."
+        "title": "메시징",
+        "description": "이벤트별 안내 템플릿과 문자 내용을 준비합니다."
       },
       {
         "slug": "certificates",
