@@ -1,7 +1,7 @@
 import "server-only";
 import { getAdminAccess } from "./auth";
 import { createClient } from "./supabase/server";
-export type RecruitmentEvent = { id: string; slug: string; title: string; status: string; applications_open: boolean; closes_at: string };
+export type RecruitmentEvent = { id: string; slug: string; title: string; status: string; applications_open: boolean; closes_at: string | null; visual_theme: 'default' | 'halloween' };
 export type ApplicationRow = { id: string; name: string; contact: string; contact_type: string; preferred_class: string; status: string; created_at: string };
 export type RecruitmentResult =
   | { kind: "error" }
@@ -12,7 +12,7 @@ export async function getRecruitment(slug?: string, page = 1): Promise<Recruitme
   if ((await getAdminAccess()).status !== "admin") return { kind: "error" };
   try {
     const client = await createClient();
-    const eventsResult = await client.from("recruitment_events").select("id,slug,title,status,applications_open,closes_at").order("created_at", { ascending: false });
+    const eventsResult = await client.from("recruitment_events").select("id,slug,title,status,applications_open,closes_at,visual_theme").order("created_at", { ascending: false });
     if (eventsResult.error) return { kind: "error" };
     const events = eventsResult.data as RecruitmentEvent[];
     if (!slug) return { kind: "ready", events, rows: [], count: 0, page: 1 };
