@@ -19,9 +19,13 @@ export function refundUpdateInput(data: FormData) {
  let amount:number|null=null;
  if(action==='process'){
   amount=Number(amountText);
-  if(!/^\d+$/.test(amountText)||!Number.isSafeInteger(amount)||amount>2147483647||!transferConfirmed)throw new Error('invalid');
+  if(!/^\d+$/.test(amountText)||!Number.isSafeInteger(amount)||amount<=0||amount>2147483647||!transferConfirmed)throw new Error('invalid');
  }else if(amountText)throw new Error('invalid');
  return {id,action,amount,transferConfirmed};
 }
 export type RefundRow={id:string;source:string;application_id:string;reason:string;requested_at:string;status:keyof typeof refundStatuses;
  decision_by:string|null;decision_at:string|null;processed_amount_krw:number|null;processed_by:string|null;processed_at:string|null;created_by:string;};
+
+export function fullRefundAllowed(actualAmount: number | null | undefined, refundAmount: number) {
+ return Number.isSafeInteger(actualAmount)&&Number(actualAmount)>0&&Number(actualAmount)<=2147483647&&Number.isSafeInteger(refundAmount)&&refundAmount>0&&refundAmount===actualAmount;
+}

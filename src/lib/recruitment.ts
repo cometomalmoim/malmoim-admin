@@ -3,7 +3,7 @@ import "server-only";
 import { getAdminAccess } from "./auth";
 import { createClient } from "./supabase/server";
 export type RecruitmentEvent = { id: string; slug: string; title: string; status: string; applications_open: boolean; closes_at: string | null; visual_theme: 'default' | 'halloween' };
-export type ApplicationRow = { id: string; name: string; contact: string; contact_type: string; preferred_class: string | null; participation_history: string | null; history_detail: string | null; status: string; created_at: string; source:string; birth_year:number|null; nationality:string|null; payment_status:string; internal_note:string; revision:number; source_note:string|null;payment_confirmed_by:string|null;payment_confirmed_at:string|null };
+export type ApplicationRow = { id: string; name: string; contact: string; contact_type: string; preferred_class: string | null; participation_history: string | null; history_detail: string | null; status: string; created_at: string; source:string; birth_year:number|null; nationality:string|null; payment_status:string; internal_note:string; revision:number; source_note:string|null;payment_confirmed_by:string|null;payment_confirmed_at:string|null;paid_amount_krw:number|null;paid_amount_recorded_by:string|null;paid_amount_recorded_at:string|null };
 export type RecruitmentResult =
   | { kind: "error" }
   | { kind: "missing" }
@@ -20,7 +20,7 @@ export async function getRecruitment(slug?: string, page = 1, query:ApplicantQue
     const event = events.find(e => e.slug === slug);
     if (!event) return { kind: "missing" };
     const safePage = Number.isSafeInteger(page) && page > 0 ? Math.min(page, 100000) : 1;
-    let request=client.from("event_application_list").select("id,name,contact,contact_type,preferred_class,status,created_at,participation_history,history_detail,source,birth_year,nationality,payment_status,internal_note,revision,source_note,payment_confirmed_by,payment_confirmed_at",{count:'exact'}).eq('event_id',event.id);
+    let request=client.from("event_application_list").select("id,name,contact,contact_type,preferred_class,status,created_at,participation_history,history_detail,source,birth_year,nationality,payment_status,internal_note,revision,source_note,payment_confirmed_by,payment_confirmed_at,paid_amount_krw,paid_amount_recorded_by,paid_amount_recorded_at",{count:'exact'}).eq('event_id',event.id);
     const search=(query.q??'').slice(0,100).replace(/[^\p{L}\p{N}\s+@_-]/gu,'').trim();
     if(search)request=request.or(`name.ilike.%${search}%,contact.ilike.%${search}%`);
     if(Object.hasOwn(applicationStatuses,query.status??''))request=request.eq('status',query.status!);

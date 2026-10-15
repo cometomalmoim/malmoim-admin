@@ -15,3 +15,12 @@ export function paymentConfirmationTime(value: string | null | undefined) {
  const date = new Date(value);
  return Number.isNaN(date.getTime()) ? '확인 필요' : `${new Intl.DateTimeFormat('ko-KR', {timeZone:'Asia/Seoul',dateStyle:'medium',timeStyle:'short'}).format(date)} (KST)`;
 }
+
+export function paymentAmountInput(data: FormData) {
+ const source=String(data.get('source')??''),applicationId=String(data.get('application_id')??'');
+ const revisionText=String(data.get('revision')??''),amountText=String(data.get('paid_amount_krw')??'').trim();
+ const revision=Number(revisionText),amount=Number(amountText);
+ if(!['manual','registration','season9'].includes(source)||! /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(applicationId)
+  ||!/^\d+$/.test(revisionText)||!Number.isSafeInteger(revision)||!/^\d+$/.test(amountText)||!Number.isSafeInteger(amount)||amount<=0||amount>2147483647)throw new Error('invalid');
+ return {source,applicationId,revision,amount};
+}

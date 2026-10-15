@@ -1,7 +1,7 @@
  'use server';
 import {getAdminAccess} from '@/lib/auth';
 import {createClient} from '@/lib/supabase/server';
-import {applicantInput} from '@/lib/applicant-validation';
+import {applicantInput,paymentAmountInput} from '@/lib/applicant-validation';
 import {revalidatePath} from 'next/cache';
 export async function saveApplicant(slug:string,_previous:{code:string},data:FormData):Promise<{code:string}>{
  if((await getAdminAccess()).status!=='admin')return {code:'forbidden'};
@@ -10,4 +10,16 @@ export async function saveApplicant(slug:string,_previous:{code:string},data:For
  if(result.error)return {code:'error'};
  if(result.data?.code==='saved')revalidatePath('/admin','layout');
  return {code:result.data?.code??'error'};}catch{return {code:'error'};}
+}
+
+export async function recordApplicantPayment(slug:string,_previous:{code:string},data:FormData):Promise<{code:string}>{
+ if((await getAdminAccess()).status!=='admin')return {code:'forbidden'};
+ let input;try{input=paymentAmountInput(data);}catch{return {code:'invalid'};}
+ try{
+  const client=await createClient();
+  const result=await client.rpc('record_event_payment',{p_slug:slug,p_source:input.source,p_application_id:input.applicationId,p_revision:input.revision,p_amount_krw:input.amount});
+  if(result.error)return {code:'error'};
+  if(result.data?.code==='saved')revalidatePath('/admin','layout');
+  return {code:result.data?.code??'error'};
+ }catch{return {code:'error'};}
 }

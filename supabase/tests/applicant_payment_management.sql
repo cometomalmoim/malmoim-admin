@@ -1,4 +1,4 @@
--- NOT executed automatically. Disposable test DB only, after 010, 013 and 014 (final refund protection rules).
+-- NOT executed automatically. Disposable test DB only, after 010, 013, 014 and 015 (final refund protection rules).
 -- Requires at least one existing test administrator. All fixture writes roll back.
 begin;
 do $$ declare a uuid; e uuid; app uuid:=gen_random_uuid(); slug text:='payment-test-'||gen_random_uuid(); begin
@@ -56,6 +56,9 @@ do $$ declare r jsonb; row_before public.event_application_list; row_after publi
   or row_after.payment_confirmed_at is distinct from row_before.payment_confirmed_at
  then raise exception 'Blocked entry changed applicant'; end if;
  if (select count(*) from public.event_application_audit where application_id=app)<>10 then raise exception 'Blocked entry changed audit'; end if;
+ r:=public.record_event_payment(slug,'manual',app,rev,100);
+ if r->>'code' is distinct from 'saved' then raise exception 'Actual amount record failed'; end if;
+ rev:=rev+1;
  -- Only the dedicated refund flow may complete a refund and synchronize payment.
  r:=public.create_event_refund_request(slug,'manual',app,'[가상] 환불 사유',clock_timestamp());
  if r->>'code' is distinct from 'saved' then raise exception 'Refund request failed: %',r; end if;
@@ -77,22 +80,25 @@ do $$ declare r jsonb; row_before public.event_application_list; row_after publi
   exception when check_violation then null; end;
  end loop;
  if not exists(select 1 from public.event_application_list where id=app and source='manual' and payment_status='refunded' and revision=rev and name='[가상] 일반 수정') then raise exception 'Blocked exit changed applicant'; end if;
- if (select count(*) from public.event_application_audit where application_id=app)<>13 then raise exception 'Refund/blocked exit audit mismatch'; end if;
+ if (select count(*) from public.event_application_audit where application_id=app)<>14 then raise exception 'Refund/blocked exit audit mismatch'; end if;
  -- Normal profile edits remain possible with refunded unchanged.
  r:=public.manage_event_application(slug,'manual',app,rev,'[가상] 환불 후 일반 수정','01000001234','phone',1998,'가상국적','waitlisted','refunded','메모','가상 접수');
  if r->>'code' is distinct from 'saved' then raise exception 'Refunded profile edit failed: %',r; end if;
  if not exists(select 1 from public.event_application_list where id=app and source='manual' and payment_status='refunded' and revision=rev+1 and name='[가상] 환불 후 일반 수정') then raise exception 'Refunded profile readback failed'; end if;
- if (select count(*) from public.event_application_audit where application_id=app)<>14 then raise exception 'Profile audit mismatch'; end if;
+ if (select count(*) from public.event_application_audit where application_id=app)<>15 then raise exception 'Profile audit mismatch'; end if;
 end $$;
 reset role;
 select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}',true);
 set local role authenticated;
 do $$ begin
  if exists(select 1 from public.event_application_list) then raise exception 'Nonadmin data exposure'; end if;
+ if public.record_event_payment(current_setting('payment_test.slug'),'manual',current_setting('payment_test.app')::uuid,0,100)->>'code' is distinct from 'forbidden' then raise exception 'Nonadmin receipt write allowed'; end if;
  if public.manage_event_application(current_setting('payment_test.slug'),'manual',null,0,'[가상] 권한','01000001235','phone',null,'','received','paid','','가상 접수')->>'code' is distinct from 'forbidden' then raise exception 'Nonadmin write allowed'; end if;
 end $$;
 reset role;
 do $$ begin
+ if has_function_privilege('anon','public.record_event_payment(text,text,uuid,integer,integer)','EXECUTE') then raise exception 'Anonymous receipt write grant'; end if;
+ if has_column_privilege('authenticated','public.event_application_management','paid_amount_krw','UPDATE') then raise exception 'Direct receipt update grant'; end if;
  if has_function_privilege('anon','public.manage_event_application(text,text,uuid,integer,text,text,text,integer,text,text,text,text,text)','EXECUTE') then raise exception 'Anonymous execution allowed'; end if;
 end $$;
 rollback;
