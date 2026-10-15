@@ -1,0 +1,40 @@
+/* Representative homepage only. Miro spacing/shapes adapted to MALMOIM colors. */
+.public-site .public-home-design{--home-yellow:#fbbc18;--home-teal:#087f8c;--home-pale-yellow:#fff3c9;--home-pale-teal:#e7f5f5;--home-ink:#171918;background:#fff;color:var(--home-ink)}
+.public-site .public-home-design .public-hero{max-width:1280px;padding:96px 32px 112px;gap:64px;grid-template-columns:1.08fr 1fr;align-items:center}
+.public-site .public-home-design .public-kicker{font-size:11px;font-weight:700;letter-spacing:.12em;color:var(--home-teal)}
+.public-site .public-home-design .public-hero>.public-kicker{display:inline-block}
+.public-site .public-home-design .public-hero>div>.public-kicker{display:inline-flex;align-items:center;border:1px solid #c6e6e5;background:var(--home-pale-teal);border-radius:9999px;padding:7px 12px}
+.public-site[lang] .public-home-design .public-hero h1{font-size:clamp(48px,6vw,80px);font-weight:700;line-height:1.13;letter-spacing:-.055em;margin:24px 0}
+.public-site[lang=en] .public-home-design .public-hero h1{font-size:clamp(44px,5vw,64px);font-weight:600;line-height:1.1;letter-spacing:-.05em}
+.public-site .public-home-design .public-hero h1 span{background:linear-gradient(transparent 78%,var(--home-pale-yellow) 78%)}
+.public-site .public-home-design .public-hero p{font-size:18px;line-height:1.7;color:#58635e;margin:24px 0 32px}
+.public-site .public-home-design .public-home-actions{display:flex;align-items:center;gap:20px;flex-wrap:wrap}
+.public-site .public-home-design .public-button{min-height:48px;padding:13px 24px;border:1px solid var(--home-yellow);border-radius:9999px;background:var(--home-yellow);color:var(--home-ink);font-size:14px;font-weight:700;line-height:1.4;gap:20px}
+.public-site .public-home-design .public-button:hover{background:#ffd25a;border-color:#ffd25a}
+.public-site .public-home-design .public-text-link{font-size:14px;font-weight:600;color:var(--home-teal);text-underline-offset:5px}
+.public-site .public-home-design .public-hero-brand{background:var(--home-pale-yellow);border:0;border-radius:28px;padding:40px 28px;min-width:0;box-shadow:none}
+.public-site .public-home-design .public-home-logo-frame{background:#fff;border-radius:16px;padding:26px 16px}
+.public-site .public-home-design .public-hero-brand>p{font-size:12px;line-height:1.6;margin:20px 0;color:#58635e}
+.public-site .public-home-design .public-home-topics{display:flex;justify-content:center;gap:8px;flex-wrap:wrap;margin-top:24px}
+.public-site .public-home-design .public-home-topics span{font-size:12px;line-height:1.5;padding:7px 14px;background:#fff;border-radius:9999px;color:var(--home-teal);font-weight:600}
+.public-site .public-home-design .public-section{padding:88px max(32px,calc((100vw - 1216px)/2))}
+.public-site .public-home-design .public-section h2{font-size:clamp(30px,3.5vw,44px);font-weight:600;line-height:1.25;letter-spacing:-.045em;margin:18px 0}
+.public-site .public-home-design .public-section-heading>p{max-width:680px;font-size:16px;line-height:1.7}
+.public-site .public-home-design .public-intro-card{margin-top:32px;padding:32px 40px;border:1px solid #eef0ed;border-radius:28px;background:#fff;gap:40px}
+.public-site .public-home-design .public-intro-card h3{font-size:24px;line-height:1.4;font-weight:600;letter-spacing:-.035em}
+.public-site .public-home-design .public-intro-card p{font-size:15px;line-height:1.7}
+.public-site .public-home-design .public-soft{background:#f7f8f7}
+.public-site .public-home-design .public-cards{gap:24px;margin-top:40px}
+.public-site .public-home-design .public-card{padding:40px;border:0;border-radius:28px;background:var(--home-pale-teal);box-shadow:none}
+.public-site .public-home-design .public-card:nth-child(2){background:var(--home-pale-yellow)}
+.public-site .public-home-design .public-card-number{background:#fff;color:var(--home-teal);font-size:12px;font-weight:600;padding:6px 12px;border-radius:9999px;margin-bottom:28px;min-width:38px;text-align:center}
+.public-site .public-home-design .public-card h3{font-size:28px;line-height:1.25;font-weight:600;letter-spacing:-.035em}
+.public-site .public-home-design .public-card p{font-size:16px;line-height:1.7}
+.public-site .public-home-design .public-empty{padding:0;background:transparent;border-radius:0;margin:12px 0 32px;font-size:14px;line-height:1.7;color:#58635e}
+.public-site .public-home-design .public-history{gap:64px}
+.public-site .public-home-design .public-history-note{padding:40px;border-radius:28px;background:var(--home-pale-teal);border:0;min-height:190px}
+.public-site .public-home-design .public-history-note>span{font-size:48px;color:var(--home-teal);font-weight:400}
+.public-site .public-home-design .public-history-note p{font-size:16px;line-height:1.7}
+@media(max-width:1023px){.public-site .public-home-design .public-hero{grid-template-columns:1fr;padding:64px 32px 72px;gap:40px}.public-site[lang] .public-home-design .public-hero h1{font-size:60px}.public-site[lang=en] .public-home-design .public-hero h1{font-size:56px}.public-site .public-home-design .public-hero-brand{max-width:620px;width:100%;margin:auto;padding:32px}.public-site .public-home-design .public-section{padding:64px 32px}.public-site .public-home-design .public-card{padding:32px}.public-site .public-home-design .public-history{gap:32px}.public-site .public-home-design .public-intro-card{padding:32px}}
+@media(max-width:767px){.public-site .public-home-design .public-hero{padding:48px 24px 56px;gap:32px}.public-site[lang] .public-home-design .public-hero h1{font-size:48px}.public-site[lang=en] .public-home-design .public-hero h1{font-size:44px}.public-site .public-home-design .public-section{padding:56px 24px}.public-site .public-home-design .public-section h2{font-size:32px}.public-site .public-home-design .public-cards,.public-site .public-home-design .public-history{grid-template-columns:1fr}.public-site .public-home-design .public-intro-card{align-items:flex-start;flex-direction:column;gap:20px;padding:28px}.public-site .public-home-design .public-hero-brand{padding:28px 20px}.public-site .public-home-design .public-card{padding:32px}.public-site .public-home-design .public-history-note{padding:32px}}
+@media(max-width:479px){.public-site[lang] .public-home-design .public-hero h1{font-size:40px;line-height:1.18}.public-site[lang=en] .public-home-design .public-hero h1{font-size:37px;line-height:1.12}.public-site .public-home-design .public-hero p{font-size:16px;margin:22px 0 28px}.public-site .public-home-design .public-home-actions{gap:18px}.public-site .public-home-design .public-home-actions>.public-text-link{font-size:13px}.public-site .public-home-design .public-section h2{font-size:30px}.public-site .public-home-design .public-card h3{font-size:25px}.public-site .public-home-design .public-home-logo-frame{padding:22px 12px}.public-site .public-home-design .public-intro-card h3{font-size:22px}}
