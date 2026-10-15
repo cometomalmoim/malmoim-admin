@@ -1,8 +1,7 @@
 import {AdminShell} from './admin-shell';
-import {MessagePreview} from './message-preview';
 import {MessagingComposer} from './messaging-composer';
 import {getMessageEvents} from '@/lib/message-events';
 export async function MessageView({email}:{email:string}){
  const result=await getMessageEvents();
- return <AdminShell email={email} current="messages" title="메시징">{result.kind==='ready'?<MessagingComposer events={result.events}/>:<section className="ops-panel" role="alert"><h1>메시징</h1><h2>이벤트 목록을 불러오지 못했습니다</h2><p>새로고침해 다시 시도해주세요.</p></section>}<details className="ops-panel"><summary>가상 데이터로 입금 대상 선정 연습</summary><MessagePreview/></details></AdminShell>;
+ return <AdminShell email={email} current="messages" title="메시징">{result.kind==='ready'?<MessagingComposer events={result.events}/>:<section className="ops-panel" role="alert"><h1>메시징</h1><h2>이벤트 목록을 불러오지 못했습니다</h2><p>새로고침해 다시 시도해주세요.</p></section>}</AdminShell>;
 }
