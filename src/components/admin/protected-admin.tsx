@@ -8,10 +8,11 @@ import { getAdminAccess } from "@/lib/auth";
 import { adminPages } from "@/lib/admin-navigation";
 import { RecruitmentView } from "./recruitment-view";
 import { AdminView } from "./admin-view";
+import { SuggestionsView } from "./suggestions-view";
 import { EventView } from "./event-view";
 import { EventDashboard } from './event-dashboard';
 import { LogoutForm } from "../logout-form";
-export async function ProtectedAdmin({ segments = [], page, query }: { segments?: string[]; page?: number; query?: ResourceQuery }) {
+export async function ProtectedAdmin({ segments = [], page, query }: { segments?: string[]; page?: number; query?: ResourceQuery & { status?: string } }) {
   await connection();
   const access = await getAdminAccess();
   if (access.status === "anonymous") redirect("/login");
@@ -21,6 +22,10 @@ export async function ProtectedAdmin({ segments = [], page, query }: { segments?
   if (segments.length === 2 && segments[0] === "events" && segments[1] === "new") return <EventView email={access.email}/>;
   if (segments.length === 3 && segments[0] === "events" && ["overview", "information", "edit"].includes(segments[2])) return <EventView email={access.email} slug={segments[1]} edit={segments[2] === "edit"} information={segments[2] === "information"}/>;
   if (segments[0] === "resources") return <ResourceView email={access.email} parts={segments.slice(1)} query={query} />;
+  if (segments[0] === "suggestions") {
+    if (segments.length > 2) notFound();
+    return <SuggestionsView email={access.email} id={segments[1]} status={query?.status} page={page} />;
+  }
   if (segments[0] === "events" && segments[2] === "resources") return <ResourceView email={access.email} slug={segments[1]} parts={segments.slice(3)} query={query} />;
   if (segments.length === 1 && ["events", "recruitment"].includes(segments[0])) return <RecruitmentView email={access.email} recruitment={segments[0] === "recruitment"} />;
   if (segments.length === 3 && segments[0] === "events" && segments[2] === "applicants") return <RecruitmentView email={access.email} slug={segments[1]} page={page} query={query} />;
