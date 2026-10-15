@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
-import Link from "next/link";
-import { PublicHeader } from "@/components/public-header";
-import { publicPages } from "@/lib/public-content";
+import { PublicFrame } from "@/components/public-frame";
 import "./public.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://malmoim.com"),
@@ -10,6 +8,4 @@ export const metadata: Metadata = {
   robots: { index: true, follow: true },
   openGraph: { title: "말모임 MALMOIM", description: "말모임의 소개와 참여 안내를 만나보세요.", locale: "ko_KR", type: "website", siteName: "말모임 MALMOIM" },
 };
-export default function PublicLayout({ children }: { children: React.ReactNode }) {
-  return <div className="public-site"><a className="public-skip" href="#public-main">본문으로 바로가기</a><PublicHeader />{children}<footer className="public-footer"><div><strong>말모임 MALMOIM</strong><p>Come to MALMOIM, Meet the world.</p></div><nav aria-label="하단 메뉴">{publicPages.map((page) => <Link key={page.slug} href={`/${page.slug}`}>{page.title}</Link>)}</nav></footer></div>;
-}
+export default function PublicLayout({ children }: { children: React.ReactNode }) { return <PublicFrame>{children}</PublicFrame>; }
