@@ -5,3 +5,14 @@ export const publicPages = [
   { slug: "board", title: "게시판", intro: "말모임의 이야기를 나누는 공간", description: "공지와 함께 나눌 이야기를 확인할 수 있는 공간입니다.", empty: "아직 공개된 게시글이 없습니다. 게시판 안내를 준비하고 있습니다." },
   { slug: "history", title: "말모임 히스토리", intro: "지나온 만남을 기억하는 곳", description: "말모임의 지난 활동을 소개하는 공간입니다.", empty: "공개할 활동 기록을 준비하고 있습니다." },
 ] as const;
+
+export type PublicLocale = "ko" | "en";
+export const publicEnglishPages = [
+  { slug: "about", title: "About MALMOIM", intro: "Discover a new world through language", description: "Get to know MALMOIM and learn how to take part.", empty: "Our introduction and participation guide are coming soon." },
+  { slug: "events", title: "Studies & Events", intro: "Learn together. Meet each other.", description: "Explore information about our study groups and events.", empty: "No study groups or events are listed here yet. Check back for new announcements." },
+  { slug: "exchange", title: "1:1 Language Exchange", intro: "Connect through each other’s languages", description: "Find information about one-to-one language exchange.", empty: "Our participation guide and program details are coming soon." },
+  { slug: "board", title: "Community Board", intro: "A space for our community’s stories", description: "Find announcements and stories from MALMOIM.", empty: "No posts have been published yet. Our community board is being prepared." },
+  { slug: "history", title: "Our History", intro: "Remember the connections we’ve made", description: "Discover MALMOIM’s past activities.", empty: "Our activity archive is being prepared for you." },
+] as const;
+export function getPublicPages(locale: PublicLocale) { return locale === "en" ? publicEnglishPages : publicPages; }
+export function publicPath(locale: PublicLocale, slug = "") { return locale === "en" ? `/en${slug ? `/${slug}` : ""}` : `/${slug}`; }
