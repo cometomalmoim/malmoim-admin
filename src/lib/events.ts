@@ -10,7 +10,7 @@ export async function getEvent(slug: string): Promise<{kind:'ready';row:EventRow
   if ((await getAdminAccess()).status !== 'admin') return {kind:'error'};
   try {
     const client = await createClient();
-    const result = await client.from('recruitment_events').select('id,slug,title,status,applications_open,description,image_url,starts_at,ends_at,location,capacity,fee_notice,opens_at,closes_at').eq('slug', slug).maybeSingle();
+    const result = await client.from('recruitment_events').select('id,slug,title,status,applications_open,description,image_url,starts_at,ends_at,location,capacity,fee_notice,opens_at,closes_at,visual_theme').eq('slug', slug).maybeSingle();
     if (result.error) return {kind:'error'};
     return result.data ? {kind:'ready',row:result.data as EventRow} : {kind:'missing'};
   } catch { return {kind:'error'}; }
