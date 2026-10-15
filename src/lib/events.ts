@@ -15,3 +15,11 @@ export async function getEvent(slug: string): Promise<{kind:'ready';row:EventRow
     return result.data ? {kind:'ready',row:result.data as EventRow} : {kind:'missing'};
   } catch { return {kind:'error'}; }
 }
+export async function getEventApplicationCount(eventId:string):Promise<number|null> {
+  if ((await getAdminAccess()).status !== 'admin') return null;
+  try {
+    const client = await createClient();
+    const result = await client.from('event_application_list').select('id',{count:'exact',head:true}).eq('event_id',eventId);
+    return result.error ? null : result.count;
+  } catch { return null; }
+}
