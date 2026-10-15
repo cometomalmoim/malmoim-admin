@@ -1,0 +1,5 @@
+export function HalloweenBanner() {
+  return <div className="evt-halloween-banner"><div><span className="evt-halloween-kicker">MALMOIM · HALLOWEEN</span><strong>조금 으스스하게,<br/>함께 즐겁게.</strong><span className="evt-halloween-caption">이 밤의 만남을 준비하세요</span></div>
+    <svg className="evt-halloween-art" viewBox="0 0 180 160" aria-hidden="true" focusable="false"><circle cx="126" cy="42" r="27" fill="#e8d8ff"/><circle cx="114" cy="33" r="25" fill="#21172f"/><path d="M18 36l9-8 10 8-3-12 10-8-14 1-5-11-4 12-13 1 11 7z" fill="#b99adf"/><path d="M117 85q12-19 23-4l6-7 5 8q16-8 22 11-18-6-27 7-10-17-29-15" fill="#a68ac8"/><path d="M79 76q-9-21 7-29" fill="none" stroke="#97b783" strokeWidth="9" strokeLinecap="round"/><ellipse cx="79" cy="111" rx="56" ry="38" fill="#e97c35"/><ellipse cx="79" cy="111" rx="35" ry="39" fill="#ff9a43"/><ellipse cx="79" cy="111" rx="16" ry="39" fill="#ffb15b"/><path d="M48 108l12-17 8 19zm41 2 11-19 12 18zM53 124l14 5 11-7 11 7 14-5-12 17H68z" fill="#39233b"/><circle cx="158" cy="126" r="3" fill="#d7b3ef"/><path d="M22 121v12m-6-6h12" stroke="#d7b3ef" strokeWidth="2"/></svg>
+  </div>;
+}

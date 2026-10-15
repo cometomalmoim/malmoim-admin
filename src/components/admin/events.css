@@ -1,0 +1,15 @@
+.evt-form{max-width:760px}.evt-form fieldset{border:0;padding:0;margin:0;min-width:0}.evt-form legend{font-weight:700}.evt-form label{display:grid;gap:7px;margin:18px 0;font-weight:600}.evt-form input,.evt-form textarea{box-sizing:border-box;width:100%;min-width:0;padding:12px;border:1px solid #bbc8c4;border-radius:8px;background:#fff;color:#171918;font:inherit}.evt-form small{font-weight:400;color:#52615d}.evt-fields{display:grid;grid-template-columns:1fr 1fr;gap:16px}.evt-primary{background:#fbbc18;border:1px solid #dca714;border-radius:8px;padding:12px 18px;color:#171918;font-weight:700}.evt-form fieldset:disabled{opacity:.65}.evt-detail p,.evt-detail dd{white-space:pre-wrap;overflow-wrap:anywhere}.evt-detail dt{font-weight:700;margin-top:18px}.evt-detail dd{margin:6px 0 0}@media(max-width:600px){.evt-fields{grid-template-columns:1fr;gap:0}}
+.evt-form select{box-sizing:border-box;width:100%;padding:12px;border:1px solid #bbc8c4;border-radius:8px;background:white;color:#171918;font:inherit}
+.evt-halloween-card,.evt-halloween-detail{background:#21172f;border-color:#684a7e;color:#fff5e9;overflow:hidden}
+.evt-halloween-banner{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 22px;margin-bottom:22px;border-bottom:1px solid #70516c}
+.evt-halloween-kicker{display:block;color:#ffc789;font-size:10px;font-weight:800;letter-spacing:.12em;line-height:1.7}
+.evt-halloween-banner strong{display:block;color:#fff0df;font-size:clamp(20px,3vw,30px);line-height:1.4;letter-spacing:-.04em;margin:12px 0}
+.evt-halloween-caption{font-size:12px;color:#d3bcdf;line-height:1.7}
+.evt-halloween-art{width:130px;max-width:38%;height:auto;flex-shrink:0}
+.ops-recruitment-card.evt-halloween-card p{color:#e1cfe9}
+.evt-halloween-card .ops-tag{background:#ffae61;color:#352139;font-weight:800}
+.evt-halloween-card .ops-link,.evt-halloween-detail .ops-link{background:#382440;color:#ffe0ae;border-color:#8b658c}
+.evt-halloween-card .ops-link:hover,.evt-halloween-detail .ops-link:hover{background:#56325e;border-color:#ffc789}
+.evt-halloween-detail dt{color:#ffbc79}.evt-halloween-detail .ops-muted{color:#d3bcdf}
+.evt-landing-links{display:flex;gap:8px;flex-wrap:wrap;white-space:normal!important}
+@media(max-width:420px){.evt-halloween-banner{gap:8px}.evt-halloween-art{width:100px}.evt-halloween-banner strong{font-size:22px}}
