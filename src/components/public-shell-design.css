@@ -43,3 +43,13 @@
 @media(max-width:640px){.public-site .public-header{display:grid;grid-template-columns:1fr auto auto;gap:10px;padding:20px 24px}.public-site .public-logo{width:120px;grid-column:1;grid-row:1}.public-site .public-languages{grid-column:2/4;grid-row:1;margin-left:0;justify-content:flex-end}.public-site .public-menu-toggle{grid-column:2;grid-row:2;margin-left:0;font-size:12px}.public-site .public-login{grid-column:3;grid-row:2;min-height:44px;padding:10px 16px;font-size:13px}.public-site .public-navigation{grid-column:1/-1;grid-row:3;width:100%;margin:0}.public-site .public-detail{padding:24px 24px 64px}.public-site .public-detail-heading{padding:40px 0 32px}.public-site .public-detail h1{font-size:40px;line-height:1.2;overflow-wrap:break-word}.public-site[lang=en] .public-detail h1{font-size:37px}.public-site .public-detail-heading p{font-size:16px}.public-site .public-detail-empty{grid-template-columns:1fr;padding:28px;gap:28px}.public-site .public-detail-symbol{width:72px;height:72px;border-radius:20px;font-size:40px}.public-site .public-detail-empty h2{font-size:25px}.public-site .public-explore{margin-top:48px}.public-site .public-explore h2{font-size:22px}.public-site .public-explore>div{grid-template-columns:1fr}.public-site .public-explore a{min-height:68px}.public-site .public-footer{padding:40px 24px;gap:24px}.public-site .public-footer nav{display:grid;grid-template-columns:1fr 1fr;gap:8px 20px;align-items:start}}
 @media(prefers-reduced-motion:no-preference){.public-site .public-navigation a,.public-site .public-login,.public-site .public-explore a{transition:background-color .15s,border-color .15s}}
 .public-site[lang=ko] .public-detail h1,.public-site[lang=ko] .public-detail h2,.public-site[lang=ko] .public-detail p{word-break:keep-all;overflow-wrap:break-word}
+
+/* Longer English labels need the existing collapsed navigation at tablet widths. */
+@media(min-width:961px) and (max-width:1100px){
+ .public-site[lang=en] .public-header{flex-wrap:wrap;gap:12px}
+ .public-site[lang=en] .public-menu-toggle{display:block;order:1;margin-left:auto;min-height:44px;padding:10px 16px;border:1px solid #d4dcd7;border-radius:9999px;background:#fff;font-size:13px;font-weight:700}
+ .public-site[lang=en] .public-login,.public-site[lang=en] .public-account,.public-site[lang=en] .public-account-loading{order:2}
+ .public-site[lang=en] .public-navigation{display:none;order:3;width:100%;margin:0;flex-direction:column;align-items:stretch;gap:8px;padding:12px;background:#f7f8f7;border-radius:24px}
+ .public-site[lang=en] .public-navigation.is-open{display:flex}
+ .public-site[lang=en] .public-navigation a{padding:14px 16px;font-size:14px}
+}
