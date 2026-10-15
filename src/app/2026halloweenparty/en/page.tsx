@@ -4,6 +4,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import "../party.css";
 import { PartyArt } from "../party-art";
 
+import "@/components/landing-design.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://malmoim.com"),
   title: "MALMOIM Halloween Party 2026 | October 31, Yeonsinnae",
