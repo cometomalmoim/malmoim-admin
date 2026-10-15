@@ -27,9 +27,9 @@
 
 ## 검증 범위
 
-Node 테스트는 참가비·납부·환불 검증과 서버 액션·조회 경계, 참여 이력 링크가 포함된 통합 목록을 확인합니다. 운영 DB에 연결하지 않습니다. SQL 관련 Node 테스트는 계약의 정적 검사이며 실제 PostgreSQL 실행 결과를 보증하지 않습니다.
+Node 테스트는 참가비·납부·환불 검증과 서버 액션·조회 경계, 참여 이력 링크가 포함된 통합 목록을 확인합니다. 운영 DB에 연결하지 않습니다. 기존 SQL 관련 Node 테스트는 계약의 정적 검사입니다. 추가된 `npm run test:db:embedded`는 격리된 PGlite PostgreSQL 엔진에서 SQL을 실행합니다. 실제 Supabase·다중 세션 검증과는 구분합니다.
 
-`supabase/tests/applicant_payment_management.sql` 및 `applicant_refund_management.sql`은 010·013·014·015가 적용된 별도 테스트 DB에서 명시적으로 실행할 검증 스크립트입니다. 요청·승인·처리의 납부 상태 유지/전환, 일반 수정 차단·프로필 수정 보존, 감사·권한·수정 충돌을 확인하고 롤백합니다. 실행에는 별도 승인이 필요하며 이 작업에서는 실행하지 않습니다.
+`supabase/tests/applicant_payment_management.sql` 및 `applicant_refund_management.sql`은 010·013·014·015가 적용된 별도 테스트 DB에서 명시적으로 실행할 검증 스크립트입니다. 요청·승인·처리의 납부 상태 유지/전환, 일반 수정 차단·프로필 수정 보존, 감사·권한·수정 충돌을 확인하고 롤백합니다. 이 스크립트들은 이번에 격리된 임베디드 PostgreSQL에서 실행해 통과했습니다. 운영 DB에서는 실행하지 않았습니다.
 
 배포 전에 실제 DB에서 SQL 적용·RLS·동시 처리·전체 롤백과 Supabase 관계 조회를 확인해야 합니다. 신규 스키마 없이 UI만 배포하면 조회·저장에 실패할 수 있으므로 적용 순서를 함께 검토합니다.
 
@@ -37,4 +37,6 @@ Node 테스트는 참가비·납부·환불 검증과 서버 액션·조회 경�
 
 ## DB 실행 검증 상태
 
-**미완료.** 로컬 임시 PostgreSQL의 initdb가 샌드박스 공유 메모리 권한 제한(`shmget: Operation not permitted`)으로 실패했습니다. 실제 DB에서 마이그레이션·RLS·동시 처리·롤백을 검증하지 못했으며 운영 DB로 대체하지 않았습니다. 금액 보완 코드와 SQL도 실행 검증 전입니다. PR은 Draft 유지, 운영 DB 적용·main 병합·배포는 계속 보류합니다.
+**부분 완료.** 일반 PostgreSQL의 initdb는 샌드박스 공유 메모리 권한 제한(`shmget: Operation not permitted`)으로 차단됐지만, 별도 메모리 PostgreSQL 엔진에서 011 보존·012→015 적용·납부 및 환불 SQL 회귀·역할별 권한·금액/중복 차단·감사 실패 롤백·015 DDL 롤백을 확인했습니다.
+
+실제 다중 세션 동시 처리, Supabase Auth/PostgREST 및 현재 환경에서의 프로덕션 빌드는 미완료입니다. [상세 검증 결과·재현 방법·문자 조회 기준](payment-refund-verification.md)을 확인하세요. 운영 DB로 대체하지 않았으며 PR은 Draft 유지, 운영 DB 적용·main 병합·배포는 계속 보류합니다.
