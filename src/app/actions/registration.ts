@@ -1,0 +1,21 @@
+ 'use server';
+import {createClient} from '@/lib/supabase/server';
+import {getAdminAccess} from '@/lib/auth';
+import {registrationInput} from '@/lib/registration-validation';
+import {revalidatePath} from 'next/cache';
+export async function registrationInfo(slug:string,test=false):Promise<{open:boolean;notice?:string;version?:string;marketingNotice?:string}> {
+ if(test&&(await getAdminAccess()).status!=='admin')return {open:false};
+ if(!test&&slug!=='halloween-2026')return {open:false};
+ try {const client=await createClient();const result=await client.rpc('event_registration_info',{p_slug:slug,p_test:test});return result.error?{open:false}:result.data??{open:false};}catch{return {open:false};}
+}
+export async function registerEvent(slug:string,test:boolean,_previous:{code:string},data:FormData):Promise<{code:string}> {
+ if(test&&(await getAdminAccess()).status!=='admin')return {code:'closed'};
+ if(!test&&slug!=='halloween-2026')return {code:'closed'};
+ if(String(data.get('website')??''))return {code:'invalid'};
+ let input;try{input=registrationInput(data);}catch(error){return {code:error instanceof Error?error.message:'invalid'};}
+ try{const client=await createClient();const result=await client.rpc('submit_event_registration',{p_slug:slug,p_test:test,p_submission:input.submission,p_name:input.name,p_contact:input.contact,p_history:input.history,p_detail:input.detail,p_consent:true,p_version:input.version,p_marketing:data.get('marketing_consent')==='on'});
+ if(result.error)return {code:'error'};
+ if(result.data==='saved')revalidatePath('/admin','layout');
+ return {code:typeof result.data==='string'?result.data:'error'};
+ }catch{return {code:'error'};}
+}

@@ -1,0 +1,23 @@
+'use client';
+import { useActionState, useState } from 'react';
+import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { saveResource, deleteResource } from '@/app/actions/resources';
+import type { ResourceRow } from '@/lib/resources';
+import { RESOURCE_KINDS } from '@/lib/resource-validation';
+export function ResourceEditor({row,events,eventId,base='/admin/resources',preview=false}:{row?:ResourceRow;events:{id:string;title:string}[];eventId?:string;base?:string;preview?:boolean}){
+ const [state,action,pending]=useActionState(saveResource.bind(null,eventId??null),{message:''});
+ return <section className="ops-panel"><form action={action} onReset={e=>e.preventDefault()} className="res-form"><input type="hidden" name="id" value={row?.id??''}/><fieldset disabled={pending||preview}><label>자료 제목<input name="title" required maxLength={150} defaultValue={row?.title}/></label><label>자료 종류<select name="kind" defaultValue={row?.kind??'english'}>{Object.entries(RESOURCE_KINDS).map(([key,value])=><option key={key} value={key}>{value}</option>)}</select></label>{eventId?<input type="hidden" name="event_id" value={eventId}/>:<label>연결 이벤트<select name="event_id" defaultValue={row?.event_id??''}><option value="">공통 자료 · 이벤트 없음</option>{events.map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label>}<div className="res-fields">{[['season','기수'],['session_number','기수 내 회차'],['cumulative_week','누적 주차']].map(([key,title])=><label key={key}>{title}<input type="number" min={1} max={100000} step={1} name={key} defaultValue={row?.[key as 'season']??''}/></label>)}</div><label>주제<input name="topic" maxLength={200} defaultValue={row?.topic}/></label><label>설명·특이사항<textarea name="description" rows={5} maxLength={5000} defaultValue={row?.description}/></label><label>영상·외부 자료 링크<input name="external_url" type="url" maxLength={2000} defaultValue={row?.external_url}/></label><p className="ops-muted">작성자는 로그인한 계정으로 기록됩니다. 첨부파일은 자료 정보를 저장한 뒤 등록할 수 있습니다.</p><button className="res-primary" disabled={pending}>{preview?'저장 · 준비 중':pending?'저장 중…':'자료 정보 저장'}</button></fieldset><p role="status">{state.message}</p>{state.success&&state.id&&<Link className="ops-link" href={`${base}/${state.id}`}>상세·첨부파일 관리로 이동 →</Link>}</form></section>;
+}
+export function ResourceFiles({row,base}:{row:ResourceRow;base:string}){
+ const router=useRouter();const [busy,setBusy]=useState(false),[message,setMessage]=useState('');
+ async function request(operation:string,fileId?:string,file?:File){
+ if(operation==='delete'&&!confirm('첨부파일을 삭제하시겠습니까?'))return;
+ setBusy(true);setMessage(operation==='upload'?'파일 업로드 중…':'처리 중…');
+ try{const data=new FormData();data.set('operation',operation);data.set('resource_id',row.id);if(fileId)data.set('file_id',fileId);if(file)data.set('file',file);
+ const response=await fetch('/api/admin/resources/files',{method:'POST',body:data});const result=await response.json();setMessage(result.message??'');if(response.ok){if(result.url){window.location.assign(result.url);}else router.refresh();}}
+ catch{setMessage('연결하지 못했습니다. 선택한 파일을 유지한 채 다시 시도해주세요.');}finally{setBusy(false);}
+ }
+ async function remove(){if(!confirm('자료와 첨부파일을 모두 삭제하시겠습니까?'))return;setBusy(true);try{const result=await deleteResource(row.id);setMessage(result.message);if(result.success){router.push(base);router.refresh();}}catch{setMessage('삭제를 완료하지 못했습니다. 다시 시도해주세요.');}finally{setBusy(false);}}
+ return <section className="ops-panel"><h2>첨부파일</h2><p className="ops-muted">PDF만 · 파일당 최대 3MB · 자료당 최대 5개. 등록이 완료되지 않은 작업은 15분 후 삭제하고 다시 올려주세요.</p>{!row.resource_files.length&&<p className="ops-empty">등록된 첨부파일이 없습니다.</p>}<ul className="res-files">{row.resource_files.map(f=><li key={f.id}><span>{f.original_name} · {(f.size_bytes/1024).toFixed(0)}KB {f.state!=='ready'&&'· 등록 미완료'}</span><div className="ops-actions"><button disabled={busy||f.state!=='ready'} onClick={()=>request('download',f.id)}>다운로드</button><button disabled={busy} onClick={()=>request('delete',f.id)}>파일 삭제</button></div></li>)}</ul><form className="res-form" onSubmit={e=>{e.preventDefault();const file=new FormData(e.currentTarget).get('file');if(file instanceof File)void request('upload',undefined,file);}}><label>PDF 첨부<input name="file" type="file" accept="application/pdf,.pdf" required disabled={busy||row.resource_files.length>=5}/></label><button className="res-primary" disabled={busy||row.resource_files.length>=5}>파일 등록</button></form><p role="status" aria-live="polite">{message}</p><hr/><button disabled={busy} onClick={remove} className="res-danger">자료 전체 삭제</button></section>;
+}
