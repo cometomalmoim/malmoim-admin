@@ -20,3 +20,11 @@ test('정원은 선택 정수, 이미지 주소는 인증정보 없는 HTTPS만 
  for(const image_url of ['javascript:alert(1)','http://example.com/x','https://user:pass@example.com/x'])assert.throws(()=>eventInput(form({image_url})));
  assert.equal(eventInput(form({image_url:'https://example.com/a.jpg'})).image_url,'https://example.com/a.jpg');
 });
+test('초안 모집 기간은 미정 가능, 한쪽만 지정하거나 잘못된 스타일은 거부',()=>{
+ const result=eventInput(form({opens_at:'',closes_at:'',visual_theme:'halloween'}));
+ assert.equal(result.opens_at,null);assert.equal(result.closes_at,null);assert.equal(result.visual_theme,'halloween');
+ assert.throws(()=>eventInput(form({opens_at:''})));
+ assert.throws(()=>eventInput(form({closes_at:''})));
+ assert.throws(()=>eventInput(form({visual_theme:'untrusted'})));
+ assert.equal(eventInput(form()).visual_theme,'default');
+});
