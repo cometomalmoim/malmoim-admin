@@ -3,6 +3,8 @@
 import { useActionState, useState } from 'react';
 import {
   createSuggestionAction,
+  deleteSuggestionAction,
+  saveSuggestionDetailsAction,
   saveSuggestionFeedbackAction,
   saveSuggestionResolutionAction,
   saveSuggestionStatusAction,
@@ -29,6 +31,32 @@ export function SuggestionCreateForm() {
     {mode === 'named' && <p className="ops-muted">입력한 이름은 계정 정보와 대조하지 않습니다.</p>}
     <FormMessage state={state} />
     <button className="sg-primary" type="submit" disabled={pending}>{pending ? '등록 중…' : '건의 등록'}</button>
+  </form>;
+}
+
+export function SuggestionEditForm({ id, title, content }: { id: string; title: string; content: string }) {
+  const [editing, setEditing] = useState(false);
+  const actionWithId = saveSuggestionDetailsAction.bind(null, id);
+  const [state, action, pending] = useActionState(actionWithId, initialState);
+  return <div className="sg-edit-control">
+    <button className="sg-secondary" type="button" aria-expanded={editing} onClick={() => setEditing(value => !value)}>{editing ? '수정 취소' : '건의 수정'}</button>
+    {editing && <form action={action} className="sg-form sg-edit-form">
+      <label className="sg-field">제목<input name="title" required maxLength={150} defaultValue={title} /></label>
+      <label className="sg-field">내용<textarea name="content" required maxLength={10000} rows={5} defaultValue={content} /></label>
+      <FormMessage state={state} />
+      <button className="sg-primary" type="submit" disabled={pending}>{pending ? '저장 중…' : '수정 내용 저장'}</button>
+    </form>}
+  </div>;
+}
+
+export function SuggestionDeleteForm({ id }: { id: string }) {
+  const actionWithId = deleteSuggestionAction.bind(null, id);
+  const [state, action, pending] = useActionState(actionWithId, initialState);
+  return <form action={action} className="sg-delete-form" onSubmit={event => {
+    if (!window.confirm('이 건의를 삭제할까요? 삭제하면 목록과 통계에서 제외되며 복구할 수 없습니다.')) event.preventDefault();
+  }}>
+    <button className="sg-danger" type="submit" disabled={pending}>{pending ? '삭제 중…' : '건의 삭제'}</button>
+    <FormMessage state={state} />
   </form>;
 }
 

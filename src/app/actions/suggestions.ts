@@ -3,7 +3,7 @@
 import { redirect } from 'next/navigation';
 import { revalidatePath } from 'next/cache';
 import { getAdminAccess } from '@/lib/auth';
-import { createSuggestion, updateSuggestionStatus, updateSuggestionText } from '@/lib/suggestions';
+import { createSuggestion, deleteSuggestion, updateSuggestionDetails, updateSuggestionStatus, updateSuggestionText } from '@/lib/suggestions';
 
 export type SuggestionActionState = { message: string; success?: boolean };
 const failed: SuggestionActionState = { message: '저장하지 못했습니다. 권한과 데이터베이스 설정을 확인한 뒤 다시 시도해주세요.' };
@@ -29,6 +29,26 @@ export async function saveSuggestionFeedbackAction(id: string, _previous: Sugges
   revalidatePath('/admin/suggestions');
   revalidatePath(`/admin/suggestions/${id}`);
   return { message: '운영진 피드백을 저장했습니다. 건의 상태는 변경되지 않았습니다.', success: true };
+}
+
+export async function saveSuggestionDetailsAction(id: string, _previous: SuggestionActionState, formData: FormData): Promise<SuggestionActionState> {
+  if ((await getAdminAccess()).status !== 'admin') return { message: '관리자 권한을 확인해주세요.' };
+  const result = await updateSuggestionDetails(id, {
+    title: String(formData.get('title') ?? ''),
+    content: String(formData.get('content') ?? ''),
+  });
+  if (!result.ok) return result.reason === 'invalid' ? { message: '제목과 내용을 입력 항목에 맞게 확인해주세요.' } : result.reason === 'missing' ? { message: '건의를 찾을 수 없습니다.' } : result.reason === 'forbidden' ? { message: '관리자 권한을 확인해주세요.' } : failed;
+  revalidatePath('/admin/suggestions');
+  revalidatePath(`/admin/suggestions/${id}`);
+  return { message: '건의 내용을 수정했습니다.', success: true };
+}
+
+export async function deleteSuggestionAction(id: string, _previous: SuggestionActionState, _formData: FormData): Promise<SuggestionActionState> {
+  if ((await getAdminAccess()).status !== 'admin') return { message: '관리자 권한을 확인해주세요.' };
+  const result = await deleteSuggestion(id);
+  if (!result.ok) return result.reason === 'missing' ? { message: '이미 삭제되었거나 건의를 찾을 수 없습니다.' } : result.reason === 'invalid' ? { message: '건의 번호를 확인해주세요.' } : result.reason === 'forbidden' ? { message: '관리자 권한을 확인해주세요.' } : failed;
+  revalidatePath('/admin/suggestions');
+  redirect('/admin/suggestions');
 }
 
 export async function saveSuggestionResolutionAction(id: string, _previous: SuggestionActionState, formData: FormData): Promise<SuggestionActionState> {
