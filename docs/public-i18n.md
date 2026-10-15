@@ -31,3 +31,8 @@ URL로 언어를 구분한다. 상단 언어 선택은 현재 메뉴를 유지�
 lint/next typegen/TypeScript 통과. /en/events→한국어 전환 시 /events 유지, 영어로 다시 전환 확인. 모바일390px 메뉴 열기/닫기, Escape 후 토글 포커스 복귀 확인. 390/961/1024px 가로 넘침 없음. 운영 빌드·전체 경로 검사는 배포 브랜치에서 추가 확인한다.
 
 12개 공개 경로 HTTP200/canonical/hreflang 확인. 320px에서도 가로 넘침 없음. 영어 모바일 화면 실제 캡처로 로고·언어 선택·로그인·본문 배치 확인.
+
+독립 운영 검증: lint/TypeScript 및 npm run build 종료 코드0. 별도3102 production 서버에서 공개12경로 HTTP200/canonical/index 확인. 없는 영어 경로는 not-found/noindex(초기 스트리밍 응답은200일 수 있음, 후속404), 운영 preview404 확인. admin Host의 /는 기존 /login으로307. 테스트용3102만 종료하고 기존3000 개발 서버 유지. 실제 계정 로그인·로그아웃·권한 전체 회귀는 미검증(관련 코드 diff0).
+
+
+운영 반영: PR12 merge commite05bd9e Vercel Production success. 실제 malmoim.com→/en 전환 및 /en/events→한국어/events 현재 메뉴 유지 확인. 관리자 인증·DB·행사 신청 변경 없음.
