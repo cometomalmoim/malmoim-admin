@@ -3,3 +3,13 @@
 @media(max-width:420px){.ops-stats{grid-template-columns:1fr}.ops-stats .ops-panel{margin-bottom:0}.ops-stats{margin-bottom:20px}}
 
 .ops-table-scroll{overflow-x:auto}.ops-applications{width:100%;border-collapse:collapse;text-align:left;font-size:13px}.ops-applications th,.ops-applications td{padding:14px;border-bottom:1px solid #e2e5e5;white-space:nowrap}.ops-applications th{background:#f5f7f6}.ops-applications small{display:block;color:#68716d;font-size:11px;margin-top:4px}.ops-applications caption{text-align:left;padding:16px 0}
+
+/* Keep padded links in normal line layout, including wrapped card actions. */
+.ops-link{display:inline-flex;align-items:center;max-width:100%;vertical-align:middle;line-height:1.5;overflow-wrap:anywhere}
+.ops-recruitment-card .ops-link{margin:4px 0}
+.ops-recruitment-card,.ops-header>span,.ops-header .account,.ops-header .account>div{min-width:0;overflow-wrap:anywhere}
+@media(max-width:900px){
+ .ops-header{position:sticky;top:0;z-index:20;padding:16px 20px 16px 100px;align-items:center}
+ .ops-header>span{flex-basis:100%}
+ .ops-header .account{gap:10px;max-width:100%}
+}
