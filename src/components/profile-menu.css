@@ -1,0 +1,13 @@
+.public-site .public-account{position:relative;flex-shrink:0}
+.public-site .public-avatar{display:grid;place-items:center;width:46px;height:46px;border:1px solid #087f8c;border-radius:50%;background:#e7f5f5;color:#086e78;cursor:pointer}
+.public-site .public-avatar svg{width:24px;height:24px}
+.public-site .public-avatar:hover{background:#d1eceb}
+.public-site .public-account-panel{position:absolute;z-index:50;right:0;top:calc(100% + 12px);width:min(288px,calc(100vw - 48px));padding:16px;background:#fff;border:1px solid #d4dcd7;border-radius:8px;box-shadow:0 6px 18px #17191812}
+.public-site .public-account-email{font-size:13px;line-height:1.6;overflow-wrap:anywhere;margin:0 0 12px;padding-bottom:12px;border-bottom:1px solid #e2e7e3}
+.public-site .public-account-panel button{display:block;text-align:left;width:100%;padding:12px 8px;min-height:44px;font-size:14px;background:transparent;border:0;border-radius:4px;color:#171918;cursor:pointer}
+.public-site .public-account-panel button:hover:not(:disabled){background:#e7f5f5}
+.public-site .public-account-panel button:disabled{color:#737c77;cursor:default}
+.public-site .public-account-panel [role=alert]{font-size:13px;color:#a12626;line-height:1.6}
+.public-site .public-account :focus-visible{outline:2px solid #087f8c;outline-offset:3px}
+.public-site .public-account-loading{width:46px;height:46px;flex-shrink:0}
+@media(max-width:640px){.public-site .public-account,.public-site .public-account-loading{grid-column:3;grid-row:2;justify-self:end}}
