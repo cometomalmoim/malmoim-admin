@@ -5,6 +5,7 @@ import { BrandLogo } from "@/components/brand-logo";
 import "./party.css";
 import { PartyArt } from "./party-art";
 
+import "@/components/landing-design.css";
 export const metadata: Metadata = {
   metadataBase: new URL("https://malmoim.com"),
   title: "2026 말모임 할로윈 파티 | 10월 31일, 연신내",

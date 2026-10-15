@@ -84,3 +84,6 @@ SQL은 resources, resource_files, 인덱스·작성자/수정일·파일 개수 
 사용자 승인으로 `codex/resources-release` 별도 배포 브랜치를 최신 main에서 만들고 자료실 구현·검증 기록만 cherry-pick했다. 기존 고정 브랜치와 draft PR5는 보존한다. 이 PR에는 시즌9 신청 Action·폼·접수 활성화 flag·SQL004 변경이 포함되지 않는다(main 대비 diff0 확인). 자료실 SQL005는 사용자가 이미 적용했다. PDF 실제 CRUD/다운로드·일반 회원 Storage 통합 검증은 미검증으로 유지하며 운영에 가짜 자료를 저장하지 않는다.
 
 자료실 전용 worktree 최종 검증: npm ci 후 next typegen으로 LayoutProps 생성, lint/TypeScript/PDF·입력 테스트4개 통과. **npm run build 종료 코드0 확인**(별도 worktree 권한 실행; 기존 checkout sandbox 권한 실패와 구분). 빌드된 production 서버 별도3101 포트에서 `/preview/admin/resources` 및 `/preview/admin/resources/new` HTTP404 확인. 기존3000 개발 서버 유지. 실제 PDF CRUD/일반 회원 테스트는 미검증.
+
+
+운영 반영 완료 기록: 자료실 전용 PR7 merge commit800b8a9의 Vercel Production success 확인. admin.malmoim.com/admin/resources 로그인 관리자 실제 목록(0건/9기 이벤트), 자료 등록 입력 화면 확인. 운영 preview404, 비로그인 파일 API403, 공개 홈페이지200. 실제 PDF 저장·다운로드·삭제·일반 회원 Storage 테스트는 미검증. 신청 기능 PR5는 미병합.
