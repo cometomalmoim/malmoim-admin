@@ -38,3 +38,7 @@ lint/next typegen/TypeScript 통과. PC 첫 화면 로고·타이포·일러스�
 
 
 운영 반영: 전용 PR9 병합 commit780171a Vercel Production success. https://malmoim.com/2026halloweenparty 실제 브라우저에서 랜딩/일정/장소/비활성 신청 폼 확인. 고정 브랜치는 유지하며 미배포9기 PR5는 병합하지 않았다.
+
+## 영어 버전
+
+공개 영어 경로 `/2026halloweenparty/en` 추가. 행사 소개·예정 일정·주소·자정 이후 자율 뒤풀이·FAQ·신청 필드/미접수 안내를 영어로 제공한다. KO/EN 상호 언어 링크, 각 canonical 및 ko/en/x-default hreflang, 영어 콘텐츠 lang=en 및 en_US OG 적용. CSS/PartyArt SVG는 두 페이지가 공유하며 행사 내용 변경 시 두 언어 문구를 함께 반영해야 한다. 실제 접수/DB 저장은 양쪽 모두 비활성 유지. 390px 가로 넘침 없음, 영어 CTA #apply 이동 확인. lint·TypeScript 통과.

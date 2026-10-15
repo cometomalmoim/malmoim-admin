@@ -2,12 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { BrandLogo } from "@/components/brand-logo";
 import "./party.css";
+import { PartyArt } from "./party-art";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://malmoim.com"),
   title: "2026 말모임 할로윈 파티 | 10월 31일, 연신내",
   description: "10월 31일 토요일, 연신내 하이브에서 만나는 말모임 할로윈 소셜 파티. 코스튬, 게임, 그리고 새로운 만남을 함께해요. 참가 신청은 오픈 준비 중입니다.",
-  alternates: { canonical: "/2026halloweenparty" },
+  alternates: { canonical: "/2026halloweenparty", languages: { ko: "/2026halloweenparty", en: "/2026halloweenparty/en", "x-default": "/2026halloweenparty" } },
   robots: { index: true, follow: true },
   openGraph: { title: "2026 말모임 할로윈 파티", description: "10.31 SAT · 19:00–24:00 · 24시 이후 자율 뒤풀이 · 연신내 하이브. 코스튬 하나, 새로운 이야기 하나.", url: "/2026halloweenparty", locale: "ko_KR", type: "website" },
 };
@@ -22,26 +23,9 @@ const schedule = [
   ["23:30", "공식 프로그램 마무리", "클로징 · 정리"],
   ["24:00 이후", "자율 뒤풀이", "희망자 자율 참여"],
 ];
-function PartyArt() {
-  return <svg className="hw-art" viewBox="0 0 600 560" role="img" aria-labelledby="hw-art-title"><title id="hw-art-title">호박과 유령이 함께하는 할로윈 파티 일러스트</title>
-    <circle cx="310" cy="270" r="220" fill="#fbbc18"/><circle cx="405" cy="135" r="54" fill="#fff4d6"/>
-    <path d="m90 100 8 23 23 8-23 8-8 23-8-23-23-8 23-8Z M500 335l7 19 19 7-19 7-7 19-7-19-19-7 19-7Z" fill="#31bbc5"/>
-    <path d="m248 166 19-47 23 12-6 48" fill="#087f8c" stroke="#191821" strokeWidth="8" strokeLinejoin="round"/>
-    <ellipse cx="270" cy="298" rx="166" ry="141" fill="#f18035" stroke="#191821" strokeWidth="8"/>
-    <ellipse cx="270" cy="298" rx="114" ry="141" fill="#ff9e36" stroke="#191821" strokeWidth="6"/>
-    <ellipse cx="270" cy="298" rx="56" ry="141" fill="#ffb83f" stroke="#191821" strokeWidth="6"/>
-    <path d="m174 266 41-35 24 45Z m151 10 24-45 41 35Z" fill="#191821"/>
-    <path d="M177 319q93 128 186 0l-43 11-7 28-32-5-13-24-22 24-31-5-8-24Z" fill="#191821"/>
-    <path d="M387 239c0-78 116-78 116 0v135l-27-20-31 23-28-22-30 19Z" fill="#fff9ee" stroke="#191821" strokeWidth="7" strokeLinejoin="round"/>
-    <ellipse cx="426" cy="240" rx="8" ry="13" fill="#191821"/><ellipse cx="465" cy="240" rx="8" ry="13" fill="#191821"/><path d="M433 270q13 14 25 0" stroke="#191821" strokeWidth="6" fill="none" strokeLinecap="round"/>
-    <path d="m123 412 8 20 22 3-17 15 5 22-19-12-19 11 5-22-16-15 22-2Z" fill="#31bbc5" stroke="#191821" strokeWidth="5"/>
-    <g transform="rotate(-12 440 440)"><rect x="356" y="408" width="170" height="58" rx="10" fill="#087f8c" stroke="#191821" strokeWidth="5"/><text x="441" y="446" textAnchor="middle" fill="white" fontSize="25" fontWeight="900">LET’S MEET!</text></g>
-    <path d="m157 74 16 9m322 37 14-12M73 329l-17 7m406 153 9 15" stroke="#fff9ee" strokeWidth="7" strokeLinecap="round"/>
-  </svg>;
-}
 export default function HalloweenParty() {
   return <div className="hw-page"><a className="hw-skip" href="#hw-main">본문 바로가기</a>
-    <header className="hw-header"><Link className="hw-brand" href="/" aria-label="말모임 홈페이지"><BrandLogo compact /></Link><nav aria-label="행사 메뉴"><a href="#party">파티 소개</a><a href="#schedule">타임테이블</a><a href="#apply" className="hw-nav-cta">신청 안내 ↗</a></nav></header>
+    <header className="hw-header"><Link className="hw-brand" href="/" aria-label="말모임 홈페이지"><BrandLogo compact /></Link><nav aria-label="행사 메뉴"><a href="#party">파티 소개</a><a href="#schedule">타임테이블</a><a href="#apply" className="hw-nav-cta">신청 안내 ↗</a><div className="hw-languages" aria-label="언어 선택"><span aria-current="page" lang="ko">한국어</span><Link href="/2026halloweenparty/en" hrefLang="en" lang="en">English</Link></div></nav></header>
     <main id="hw-main">
       <section className="hw-hero" aria-labelledby="hw-title"><div className="hw-wrap hw-hero-grid"><div className="hw-hero-copy"><span className="hw-pill">MALMOIM · HALLOWEEN SOCIAL PARTY</span><p className="hw-kicker">10.31 SAT / 2026</p><h1 id="hw-title">낯선 얼굴도,<br/>오늘은 <em>친구.</em></h1><p className="hw-intro">코스튬 하나, 새로운 이야기 하나.<br/>말모임의 할로윈 밤에 함께해요.</p><a className="hw-button" href="#apply">참가 신청 안내 보기 <span aria-hidden="true">↗</span></a><p className="hw-small">2026 말모임 할로윈 파티</p></div><div className="hw-hero-art"><PartyArt/><span className="hw-art-note">A LITTLE SPOOKY. A LOT OF FUN.</span></div></div><div className="hw-facts hw-wrap"><div><span>WHEN</span><strong>10월 31일 토요일</strong><p>19:00 입장 · 24:00 이후 자율 뒤풀이</p></div><div><span>WHERE</span><strong>연신내 하이브 HIVE</strong><p>서울 은평구 연서로27길 16-16, 지하 1층</p></div><div><span>DRESS CODE</span><strong>코스튬 권장</strong><p>간단한 소품으로도 함께해요</p></div></div></section>
       <section id="party" className="hw-section hw-wrap"><p className="hw-eyebrow">MEET. PLAY. CONNECT.</p><h2>무서운 건 잠깐,<br/>즐거운 건 오래.</h2><p className="hw-lead">자유롭게 이야기하고, 함께 게임하고, 서로의 코스튬을 발견하는 밤.<br className="hw-desktop"/> 자유 시간과 프로그램을 번갈아 즐기는 소셜 파티예요.</p><div className="hw-programs">{[["01","처음이어도, 편안하게","오프닝 & 아이스브레이킹","파티의 시작은 서로 알아가는 시간으로 준비합니다."],["02","함께라서 더 재밌게","레크리에이션 & 네트워킹","게임과 자유로운 대화를 번갈아 즐겨요."],["03","오늘만큼은 주인공","코스튬 콘테스트","간단한 소품부터 나만의 코스튬까지. 서로의 스타일을 만나보세요."]].map(([n,heading,title,body])=><article key={n}><span className="hw-number">{n}</span><p>{heading}</p><h3>{title}</h3><p>{body}</p></article>)}</div></section>
