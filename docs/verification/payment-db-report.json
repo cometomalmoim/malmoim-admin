@@ -1,0 +1,265 @@
+{
+  "engine": "PGlite isolated in-memory PostgreSQL with synthetic auth.users/auth.uid/roles; not Supabase Auth/PostgREST",
+  "commit": "94849f7fc6d429c3c3ed1955321fbb05697cf4c9",
+  "checks": [
+    {
+      "name": "PostgreSQL engine",
+      "ok": true,
+      "detail": "PostgreSQL 18.6 (PGlite 0.5.10) on wasm32-unknown-emscripten, compiled by emcc (Emscripten gcc/clang-like replacement + linker emulating GNU ld) 6.0.5 (1db513782be24469589d7cb8a1f1834e9a33f271), 32-bit"
+    },
+    {
+      "name": "apply 001_admin_users.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 003_recruitment_applications.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 006_event_management.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 007_event_draft_period_theme.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 008_event_test_flag.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 009_event_registration.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 010_applicant_management.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 011_participation_history.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 012_event_fee_settings.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 013_applicant_payment_management.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 014_applicant_refund_management.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 015_actual_payment_full_refund.sql",
+      "ok": true
+    },
+    {
+      "name": "participation definitions unchanged",
+      "ok": true
+    },
+    {
+      "name": "participation objects preserved",
+      "ok": true
+    },
+    {
+      "name": "SQL regression applicant_payment_management.sql",
+      "ok": true,
+      "detail": "Regression and fixture rollback"
+    },
+    {
+      "name": "SQL regression applicant_refund_management.sql",
+      "ok": true,
+      "detail": "Regression and fixture rollback"
+    },
+    {
+      "name": "SQL regression participation_history.sql",
+      "ok": true,
+      "detail": "Regression and fixture rollback"
+    },
+    {
+      "name": "fee save/readback",
+      "ok": true
+    },
+    {
+      "name": "unknown paid amount blocks request",
+      "ok": true
+    },
+    {
+      "name": "zero actual receipt blocked",
+      "ok": true
+    },
+    {
+      "name": "actual amount save",
+      "ok": true
+    },
+    {
+      "name": "actual receipt metadata",
+      "ok": true
+    },
+    {
+      "name": "stale payment revision blocked",
+      "ok": true
+    },
+    {
+      "name": "direct receipt write denied",
+      "ok": true
+    },
+    {
+      "name": "recorded receipt status guard and statement rollback",
+      "ok": true
+    },
+    {
+      "name": "duplicate request blocked",
+      "ok": true
+    },
+    {
+      "name": "receipt locked after refund request",
+      "ok": true
+    },
+    {
+      "name": "unapproved completion blocked",
+      "ok": true
+    },
+    {
+      "name": "refund amount 0 blocked",
+      "ok": true
+    },
+    {
+      "name": "refund amount 99 blocked",
+      "ok": true
+    },
+    {
+      "name": "refund amount 101 blocked",
+      "ok": true
+    },
+    {
+      "name": "transfer confirmation required",
+      "ok": true
+    },
+    {
+      "name": "full refund completion",
+      "ok": true
+    },
+    {
+      "name": "duplicate completion blocked",
+      "ok": true
+    },
+    {
+      "name": "refund/payment consistency",
+      "ok": true,
+      "detail": {
+        "status": "processed",
+        "payment_status": "refunded",
+        "paid_amount_krw": 100,
+        "revision": 3
+      }
+    },
+    {
+      "name": "audit failure rolls back refund/payment/revision",
+      "ok": true,
+      "detail": {
+        "status": "approved",
+        "payment_status": "paid",
+        "revision": 2
+      }
+    },
+    {
+      "name": "same receipt retry is idempotent",
+      "ok": true
+    },
+    {
+      "name": "receipt correction retains audit",
+      "ok": true
+    },
+    {
+      "name": "documented SMS query excludes unknown/pending/paid/waitlisted/refund",
+      "ok": true
+    },
+    {
+      "name": "documented SMS query excludes free event",
+      "ok": true
+    },
+    {
+      "name": "nonadmin read denied",
+      "ok": true
+    },
+    {
+      "name": "nonadmin payment RPC denied",
+      "ok": true
+    },
+    {
+      "name": "nonadmin refund RPC denied",
+      "ok": true
+    },
+    {
+      "name": "anonymous RPC denied",
+      "ok": true
+    },
+    {
+      "name": "apply 001_admin_users.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 003_recruitment_applications.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 006_event_management.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 007_event_draft_period_theme.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 008_event_test_flag.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 009_event_registration.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 010_applicant_management.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 011_participation_history.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 012_event_fee_settings.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 013_applicant_payment_management.sql",
+      "ok": true
+    },
+    {
+      "name": "apply 014_applicant_refund_management.sql",
+      "ok": true
+    },
+    {
+      "name": "participation definitions unchanged",
+      "ok": true
+    },
+    {
+      "name": "015 failure rolls back schema",
+      "ok": true,
+      "detail": {
+        "col": false,
+        "fn": null
+      }
+    }
+  ],
+  "concurrency": "NOT VERIFIED: single connection engine",
+  "verified_date_kst": "2026-10-15",
+  "native_postgres": "INCOMPLETE: initdb shmget Operation not permitted",
+  "production_build": "INCOMPLETE: Turbopack subprocess port binding Operation not permitted",
+  "supabase_integration": "NOT VERIFIED: synthetic auth schema and SQL roles only",
+  "code_tests": "37 passed",
+  "typecheck": "passed",
+  "lint": "0 errors; 2 pre-existing suggestions.ts warnings"
+}
