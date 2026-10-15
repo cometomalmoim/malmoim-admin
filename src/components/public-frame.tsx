@@ -1,4 +1,5 @@
 import Link from "next/link";
+import "./public-shell-design.css";
 import { PublicHeader } from "./public-header";
 import { getPublicPages, publicPath, type PublicLocale } from "@/lib/public-content";
 export function PublicFrame({ children, locale = "ko" }: { children: React.ReactNode; locale?: PublicLocale }) {
