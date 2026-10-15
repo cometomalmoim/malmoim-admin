@@ -35,3 +35,10 @@ lint/next typegen/TypeScript 통과. PC 첫 화면 로고·타이포·일러스�
 최초 확인:390px 모바일 가로 넘침 없음(390/390), 신청 anchor3개 모두 #apply, 모바일 고정 CTA 실제 이동 확인. 원본 로고 표시/일러스트/제목·메타데이터 canonical/index 확인. 기존 checkout 빌드는 Turbopack CSS process/port Operation not permitted(os error1)로 중단되어 통과로 기록하지 않는다. 별도 worktree/CI에서 재검사한다.
 
 독립 배포 worktree 검증: npm ci 후 lint/next typegen/TypeScript 및 **npm run build 종료 코드0**. `/2026halloweenparty` 정적 페이지 생성 확인. 키보드 Enter로 타임테이블 anchor 이동 확인. 배포 diff는 새 route/page.tsx, scoped party.css, 이 문서 세 파일뿐이며 인증·기존 신청·DB·패키지 변경0. 실제 행사 신청은 UI disabled 상태로 게시하며 아직 구현/활성화하지 않는다.
+
+
+운영 반영: 전용 PR9 병합 commit780171a Vercel Production success. https://malmoim.com/2026halloweenparty 실제 브라우저에서 랜딩/일정/장소/비활성 신청 폼 확인. 고정 브랜치는 유지하며 미배포9기 PR5는 병합하지 않았다.
+
+## 영어 버전
+
+공개 영어 경로 `/2026halloweenparty/en` 추가. 행사 소개·예정 일정·주소·자정 이후 자율 뒤풀이·FAQ·신청 필드/미접수 안내를 영어로 제공한다. KO/EN 상호 언어 링크, 각 canonical 및 ko/en/x-default hreflang, 영어 콘텐츠 lang=en 및 en_US OG 적용. CSS/PartyArt SVG는 두 페이지가 공유하며 행사 내용 변경 시 두 언어 문구를 함께 반영해야 한다. 실제 접수/DB 저장은 양쪽 모두 비활성 유지. 390px 가로 넘침 없음, 영어 CTA #apply 이동 확인. lint·TypeScript 통과.
