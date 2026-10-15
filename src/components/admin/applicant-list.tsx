@@ -8,7 +8,7 @@ export function ApplicantList({slug,title,rows,count,page,query={}}:{slug:string
  const pageLink=(next:number)=>{const params=new URLSearchParams();for(const [k,v]of Object.entries(query))if(['q','status','payment','nationality','year'].includes(k)&&v)params.set(k,v);params.set('page',String(next));return `${base}?${params}`;};
  return <section className="ops-panel"><div className="applicant-heading"><div><h2>{title} · 조회 {count}건</h2><p className="ops-muted">검색·필터를 적용한 결과입니다. 입금 기록은 운영진이 수동 확인합니다.</p></div></div>
  <details className="applicant-add"><summary>+ 신청자 직접 추가</summary><ApplicantEditor slug={slug}/></details>
- <form method="get" className="applicant-filters" aria-label="신청자 검색·필터">
+ <form key={JSON.stringify(query)} method="get" className="applicant-filters" aria-label="신청자 검색·필터">
  <label>이름·연락처 검색<input name="q" defaultValue={query.q} maxLength={100}/></label>
  <label>선발 상태<select name="status" defaultValue={query.status??''}><option value="">전체</option>{Object.entries(applicationStatuses).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
  <label>입금 여부<select name="payment" defaultValue={query.payment??''}><option value="">전체</option>{Object.entries(paymentStatuses).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
