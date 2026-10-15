@@ -5,6 +5,11 @@ export function EventRegistrationForm({slug='halloween-2026',test=false,english=
  const [info,setInfo]=useState<{open:boolean;notice?:string;version?:string;marketingNotice?:string}>({open:false});
  const [submission,setSubmission]=useState('');
  const [history,setHistory]=useState('');
+ const [name,setName]=useState('');
+ const [contact,setContact]=useState('');
+ const [detail,setDetail]=useState('');
+ const [privacy,setPrivacy]=useState(false);
+ const [marketing,setMarketing]=useState(false);
  const [state,action,pending]=useActionState(registerEvent.bind(null,slug,test),{code:''});
  useEffect(()=>{let active=true;registrationInfo(slug,test).then(value=>{if(active){setInfo(value);setSubmission(crypto.randomUUID());}});return ()=>{active=false;};},[slug,test]);
  const t=(ko:string,en:string)=>english?en:ko;
@@ -14,13 +19,13 @@ export function EventRegistrationForm({slug='halloween-2026',test=false,english=
  <fieldset disabled={!info.open||pending||!submission}>
  <input type="hidden" name="submission_id" value={submission}/><input type="hidden" name="version" value={info.version??''}/>
  <div hidden aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off"/></label></div>
- <label>{t('이름','Name')}<input name="name" required maxLength={100} autoComplete="name"/></label>
- <label>{t('전화번호','Phone number')}<input name="contact" required maxLength={40} type="tel" autoComplete="tel"/></label>
+ <label>{t('이름','Name')}<input name="name" value={name} onChange={event=>setName(event.target.value)} required maxLength={100} autoComplete="name"/></label>
+ <label>{t('전화번호','Phone number')}<input name="contact" value={contact} onChange={event=>setContact(event.target.value)} required maxLength={40} type="tel" autoComplete="tel"/></label>
  <label>{t('말모임 참가 이력','Past MALMOIM participation')}<select name="history" required value={history} onChange={event=>setHistory(event.target.value)}><option value="">{t('선택해주세요','Select')}</option><option value="new">{t('참가한 적 없음','First time')}</option><option value="returning">{t('참가한 적 있음','Returning participant')}</option></select></label>
- <label>{t('참가한 기수·활동명 (선택)','Season or activity (optional)')}<input name="history_detail" maxLength={300} disabled={history!=='returning'}/></label>
+ <label>{t('참가한 기수·활동명 (선택)','Season or activity (optional)')}<input name="history_detail" value={detail} onChange={event=>setDetail(event.target.value)} maxLength={300} disabled={history!=='returning'}/></label>
  {info.notice&&<p style={{whiteSpace:'pre-wrap'}}>{info.notice}</p>}
- <label className="hw-consent"><input name="privacy_consent" type="checkbox" required/><span>{t('개인정보 수집·이용에 동의합니다.','I agree to the collection and use of personal information.')}</span></label>
- {info.marketingNotice&&<><p style={{whiteSpace:'pre-wrap'}}>{info.marketingNotice}</p><label className="hw-consent"><input name="marketing_consent" type="checkbox"/><span>{t('마케팅 안내 수신 동의 (선택, 미동의해도 신청 가능)','Marketing updates (optional; not required to apply)')}</span></label></>}
+ <label className="hw-consent"><input name="privacy_consent" type="checkbox" checked={privacy} onChange={event=>setPrivacy(event.target.checked)} required/><span>{t('개인정보 수집·이용에 동의합니다.','I agree to the collection and use of personal information.')}</span></label>
+ {info.marketingNotice&&<><p style={{whiteSpace:'pre-wrap'}}>{info.marketingNotice}</p><label className="hw-consent"><input name="marketing_consent" type="checkbox" checked={marketing} onChange={event=>setMarketing(event.target.checked)}/><span>{t('마케팅 안내 수신 동의 (선택, 미동의해도 신청 가능)','Marketing updates (optional; not required to apply)')}</span></label></>}
  <button type="submit">{pending?t('저장 중…','Saving…'):info.open?t('신청하기','Submit application'):t('신청 오픈 준비 중','Registration coming soon')}</button></fieldset>
  <p role="status" aria-live="polite">{messages[state.code]??''}</p></form>;
 }
