@@ -19,10 +19,10 @@ async function getDashboard() {
     const client = await createClient();
     const now = new Date().toISOString();
     const [recent,upcoming,unscheduled] = await Promise.all([
-      client.from('recruitment_events').select(fields,{count:'exact'}).order('created_at',{ascending:false}).order('id',{ascending:true}).limit(6),
+      client.from('recruitment_events').select(fields,{count:'exact'}).eq('is_test',false).order('created_at',{ascending:false}).order('id',{ascending:true}).limit(6),
       // Recruitment closure is separate from the event date: future closed events still appear.
-      client.from('recruitment_events').select(fields,{count:'exact'}).gte('starts_at',now).order('starts_at',{ascending:true}).order('id',{ascending:true}).limit(5),
-      client.from('recruitment_events').select('id',{count:'exact',head:true}).is('starts_at',null),
+      client.from('recruitment_events').select(fields,{count:'exact'}).eq('is_test',false).gte('starts_at',now).order('starts_at',{ascending:true}).order('id',{ascending:true}).limit(5),
+      client.from('recruitment_events').select('id',{count:'exact',head:true}).eq('is_test',false).is('starts_at',null),
     ]);
     if (recent.error || upcoming.error || unscheduled.error) return null;
     return {events:recent.data as DashboardEvent[],upcoming:upcoming.data as DashboardEvent[],total:recent.count??0,upcomingCount:upcoming.count??0,unscheduled:unscheduled.count??0};
@@ -44,9 +44,9 @@ export async function EventDashboard({email}:{email:string}) {
   return <AdminShell current="" title="대시보드" email={email}>
     <div className="ops-heading dash-heading"><div><span className="dash-eyebrow">EVENT OPERATIONS</span><h1>이벤트 운영 대시보드</h1><p>다가오는 일정과 등록된 이벤트를 한곳에서 확인하세요.</p></div><Link className="ops-link" href="/admin/events/new">+ 이벤트 등록</Link></div>
     {!data?<section className="ops-panel" role="alert"><h2>이벤트 현황을 불러오지 못했습니다</h2><p>연결 설정과 조회 권한을 확인한 뒤 다시 시도해주세요.</p><Link className="ops-link" href="/admin">다시 시도</Link></section>:<>
-    <section className="ops-stats" aria-label="이벤트 운영 요약">{[['등록된 이벤트',data.total,'전체 등록 건수'],['예정된 이벤트',data.upcomingCount,'시작 전 이벤트 · 초안 포함'],['일시 미정',data.unscheduled,'행사 시작일을 설정해주세요']].map(([label,count,note])=><article className="ops-panel" key={label}><h2>{label}</h2><strong>{count}</strong><p className="ops-muted">{note}</p></article>)}</section>
+    <section className="ops-stats" aria-label="이벤트 운영 요약">{[['등록된 이벤트',data.total,'테스트를 제외한 등록 건수'],['예정된 이벤트',data.upcomingCount,'시작 전 이벤트 · 테스트 제외'],['일시 미정',data.unscheduled,'행사 시작일을 설정해주세요']].map(([label,count,note])=><article className="ops-panel" key={label}><h2>{label}</h2><strong>{count}</strong><p className="ops-muted">{note}</p></article>)}</section>
     <section className="ops-panel"><div className="dash-section-heading"><h2>예정된 이벤트</h2><span>가까운 시작일 순 · 한국시간</span></div><p className="ops-muted">시작 전 이벤트를 최대 5개 표시합니다. 모집 마감 여부와 행사 일정은 별개입니다.</p>{data.upcoming.length?<EventRows events={data.upcoming} upcoming/>:<p className="ops-empty">시작일이 지정된 예정 이벤트가 없습니다.</p>}</section>
-    <section className="ops-panel"><div className="dash-section-heading"><h2>이벤트 목록</h2><Link className="ops-link" href="/admin/events">전체 {data.total}개 보기 →</Link></div><p className="ops-muted">최근 등록한 이벤트 최대 6개입니다. 날짜가 미정인 이벤트도 표시합니다.</p>{data.events.length?<EventRows events={data.events}/>:<div className="ops-empty"><p>아직 등록된 이벤트가 없습니다.</p><Link className="ops-link" href="/admin/events/new">첫 이벤트 등록</Link></div>}</section>
+    <section className="ops-panel"><div className="dash-section-heading"><h2>이벤트 목록</h2><Link className="ops-link" href="/admin/events">이벤트 관리 →</Link></div><p className="ops-muted">테스트를 제외하고 최근 등록한 이벤트 최대 6개입니다. 날짜가 미정인 이벤트도 표시합니다.</p>{data.events.length?<EventRows events={data.events}/>:<div className="ops-empty"><p>아직 등록된 이벤트가 없습니다.</p><Link className="ops-link" href="/admin/events/new">첫 이벤트 등록</Link></div>}</section>
     </>}
     <section className="ops-panel"><h2>운영 메뉴 바로가기</h2><div className="ops-shortcuts"><Link href="/admin/events">이벤트 관리 →</Link><Link href="/admin/recruitment">모집 페이지 →</Link><Link href="/admin/resources">자료실 →</Link><Link href="/admin/schedule">스케줄 →</Link></div></section>
   </AdminShell>;
