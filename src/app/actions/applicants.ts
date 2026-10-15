@@ -1,0 +1,13 @@
+ 'use server';
+import {getAdminAccess} from '@/lib/auth';
+import {createClient} from '@/lib/supabase/server';
+import {applicantInput} from '@/lib/applicant-validation';
+import {revalidatePath} from 'next/cache';
+export async function saveApplicant(slug:string,_previous:{code:string},data:FormData):Promise<{code:string}>{
+ if((await getAdminAccess()).status!=='admin')return {code:'forbidden'};
+ let input;try{input=applicantInput(data);}catch{return {code:'invalid'};}
+ try{const client=await createClient();const result=await client.rpc('manage_event_application',{p_slug:slug,p_source:input.source,p_id:input.id,p_revision:input.revision,p_name:input.name,p_contact:input.contact,p_contact_type:input.contact_type,p_birth_year:input.birth_year,p_nationality:input.nationality,p_status:input.status,p_payment:input.payment,p_note:input.note,p_source_note:input.source_note});
+ if(result.error)return {code:'error'};
+ if(result.data?.code==='saved')revalidatePath('/admin','layout');
+ return {code:result.data?.code??'error'};}catch{return {code:'error'};}
+}
