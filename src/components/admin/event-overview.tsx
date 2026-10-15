@@ -12,7 +12,7 @@ export async function EventOverview({row}:{row:EventRow}) {
   const functions=[
     {title:'신청자 관리',description:'이 이벤트의 접수 내역을 확인합니다.',href:`${base}/applicants`,label:'신청자 목록 →'},
     {title:'이벤트 자료',description:'운영 자료와 PDF 첨부파일을 관리합니다.',href:`${base}/resources`,label:'자료실 →'},
-    {title:'참여자·출석',description:'참가 확정과 회차별 출석을 연결할 영역입니다.'},
+    {title:'개인별 참여 이력',description:'사람별 실제 참석 횟수와 이벤트 이력을 확인합니다.',href:'/admin/participants',label:'참여 이력 →'},
     {title:'문자 안내',description:'문자 대상·템플릿·발송 내역을 연결할 영역입니다.'},
     {title:'수료증',description:'발급 대상과 수료증 기능을 연결할 영역입니다.'},
     {title:'회차 관리',description:'여러 회차의 일정과 장소를 연결할 영역입니다.'},

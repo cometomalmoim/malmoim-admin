@@ -1,3 +1,4 @@
+import {ParticipationSummary} from './participation-summary';
 import 'server-only';
 import Link from 'next/link';
 import { getAdminAccess } from '@/lib/auth';
@@ -42,7 +43,8 @@ function EventRows({events,upcoming=false}:{events:DashboardEvent[];upcoming?:bo
 export async function EventDashboard({email}:{email:string}) {
   const data = await getDashboard();
   return <AdminShell current="" title="대시보드" email={email}>
-    <div className="ops-heading dash-heading"><div><span className="dash-eyebrow">EVENT OPERATIONS</span><h1>이벤트 운영 대시보드</h1><p>다가오는 일정과 등록된 이벤트를 한곳에서 확인하세요.</p></div><Link className="ops-link" href="/admin/events/new">+ 이벤트 등록</Link></div>
+    <div className="ops-heading dash-heading"><div><span className="dash-eyebrow">EVENT OPERATIONS</span><h1>이벤트 운영 대시보드</h1><Link href="/admin/participants">개인별 참여 횟수·이력 →</Link><p>다가오는 일정과 등록된 이벤트를 한곳에서 확인하세요.</p></div><Link className="ops-link" href="/admin/events/new">+ 이벤트 등록</Link></div>
+    <ParticipationSummary/>
     {!data?<section className="ops-panel" role="alert"><h2>이벤트 현황을 불러오지 못했습니다</h2><p>연결 설정과 조회 권한을 확인한 뒤 다시 시도해주세요.</p><Link className="ops-link" href="/admin">다시 시도</Link></section>:<>
     <section className="ops-stats" aria-label="이벤트 운영 요약">{[['등록된 이벤트',data.total,'테스트를 제외한 등록 건수'],['예정된 이벤트',data.upcomingCount,'시작 전 이벤트 · 테스트 제외'],['일시 미정',data.unscheduled,'행사 시작일을 설정해주세요']].map(([label,count,note])=><article className="ops-panel" key={label}><h2>{label}</h2><strong>{count}</strong><p className="ops-muted">{note}</p></article>)}</section>
     <section className="ops-panel"><div className="dash-section-heading"><h2>예정된 이벤트</h2><span>가까운 시작일 순 · 한국시간</span></div><p className="ops-muted">시작 전 이벤트를 최대 5개 표시합니다. 모집 마감 여부와 행사 일정은 별개입니다.</p>{data.upcoming.length?<EventRows events={data.upcoming} upcoming/>:<p className="ops-empty">시작일이 지정된 예정 이벤트가 없습니다.</p>}</section>
