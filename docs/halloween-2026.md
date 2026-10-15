@@ -33,3 +33,5 @@
 lint/next typegen/TypeScript 통과. PC 첫 화면 로고·타이포·일러스트 확인. 모바일/CTA/빌드 결과는 최종 검증에 추가한다. 실제 신청 저장·중복·마감·관리자 조회는 아직 구현되지 않았으므로 검증 완료로 표시하지 않는다.
 
 최초 확인:390px 모바일 가로 넘침 없음(390/390), 신청 anchor3개 모두 #apply, 모바일 고정 CTA 실제 이동 확인. 원본 로고 표시/일러스트/제목·메타데이터 canonical/index 확인. 기존 checkout 빌드는 Turbopack CSS process/port Operation not permitted(os error1)로 중단되어 통과로 기록하지 않는다. 별도 worktree/CI에서 재검사한다.
+
+독립 배포 worktree 검증: npm ci 후 lint/next typegen/TypeScript 및 **npm run build 종료 코드0**. `/2026halloweenparty` 정적 페이지 생성 확인. 키보드 Enter로 타임테이블 anchor 이동 확인. 배포 diff는 새 route/page.tsx, scoped party.css, 이 문서 세 파일뿐이며 인증·기존 신청·DB·패키지 변경0. 실제 행사 신청은 UI disabled 상태로 게시하며 아직 구현/활성화하지 않는다.
