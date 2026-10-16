@@ -12,6 +12,8 @@
 
 Instagram은 `@malmoim` 또는 `malmoim`처럼 ID만 입력하며 DB에는 기존 방식과 호환되는 HTTPS 주소로 저장합니다. 이름은 필수이며 나머지 항목은 선택입니다. 기수·역할 필터는 등록한 값으로 구성됩니다.
 
+사진 미리보기는 원본 File의 Object URL을 사용하고, 업로드는 원본 바이트를 저장합니다. Canvas 변환·압축·리사이징 없이 원본 해상도와 인코딩을 유지하며 조회 API도 저장된 파일을 그대로 반환합니다. 용량 초과 파일은 화질을 낮추지 않고 업로드를 거부합니다. 상세 사진과 미리보기는 `object-fit: cover` 및 `image-rendering: high-quality`를 사용하며 미지원 브라우저는 `auto`로 표시합니다. 작은 원본에서 손실된 디테일은 CSS로 복원할 수 없습니다.
+
 ## 검증
 
 `node --test tests/people.test.mjs` — 필수값, 길이, URL·이메일, 연결 ID 검증.

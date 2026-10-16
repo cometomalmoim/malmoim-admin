@@ -19,6 +19,7 @@ export async function mutatePerson(kind: 'save' | 'active' | 'inactive' | 'delet
       const file = form.get('photo_file');
       if (file instanceof File && file.size) {
         if (file.size > PHOTO_LIMIT) return {message:'사진은 3MB 이하로 선택해주세요.'};
+        // Upload original bytes: no resizing, canvas conversion, or lossy re-encoding.
         const bytes = new Uint8Array(await file.arrayBuffer());
         const extension = photoExtension(bytes, file.type);
         uploadedPath = `${crypto.randomUUID()}.${extension}`;

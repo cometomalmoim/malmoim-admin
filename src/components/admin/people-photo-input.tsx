@@ -14,6 +14,7 @@ export function PeoplePhotoInput({ current = '' }: {current?: string}) {
     if (file.size > PHOTO_LIMIT || !['image/jpeg','image/png','image/webp'].includes(file.type)) {
       event.target.value = ''; setPreview(''); setError('JPG, PNG, WebP 파일을 3MB 이하로 선택해주세요.'); return;
     }
+    // Preview the original file directly, preserving its resolution and encoding.
     setPreview(URL.createObjectURL(file));
-  }}/><small>JPG · PNG · WebP, 최대 3MB<br/>사진을 선택한 후 저장을 눌러주세요.</small></label>{error && <p role="alert">{error}</p>}</div>;
+  }}/><small>JPG · PNG · WebP, 최대 3MB · 원본 해상도 유지<br/>사진을 선택한 후 저장을 눌러주세요.</small></label>{error && <p role="alert">{error}</p>}</div>;
 }
