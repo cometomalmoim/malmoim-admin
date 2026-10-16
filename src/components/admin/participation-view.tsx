@@ -3,7 +3,7 @@ import {participationData} from '@/lib/participation';import {confirmations,atte
 import {AdminShell} from './admin-shell';import {ParticipationEditor} from './participation-editor';import './events.css';import './participation.css';
 export async function ParticipationView({email,slug,source,id,query={}}:{email:string;slug?:string;source?:string;id?:string;query?:{q?:string;person?:string}}){
  const data=await participationData(slug,source,id,query.q??'',query.person);if('missing'in data)notFound();
- return <AdminShell email={email} current="events" title="개인별 참여 이력"><div className="ops-heading"><h1>개인별 참여 이력</h1><p>실제 참석으로 기록한 이벤트 수를 집계합니다. 신청·합격·입금과 구분하며 테스트는 실제 횟수에서 제외합니다.</p></div>
+ return <AdminShell email={email} current="participants" title="참여이력관리"><div className="ops-heading"><h1>참여이력관리</h1><p>실제 참석으로 기록한 이벤트 수를 집계합니다. 신청·합격·입금과 구분하며 테스트는 실제 횟수에서 제외합니다.</p></div>
  {'error'in data?<section className="ops-panel" role="alert">참여 이력을 불러오지 못했습니다. DB 적용 및 조회 권한을 확인해주세요.</section>:<>
  <nav className="ops-shortcuts"><Link href="/admin/participants">전체 사람 검색</Link>{slug&&<Link href={`/admin/events/${encodeURIComponent(slug)}/applicants`}>이 이벤트 신청자 목록</Link>}</nav>
  {data.application&&<section className="ops-panel"><h2>{data.application.name} · {data.event?.title}</h2><p>{data.application.contact}</p>{data.event?.is_test&&<p className="notice">테스트 이벤트입니다. 출석을 기록해도 실제 참여 횟수에는 포함되지 않습니다.</p>}<p>과거 참여 여부를 적은 신청 응답은 실제 참석 횟수로 자동 변환하지 않습니다.</p></section>}
