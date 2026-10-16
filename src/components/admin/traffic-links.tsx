@@ -1,0 +1,8 @@
+'use client';
+import {useState} from 'react';
+import {trafficSources,taggedRecruitmentUrl} from '@/lib/attribution';
+export function TrafficLinks(){
+ const [url,setUrl]=useState('https://malmoim.com/2026halloweenparty'),[medium,setMedium]=useState('social'),[campaign,setCampaign]=useState(''),[copied,setCopied]=useState('');
+ let links:{source:string;label:string;url:string}[]=[];try{links=Object.entries(trafficSources).map(([source,label])=>({source,label,url:taggedRecruitmentUrl(url,source,medium,campaign)}));}catch{}
+ return <details className="ops-panel traffic-links"><summary>유입경로별 모집 링크 만들기</summary><p>배포할 채널별 링크를 복사하세요. 신청 완료 시 전달된 태그를 기록하며 실제 방문자 수를 집계하는 기능은 아닙니다.</p><div className="applicant-filters"><label>모집 페이지 주소<input type="url" value={url} onChange={e=>{setUrl(e.target.value);setCopied('');}}/></label><label>매체 (utm_medium)<input value={medium} maxLength={150} onChange={e=>setMedium(e.target.value)}/></label><label>캠페인 (utm_campaign)<input value={campaign} maxLength={150} onChange={e=>setCampaign(e.target.value)}/></label></div>{!links.length&&<p role="alert">올바른 https 모집 페이지 주소를 입력해주세요.</p>}{links.map(link=><label className="traffic-link" key={link.source}><strong>{link.label}</strong><input readOnly aria-label={`${link.label} 배포 링크`} value={link.url}/><button type="button" onClick={async()=>{try{await navigator.clipboard.writeText(link.url);setCopied(link.label);}catch{setCopied('복사 실패 — 링크를 직접 선택해주세요.');}}}>복사</button></label>)}<p role="status">{copied&&`${copied}${Object.values(trafficSources).includes(copied)?' 링크 복사 완료':''}`}</p><p className="ops-muted">UTM은 링크에 붙이는 값이므로 실제 광고 플랫폼을 인증하는 정보는 아닙니다. 외부 신청 폼도 같은 필드를 제출해야 기록됩니다. 9기 신청서는 현재 제출 비활성입니다.</p></details>;
+}
