@@ -3,7 +3,7 @@ import path from 'node:path';
 import { getAdminAccess } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { certificateData, certificatesEnabled, templateBackground } from '@/lib/certificates';
-import { certificateSameOrigin, placement, selectCandidates, type Template } from '@/lib/certificate-model';
+import { certificateSameOrigin, placement, selectCandidates, requireAttended, identity, type Template } from '@/lib/certificate-model';
 import { certificatePdf, certificateZip } from '@/lib/certificate-pdf';
 import { pdfStructure } from '@/lib/pdf-validation';
 export const maxDuration = 60;
@@ -60,18 +60,20 @@ export async function POST(request: Request) {
   const t = await db.from('certificate_templates').select('*').eq('id', previous!.template_id).single();
   if (t.error) return reply('발급 당시 템플릿을 찾을 수 없습니다.'); template = t.data;
  }
- const data = previous ? null : await certificateData(body.event);
- const selected = previous ? [previous] : selectCandidates(data!.candidates, body.keys);
+ const data = await certificateData(previous?.event_id ?? body.event);
+ const current = selectCandidates(data.candidates, previous ? [identity(previous)] : body.keys);
+ if (body.action !== 'preview') requireAttended(current);
+ const selected = previous ? [previous] : current;
  const background = await templateBackground(template);
  const files = [];
  for (const row of selected) files.push({ id: `${row.event_id}-${row.source}-${row.application_id}`, bytes: await certificatePdf(row.name, template.placement, font, background, body.action === 'preview') });
  if (body.action !== 'preview') {
   if (body.confirm !== true) return reply('대상자를 확인한 뒤 발급해주세요.');
   const r = await db.rpc('record_certificate_batch', { p_template: template.id, p_rows: selected.map(r => ({ event_id: r.event_id, source: r.source, application_id: r.application_id, name: r.name })), p_previous: previous?.id ?? null });
-  if (r.error) return reply('발급 기록 저장에 실패했습니다. 대상자 변경 또는 DB 설정을 확인해주세요.', 409);
+  if (r.error) return reply(r.error.message.includes('attendance_required') ? '출석 상태가 변경되었습니다. 출석 완료된 신청자만 발급할 수 있습니다.' : '발급 기록 저장에 실패했습니다. 대상자 변경 또는 DB 설정을 확인해주세요.', 409);
  }
  const zip = body.zip === true || files.length > 1;
  const bytes = zip ? certificateZip(files) : files[0].bytes;
  return new Response(Buffer.from(bytes), { headers: { ...headers, 'Content-Type': zip ? 'application/zip' : 'application/pdf', 'Content-Disposition': `${body.action === 'preview' ? 'inline' : 'attachment'}; filename="certificates.${zip ? 'zip' : 'pdf'}"` } });
- } catch (e) { return reply(e instanceof Error && /이름|위치|페이지|폰트|한 번에|신청자|템플릿|이미지/.test(e.message) ? e.message : '처리 실패: 파일 및 전용 DB 설정을 확인해주세요.'); }
+ } catch (e) { if (e instanceof Error && e.message.startsWith('출석 완료')) return reply(e.message, 409); return reply(e instanceof Error && /이름|위치|페이지|폰트|한 번에|신청자|템플릿|이미지/.test(e.message) ? e.message : '처리 실패: 파일 및 전용 DB 설정을 확인해주세요.'); }
 }

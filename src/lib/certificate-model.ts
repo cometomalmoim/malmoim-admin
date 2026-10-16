@@ -12,6 +12,14 @@ export function selectCandidates(all: Candidate[], keys: string[]): Candidate[] 
  if (!Array.isArray(keys) || !keys.length || keys.length > 100 || new Set(keys).size !== keys.length) throw new Error('한 번에 1~100명을 중복 없이 선택해주세요.');
  return keys.map(key => { const row = all.find(p => identity(p) === key); if (!row) throw new Error('신청자 또는 이벤트가 변경되었습니다. 다시 조회해주세요.'); return row; });
 }
+export function requireAttended(rows: Candidate[]): Candidate[] {
+ if (rows.some(row => row.attendance !== 'attended')) throw new Error('출석 완료된 신청자만 발급할 수 있습니다. 목록을 다시 확인해주세요.');
+ return rows;
+}
+export function eligibleSelection(rows: Candidate[], keys: string[]): string[] {
+ const eligible = new Set(rows.filter(row => row.attendance === 'attended').map(identity));
+ return keys.filter(key => eligible.has(key));
+}
 export function attendedFirst(rows: Candidate[]) { return [...rows].sort((a, b) => Number(b.attendance === 'attended') - Number(a.attendance === 'attended') || a.name.localeCompare(b.name, 'ko')); }
 export async function collectPages<T>(read: (from: number, to: number) => Promise<T[]>, size = 500): Promise<T[]> {
  const result: T[] = [];

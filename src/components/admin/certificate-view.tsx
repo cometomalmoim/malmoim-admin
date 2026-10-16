@@ -1,7 +1,7 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
 import { AdminShell } from './admin-shell';
-import { attendedFirst, defaultPlacement, demoCandidates, identity, selectCandidates, type Candidate, type Placement, type Template } from '@/lib/certificate-model';
+import { attendedFirst, defaultPlacement, demoCandidates, identity, selectCandidates, requireAttended, eligibleSelection, type Candidate, type Placement, type Template } from '@/lib/certificate-model';
 import './certificates.css';
 import { confirmations, attendances } from '@/lib/participation-validation';
 type Issue = { id: string; name: string; event_title: string; event_id: string; source: string; application_id: string; created_at: string; template_id: string };
@@ -13,6 +13,15 @@ export function CertificateView({ email, enabled = false, preview = false, slug 
  const [title, setTitle] = useState('말모임 수료증'), [file, setFile] = useState<File>(), [url, setUrl] = useState(''), [busy, setBusy] = useState(false), [message, setMessage] = useState(''), [confirmed, setConfirmed] = useState(false);
  const [demoHistory, setDemoHistory] = useState<Issue[]>([]);
  const urlRef = useRef('');
+ useEffect(() => {
+  if (demo) return;
+  const refresh = () => { if (document.visibilityState === 'visible' && !busy) void load().catch(() => { setKeys([]); setConfirmed(false); }); };
+  const timer = setInterval(refresh, 15000);
+  window.addEventListener('focus', refresh);
+  return () => { clearInterval(timer); window.removeEventListener('focus', refresh); };
+  // Refresh the current event when returning to the screen; server/DB remain authoritative.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+ }, [demo, event, busy]);
  useEffect(() => () => { if (urlRef.current) URL.revokeObjectURL(urlRef.current); }, []);
  const rows = demo ? attendedFirst(demoCandidates) : data.candidates;
  function show(blob: Blob) { if (urlRef.current) URL.revokeObjectURL(urlRef.current); urlRef.current = URL.createObjectURL(blob); setUrl(urlRef.current); }
@@ -23,7 +32,7 @@ export function CertificateView({ email, enabled = false, preview = false, slug 
  }
  async function load(eventId = event) {
   const r = await fetch(`/api/admin/certificates?event=${encodeURIComponent(eventId)}`); const d = await r.json(); if (!r.ok) throw new Error(d.message);
-  setData(d); return d as Data;
+  setData(d); setKeys(old => eligibleSelection(d.candidates, old)); setConfirmed(false); return d as Data;
  }
  async function run(task: () => Promise<void>) { setBusy(true); setMessage(''); try { await task(); } catch (e) { setMessage(e instanceof Error ? e.message : '처리 실패'); } finally { setBusy(false); } }
  async function generate(action: 'preview' | 'issue', single = false, reissue?: Issue) {
@@ -33,7 +42,7 @@ export function CertificateView({ email, enabled = false, preview = false, slug 
    const font = new Uint8Array(await fontResponse.arrayBuffer());
    const background = file ? { bytes: new Uint8Array(await file.arrayBuffer()), mime: file.type } : undefined;
    if (file && (!['application/pdf', 'image/png', 'image/jpeg'].includes(file.type) || file.size > 5242880)) throw new Error('5MB 이하 PDF, PNG, JPG를 선택해주세요.');
-   const selected = action === 'preview' ? [{ ...demoCandidates[0], name }] : reissue ? [{ ...demoCandidates[0], ...reissue }] : selectCandidates(rows, keys);
+   const selected = action === 'preview' ? [{ ...demoCandidates[0], name }] : reissue ? [{ ...demoCandidates[0], ...reissue }] : requireAttended(selectCandidates(rows, keys));
    if (single && selected.length !== 1) throw new Error('개별 PDF는 한 명을 선택해주세요.');
    const files = [];
    for (const p of selected) files.push({ id: `${p.event_id}-${p.source}-${p.application_id}`, bytes: await certificatePdf(p.name, settings, font, background, true) });
@@ -58,8 +67,8 @@ export function CertificateView({ email, enabled = false, preview = false, slug 
  </fieldset>
  {url && <section className="ops-panel"><h2>{demo ? '가상 미리보기' : '발급 전 미리보기 · 발급 기록 없음'}</h2><iframe title="수료증 PDF 미리보기" src={url} className="cert-preview" /></section>}
  <fieldset disabled={busy} className="ops-panel cert-panel"><legend>2. 발급 대상 선택</legend>{!demo && <label>이벤트<select value={event} onChange={e => { const id = e.target.value; setEvent(id); setKeys([]); setConfirmed(false); run(async () => { await load(id); }); }}><option value="">선택하세요</option>{data.events.filter(e => !e.is_test).map(e => <option value={e.id} key={e.id}>{e.title}</option>)}</select></label>}
- <p>참석자를 먼저 표시합니다. 합격·입금만으로 수료 처리하지 않습니다. 전체 {rows.length}명 중 {keys.length}명 선택 · 한 번에 최대 100명</p><div className="cert-actions"><button onClick={() => { setConfirmed(false); setKeys(rows.filter(r => r.attendance === 'attended').slice(0, 100).map(identity)); }}>참석자 선택 (최대 100명)</button><button onClick={() => { setConfirmed(false); setKeys([]); }}>선택 해제</button></div>
- <div className="cert-list"><table><thead><tr><th>선택</th><th>이름</th><th>참여 상태</th><th>신청 식별자</th></tr></thead><tbody>{rows.map(r => <tr key={identity(r)}><td><input type="checkbox" aria-label={`${r.name} ${r.source} ${r.application_id} 선택`} checked={keys.includes(identity(r))} onChange={e => { setConfirmed(false); setKeys(e.target.checked ? [...keys, identity(r)] : keys.filter(k => k !== identity(r))); }} /></td><td>{r.name}</td><td>{attendances[r.attendance as keyof typeof attendances] ?? '미기록'} / {confirmations[r.confirmation as keyof typeof confirmations] ?? '미확정'}</td><td><small>{r.source} / {r.application_id}</small></td></tr>)}</tbody></table></div>
+ <p>출석 완료된 신청자만 선택할 수 있습니다. 합격·입금만으로 수료 처리하지 않습니다. 전체 {rows.length}명 중 {keys.length}명 선택 · 한 번에 최대 100명</p><div className="cert-actions"><button onClick={() => { setConfirmed(false); setKeys(rows.filter(r => r.attendance === 'attended').slice(0, 100).map(identity)); }}>참석자 선택 (최대 100명)</button><button onClick={() => { setConfirmed(false); setKeys([]); }}>선택 해제</button></div>
+ <div className="cert-list"><table><thead><tr><th>선택</th><th>이름</th><th>참여 상태</th><th>신청 식별자</th></tr></thead><tbody>{rows.map(r => <tr key={identity(r)}><td><input type="checkbox" aria-label={`${r.name} ${r.source} ${r.application_id} 선택`} disabled={r.attendance !== 'attended'} title={r.attendance !== 'attended' ? '출석 완료된 신청자만 발급 가능합니다.' : undefined} checked={r.attendance === 'attended' && keys.includes(identity(r))} onChange={e => { setConfirmed(false); setKeys(e.target.checked && r.attendance === 'attended' ? [...keys, identity(r)] : keys.filter(k => k !== identity(r))); }} /></td><td>{r.name}</td><td>{attendances[r.attendance as keyof typeof attendances] ?? '미기록'} / {confirmations[r.confirmation as keyof typeof confirmations] ?? '미확정'}</td><td><small>{r.source} / {r.application_id}</small></td></tr>)}</tbody></table></div>
  <label><input type="checkbox" checked={confirmed} onChange={e => setConfirmed(e.target.checked)} />선택한 참가자가 수료 대상임을 확인했습니다.</label><div className="cert-actions"><button disabled={!keys.length || (!demo && !confirmed)} onClick={() => run(() => generate('issue', true))}>{demo ? '가상 ' : ''}개별 PDF 다운로드</button><button disabled={!keys.length || (!demo && !confirmed)} onClick={() => run(() => generate('issue'))}>{demo ? '가상 ' : ''}일괄 ZIP 다운로드</button></div></fieldset>
  <section className="ops-panel cert-panel"><h2>{demo ? '가상 처리 기록 (새로고침하면 초기화)' : '발급 기록'}</h2><p>발급 당시 이름과 템플릿 버전을 보존합니다. 실제 재발급은 원래 이름과 원본 템플릿으로 생성합니다.</p>{(demo ? demoHistory : data.history).map(h => <div className="cert-history" key={h.id}><span>{h.name} · {h.event_title} · {new Date(h.created_at).toLocaleString('ko-KR', { timeZone: 'Asia/Seoul' })}<small>{h.source} / {h.application_id}</small></span><button disabled={busy || (!demo && !confirmed)} onClick={() => run(() => generate('issue', true, h))}>{demo ? '가상 재생성 (현재 설정)' : '재발급 PDF'}</button></div>)}</section>
  <p role="status" aria-live="polite">{busy ? '처리 중…' : message}</p></AdminShell>;

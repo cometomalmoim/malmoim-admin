@@ -6,7 +6,7 @@ import {unzipSync} from 'fflate';
 import {certificateSameOrigin,identity,selectCandidates,attendedFirst,collectPages,demoCandidates,defaultPlacement,placement} from '../src/lib/certificate-model.ts';
 import {certificatePdf,certificateZip} from '../src/lib/certificate-pdf.ts';
 const font = new Uint8Array(await readFile(new URL('../public/fonts/NanumGothic-Regular.ttf',import.meta.url)));
-test('동명이인은 복합 식별자로 구분하고 참석자 우선; 미기록도 관리자 선택 가능',()=>{
+test('동명이인은 복합 식별자로 구분하고 참석자 우선; 원본 조회는 상태 보존',()=>{
  assert.equal(demoCandidates[0].name,demoCandidates[1].name);
  assert.notEqual(identity(demoCandidates[0]),identity(demoCandidates[1]));
  assert.equal(selectCandidates(demoCandidates,[identity(demoCandidates[0])])[0].attendance,'unrecorded');
