@@ -36,7 +36,7 @@ function EventRows({events,upcoming=false}:{events:DashboardEvent[];upcoming?:bo
     <div className="dash-event-info"><div className="dash-event-title"><Link href={`/admin/events/${encodeURIComponent(event.slug)}/overview`}>{event.title}</Link><span className="ops-tag">{statuses[event.status]??'상태 확인 필요'}</span></div>
     <p>{event.starts_at?<time dateTime={event.starts_at}>{dateFormat.format(new Date(event.starts_at))}</time>:'행사 일시 미정'}{event.location&&<> · {event.location}</>}</p>
     <small>실제 접수: {event.applications_open?'접수 허용 설정':'비활성'}</small></div>
-    <div className="dash-event-actions"><Link href={`/admin/events/${encodeURIComponent(event.slug)}/edit`}>정보 수정</Link><Link href={`/admin/events/${encodeURIComponent(event.slug)}/applicants`}>신청자</Link></div>
+    <div className="dash-event-actions"><Link href={`/admin/events/${encodeURIComponent(event.slug)}/edit`}>정보 수정</Link><Link href={`/admin/recruitment?event=${event.id}`}>신청자</Link></div>
   </li>)}</ul>;
 }
 
