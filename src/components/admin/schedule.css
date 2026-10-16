@@ -15,3 +15,19 @@
 @media(max-width:740px){.schedule-layout{grid-template-columns:minmax(0,1fr);gap:18px}.schedule-detail{position:static;max-height:none;overflow:visible}.schedule-calendar-card{max-width:none;padding:12px}.schedule-toolbar strong{font-size:18px}}
 @media(max-width:420px){.schedule-toolbar{gap:12px}.schedule-toolbar>div{gap:2px}.schedule-toolbar button{padding:7px}.schedule-bars button{padding:2px;font-size:9px}.schedule-calendar-card{padding:10px}}
 .schedule-toolbar,.schedule-detail-form header,.schedule-dialog header{min-height:0;padding:0;border:0;background:transparent}
+/* The badge and form share a mode accent so the distinction remains visible while scrolling. */
+.schedule-detail-create{--schedule-mode:#23744f;--schedule-mode-soft:#eaf7ef;--schedule-mode-border:#b7d9c2;--schedule-mode-surface:#f7fcf8}
+.schedule-detail-edit{--schedule-mode:#334b80;--schedule-mode-soft:#eaf0fc;--schedule-mode-border:#b9c9e8;--schedule-mode-surface:#f7f9fe}
+.schedule-detail-create,.schedule-detail-edit{background:var(--schedule-mode-surface);border-color:var(--schedule-mode-border);border-top:4px solid var(--schedule-mode)}
+.schedule-detail .schedule-detail-heading{background:var(--schedule-mode-soft);border-bottom-color:var(--schedule-mode-border);border-radius:14px 14px 0 0}
+.schedule-mode-badge{display:inline-flex;align-items:center;gap:6px;padding:5px 9px;border-radius:6px;background:var(--schedule-mode);color:#fff;font-size:11px;font-weight:700;line-height:1.5}
+.schedule-mode-badge>span{font-size:15px;line-height:1}
+.schedule-detail .schedule-detail-heading h2{color:var(--schedule-mode)}
+.schedule-detail .schedule-detail-heading p{color:#52645b}
+.schedule-detail .schedule-detail-form header{border-left:3px solid var(--schedule-mode);padding-left:9px;color:var(--schedule-mode)}
+.schedule-detail .schedule-detail-form input:not([type=hidden]),.schedule-detail .schedule-detail-form select,.schedule-detail .schedule-detail-form textarea{border-color:var(--schedule-mode-border)}
+.schedule-detail .schedule-detail-form :is(input,select,textarea,button):focus-visible{outline-color:var(--schedule-mode)}
+.schedule-detail button.schedule-primary{background:var(--schedule-mode);border-color:var(--schedule-mode)}
+.schedule-detail button.schedule-primary:hover{filter:brightness(.92)}
+.schedule-detail .schedule-day-list{border-bottom-color:var(--schedule-mode-border)}
+.schedule-detail .schedule-day-list button[aria-pressed=true]{background:var(--schedule-mode-soft);border-color:var(--schedule-mode-border)}
