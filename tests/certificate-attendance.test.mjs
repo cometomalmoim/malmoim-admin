@@ -55,3 +55,60 @@ test('API refuses PDF response if final transactional attendance check fails',as
 test('attended reissue retains saved name and template flow',async()=>{
  const a=api({action:'reissue'});assert.equal((await a.run()).status,200);assert.equal(a.counts().rpcCalls,1);
 });
+
+test('login-free preview renders synthetic design with all work controls disabled',()=>{
+ const {CertificateView}=load('src/components/admin/certificate-view.tsx',{
+  react:{...React,useState:initial=>[initial,()=>{}],useEffect:()=>{},useRef:()=>({current:''})},
+  './admin-shell':{AdminShell:({children})=>React.createElement('main',null,children)},
+  '@/lib/certificate-model':model,'./certificates.css':{},'@/lib/participation-validation':{attendances:{},confirmations:{}},
+ });
+ const html=renderToStaticMarkup(React.createElement(CertificateView,{preview:true}));
+ assert.match(html,/<fieldset disabled=""/);
+ assert.match(html,/화면 확인 전용/);assert.match(html,/가상 수료증 디자인/);
+ assert.equal((html.match(/aria-label="[^>]*선택"/g)||[]).length,32);
+ assert.doesNotMatch(html,/<iframe/);
+});
+test('preview page fails closed outside development',()=>{
+ for(const mode of ['development','production','test']){
+  const loaded={exports:{}};
+  const {outputText}=ts.transpileModule(readFileSync('src/app/preview/certificates/page.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}});
+  runInNewContext(outputText,{module:loaded,exports:loaded.exports,process:{env:{NODE_ENV:mode}},require:n=>n==='next/navigation'?{notFound:()=>{throw new Error('404');}}:n==='@/components/admin/certificate-view'?{CertificateView:()=>null}:require(n)});
+  if(mode==='development')assert.equal(loaded.exports.default().props.preview,true);
+  else assert.throws(()=>loaded.exports.default(),/404/);
+ }
+});
+
+test('name substring search preserves duplicate identities, source and original selection',()=>{
+ const rows=[row,{...row,source:'registration',application_id:'other'}, {...row,name:'박하늘',application_id:'absent',attendance:'absent'}];
+ const selection=rows.slice(0,2).map(model.identity);
+ assert.equal(model.searchCandidates(rows,'명이').length,2);
+ assert.equal(model.searchCandidates(rows,' 하늘 ').length,1);
+ assert.deepEqual(model.searchCandidates(rows,'unknown'),[]);
+ assert.equal(model.searchCandidates([{...row,name:'Alex Kim'}],'aLEX').length,1);
+ assert.equal(model.searchCandidates(rows,'')[2].attendance,'absent');
+ assert.deepEqual(selection,rows.slice(0,2).map(model.identity));
+ const uuid='22222222-2222-4222-8222-123456789012';
+ assert.equal(model.shortApplicationId(uuid),'22222222…789012');
+ assert.equal(model.shortApplicationId('short'),'short');
+});
+test('filtered screen keeps global counts and selected hidden applicants, and full IDs remain available',()=>{
+ const rows=[row,{...row,application_id:'absent-application-123456789',name:'박하늘',attendance:'absent'},{...row,application_id:'hidden',name:'이예원'}];
+ const data={events:[],templates:[],history:[],candidates:rows};
+ function render(query,preview=false){
+  let index=0;
+  const {CertificateView}=load('src/components/admin/certificate-view.tsx',{
+   react:{...React,useState:initial=>{const i=index++;return [i===0?false:i===1?data:i===5?[model.identity(row),model.identity(rows[2])]:i===14?query:initial,()=>{}];},useEffect:()=>{},useRef:()=>({current:''})},
+   './admin-shell':{AdminShell:({children})=>React.createElement('main',null,children)},
+   '@/lib/certificate-model':model,'./certificates.css':{},'@/lib/participation-validation':{attendances:{},confirmations:{}},
+  });
+  return renderToStaticMarkup(React.createElement(CertificateView,{preview,enabled:true}));
+ }
+ const filtered=render('하늘');
+ assert.equal((filtered.match(/aria-label="[^>]*선택"/g)||[]).length,1);
+ assert.match(filtered,/전체 신청자 <strong>3명/);assert.match(filtered,/발급 가능 <strong>2명/);assert.match(filtered,/현재 선택 <strong>2명/);
+ assert.match(filtered,/검색 결과 1명/);assert.match(filtered,/disabled=""[^>]*title="출석 완료/);
+ assert.match(filtered,/전체 식별자 보기/);assert.match(filtered,/absent-application-123456789/);
+ const cleared=render('');assert.equal((cleared.match(/aria-label="[^>]*선택"/g)||[]).length,3);assert.equal((cleared.match(/checked=""/g)||[]).length,2);
+ assert.match(render('notfound'),/검색 결과가 없습니다/);
+ const preview=render('하늘',true);assert.match(preview,/type="search"/);assert.match(preview,/<input type="checkbox"[^>]*disabled=""/);
+});

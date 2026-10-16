@@ -34,3 +34,11 @@ export function certificateSameOrigin(headers: Headers, requestUrl: string): boo
   return ['http', 'https'].includes(protocol) && origin.protocol === `${protocol}:` && origin.host === headers.get('host') && !origin.username && !origin.password && origin.pathname === '/' && !origin.search && !origin.hash;
  } catch { return false; }
 }
+
+export function searchCandidates(rows: Candidate[], query: string): Candidate[] {
+ const term = query.trim().normalize('NFC').toLocaleLowerCase('ko');
+ return term ? rows.filter(row => row.name.normalize('NFC').toLocaleLowerCase('ko').includes(term)) : rows;
+}
+export function shortApplicationId(id: string): string {
+ return id.length > 16 ? `${id.slice(0, 8)}…${id.slice(-6)}` : id;
+}
