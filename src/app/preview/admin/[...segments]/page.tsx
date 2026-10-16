@@ -1,3 +1,4 @@
+import { ScheduleView } from '@/components/admin/schedule-view';
 import type { ResourceQuery } from "@/lib/resources";
 import { ResourceView } from "@/components/resources/resource-view";
 import { Suspense } from "react";
@@ -8,6 +9,7 @@ export const instant = false;
 async function PreviewRoute({ params, searchParams }: { params: Promise<{ segments: string[] }>; searchParams: Promise<ResourceQuery> }) {
   if (process.env.NODE_ENV !== "development") notFound();
   const { segments } = await params;
+  if(segments.length===1&&segments[0]==='schedule')return <ScheduleView preview/>;
   if (segments[0] === "resources") {
     const raw = await searchParams;
     const query = Object.fromEntries(Object.entries(raw).filter(([,value])=>typeof value === "string")) as ResourceQuery;
