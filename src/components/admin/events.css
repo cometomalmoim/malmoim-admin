@@ -13,3 +13,8 @@
 .evt-halloween-detail dt{color:#ffbc79}.evt-halloween-detail .ops-muted{color:#d3bcdf}
 .evt-landing-links{display:flex;gap:8px;flex-wrap:wrap;white-space:normal!important}
 @media(max-width:420px){.evt-halloween-banner{gap:8px}.evt-halloween-art{width:100px}.evt-halloween-banner strong{font-size:22px}}
+
+.event-directory{list-style:none;padding:0;margin:20px 0 0}.event-directory li+li{border-top:1px solid #e2e8e5}
+.event-directory a{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:24px 12px;text-decoration:none;color:#19392e;font-size:17px;font-weight:700;border-radius:8px;overflow-wrap:anywhere}
+.event-directory a:hover,.event-directory a:focus-visible{background:#fff5ce;outline:2px solid #f2ca55;outline-offset:-2px}
+.event-attendance-header{display:flex;flex-wrap:wrap;gap:12px;align-items:end;margin:18px 0}.event-attendance-header label{display:grid;gap:8px}.event-attendance-header input{padding:10px;border:1px solid #c6d6cc;border-radius:8px}

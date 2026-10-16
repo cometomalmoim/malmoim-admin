@@ -1,3 +1,4 @@
+import {EventAttendanceView} from './event-attendance-view';
 import {MessageView} from './message-view';
 import {ParticipationView} from './participation-view';
 import { EventRegistrationForm } from '../event-registration-form';
@@ -22,6 +23,7 @@ export async function ProtectedAdmin({ segments = [], page, query }: { segments?
   if(segments.length===3&&segments[0]==='events'&&segments[2]==='intake-test')return <main className="login-page"><section className="login-card"><h1>관리자 신청 저장 테스트</h1><p>테스트 표시된 이벤트만 허용합니다. 가상 데이터만 입력하세요.</p><EventRegistrationForm slug={segments[1]} test/></section></main>;
   if(segments.length===1&&segments[0]==='participants')return <ParticipationView email={access.email} query={query}/>;
   if(segments.length===5&&segments[0]==='events'&&segments[2]==='participants')return <ParticipationView email={access.email} slug={segments[1]} source={segments[3]} id={segments[4]} query={query}/>;
+  if(segments.length===3&&segments[0]==='events'&&segments[2]==='attendance')return <EventAttendanceView email={access.email} slug={segments[1]} page={page} query={query}/>;
   if(segments.length===1&&segments[0]==='messages')return <MessageView email={access.email}/>;
   if (segments.length === 0) return <EventDashboard email={access.email}/>;
   if (segments.length === 2 && segments[0] === "events" && segments[1] === "new") return <EventView email={access.email}/>;
