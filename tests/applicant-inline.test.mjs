@@ -12,3 +12,9 @@ test('선택 필드 빈값 허용, 연락처 검증과 변경 불가 필드 차�
  assert.throws(()=>applicantInput(applicantEditData(row,'contact','잘못된 번호')));
  assert.throws(()=>applicantEditData(row,'revision','0'));
 });
+
+import {applicantDate} from '../src/lib/applicant-date.ts';
+test('접수일은 한국 시각으로 해석하며 실제 달력과 미래 날짜를 검증',()=>{
+ assert.equal(applicantDate('2026-01-15T09:30'),'2026-01-15T00:30:00.000Z');
+ for(const value of ['2026-02-30T10:00','2026-13-01T10:00','1899-01-01T10:00','2999-01-01T10:00','2026-01-15'])assert.throws(()=>applicantDate(value));
+});
