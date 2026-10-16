@@ -1,5 +1,5 @@
 import type {ApplicationRow} from './recruitment';
-export const inlineApplicantFields=['name','contact','birth_year','nationality','status','payment_status','internal_note'] as const;
+export const inlineApplicantFields=['name','contact','birth_year','nationality','status','payment_status','internal_note','created_at'] as const;
 export type InlineApplicantField=typeof inlineApplicantFields[number];
 export function applicantEditData(row:ApplicationRow,field:InlineApplicantField,value:string){
  if(!inlineApplicantFields.includes(field))throw new Error('invalid_field');

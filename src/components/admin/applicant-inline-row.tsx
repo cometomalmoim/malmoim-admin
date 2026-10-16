@@ -1,21 +1,40 @@
 'use client';
-import {useState,useTransition} from 'react';
+import {useRef,useState,useTransition} from 'react';
 import {useRouter} from 'next/navigation';
 import Link from 'next/link';
 import type {ApplicationRow} from '@/lib/recruitment';
-import {applicantEditData,type InlineApplicantField} from '@/lib/applicant-inline';
+import {applicantEditData} from '@/lib/applicant-inline';
 import {saveApplicant} from '@/app/actions/applicants';
 import {applicationStatuses,paymentStatuses} from '@/lib/applicant-validation';
 import {trafficSources} from '@/lib/attribution';
-export function ApplicantInlineRow({row}:{row:ApplicationRow}){
- const [editing,setEditing]=useState<InlineApplicantField|null>(null),[value,setValue]=useState(''),[message,setMessage]=useState('');
- const [pending,startTransition]=useTransition();const router=useRouter();
- const labels:Record<InlineApplicantField,string>={name:'이름',contact:'연락처',birth_year:'출생연도',nationality:'국적',status:'선발 상태',payment_status:'입금 확인',internal_note:'내부 메모'};
- function save(){if(!editing||!row.event_slug)return;const data=applicantEditData(row,editing,value);startTransition(async()=>{try{const result=await saveApplicant(row.event_slug!,{code:''},data);const messages:Record<string,string>={saved:'저장했습니다.',invalid:'입력 형식을 확인해주세요.',duplicate:'같은 연락처의 신청자가 있습니다.',conflict:'다른 운영진이 먼저 수정했습니다. 최신 목록을 불러온 뒤 다시 수정해주세요.',forbidden:'관리자 권한을 확인해주세요.',missing:'신청자를 찾을 수 없습니다.',error:'저장하지 못했습니다. 입력을 유지하고 다시 시도해주세요.'};setMessage(messages[result.code]??messages.error);if(result.code==='saved'){setEditing(null);router.refresh();}}catch{setMessage('저장하지 못했습니다. 입력을 유지하고 다시 시도해주세요.');}});}
- function cell(field:InlineApplicantField,display:string){
-  if(editing!==field)return <button className="applicant-cell-button" type="button" disabled={pending||!!editing||!row.event_slug} aria-label={`${row.name} ${labels[field]} 수정`} onClick={()=>{setValue(String(row[field]??''));setEditing(field);setMessage('');}}>{display||'—'} <span aria-hidden="true">✎</span></button>;
-  const options=field==='status'?applicationStatuses:field==='payment_status'?paymentStatuses:null;
-  return <form className="applicant-cell-editor" aria-label={`${row.name} ${labels[field]} 편집`} onSubmit={e=>{e.preventDefault();save();}}><label>{labels[field]}{options?<select autoFocus value={value} disabled={pending} onChange={e=>setValue(e.target.value)}>{Object.entries(options).map(([v,label])=><option key={v} value={v}>{label}</option>)}</select>:field==='internal_note'?<textarea autoFocus value={value} maxLength={3000} disabled={pending} onChange={e=>setValue(e.target.value)}/>:<input autoFocus value={value} type={field==='birth_year'?'number':'text'} min={field==='birth_year'?1900:undefined} max={field==='birth_year'?new Date().getUTCFullYear():undefined} maxLength={field==='contact'?200:100} required={field==='name'||field==='contact'} disabled={pending} onChange={e=>setValue(e.target.value)}/>}</label><div><button type="submit" disabled={pending}>{pending?'저장 중…':'저장'}</button><button type="button" disabled={pending} onClick={()=>{setEditing(null);setMessage('');}}>취소</button></div></form>;
+import {ApplicantEditor} from './applicant-editor';
+
+export function ApplicantInlineRow({row,eventMode=false}:{row:ApplicationRow;eventMode?:boolean}){
+ const [message,setMessage]=useState('');
+ const [pending,startTransition]=useTransition();
+ const detail=useRef<HTMLDialogElement>(null);
+ const router=useRouter();
+ function statusControl(field:'status'|'payment_status',label:string,options:Record<string,string>){
+  return <label className="applicant-status-control"><span className="sr-only">{row.name} {label}</span><select aria-label={`${row.name} ${label}`} value={row[field]} disabled={pending||!row.event_slug} onChange={e=>{
+   const data=applicantEditData(row,field,e.target.value);
+   startTransition(async()=>{try{
+    const result=await saveApplicant(row.event_slug!,{code:''},data);
+    setMessage(({saved:'저장했습니다.',conflict:'다른 운영진이 수정했습니다. 최신 목록을 불러와 다시 선택해주세요.',duplicate:'같은 연락처의 신청자가 있습니다.',invalid:'입력값을 확인해주세요.',forbidden:'관리자 권한을 확인해주세요.'} as Record<string,string>)[result.code]??'저장하지 못했습니다. 다시 시도해주세요.');
+    if(result.code==='saved')router.refresh();
+   }catch{setMessage('저장하지 못했습니다. 다시 시도해주세요.');}});
+  }}>{Object.entries(options).map(([value,text])=><option key={value} value={value}>{text}</option>)}</select></label>;
  }
- return <tr><td><Link href={`/admin/events/${encodeURIComponent(row.event_slug??'')}/overview`}>{row.event_title??'이벤트 개요'}</Link></td><td>{cell('name',row.name)}<small>{row.source==='manual'?'운영진 추가':'온라인 신청'}</small><Link href={`/admin/events/${encodeURIComponent(row.event_slug??'')}/participants/${row.source}/${row.id}`}>참여 이력 →</Link></td><td><span className="applicant-badge">{trafficSources[row.utm_source as keyof typeof trafficSources]??(row.utm_source||'미확인')}</span></td><td>{row.utm_medium||'—'}<small>{row.utm_campaign||'—'}</small></td><td>{cell('contact',row.contact)}<small>{row.contact_type==='phone'?'전화':'인스타그램'}</small></td><td>{cell('birth_year',row.birth_year?`${row.birth_year}년생`:'—')}</td><td>{cell('nationality',row.nationality??'')}</td><td>{cell('status',applicationStatuses[row.status as keyof typeof applicationStatuses]??'확인 필요')}</td><td>{cell('payment_status',paymentStatuses[row.payment_status as keyof typeof paymentStatuses]??'미확인')}<small>운영진 수동 기록</small></td><td>{new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'short'}).format(new Date(row.created_at))}</td><td>{cell('internal_note',row.internal_note||'메모 추가')}<p role="status">{message}</p>{message.includes('최신 목록')&&<button type="button" onClick={()=>{setEditing(null);router.refresh();}}>최신 목록 불러오기</button>}</td></tr>;
+ return <tr>
+ {!eventMode&&<td><Link href={`/admin/events/${encodeURIComponent(row.event_slug??'')}/applicants`}>{row.event_title??'이벤트 신청자·운영'}</Link></td>}
+ <td>{row.name}<small>{row.source==='manual'?'운영진 추가':'온라인 신청'}</small><Link href={`/admin/events/${encodeURIComponent(row.event_slug??'')}/participants/${row.source}/${row.id}`}>참여·출석 기록 →</Link></td>
+ <td><span className="applicant-badge">{trafficSources[row.utm_source as keyof typeof trafficSources]??(row.utm_source||'미확인')}</span></td>
+ {!eventMode&&<td>{row.utm_medium||'—'}<small>{row.utm_campaign||'—'}</small></td>}
+ <td>{row.contact}<small>{row.contact_type==='phone'?'전화':'인스타그램'}</small></td>
+ <td>{row.birth_year?`${row.birth_year}년생`:'—'}</td><td>{row.nationality||'—'}</td>
+ <td>{statusControl('status','선발 상태',applicationStatuses)}</td>
+ <td>{statusControl('payment_status','입금 확인',paymentStatuses)}<small>운영진 수동 기록</small></td>
+ <td>{new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'short'}).format(new Date(row.created_at))}</td>
+ <td><button type="button" className="applicant-cell-button" disabled={pending||!row.event_slug} onClick={()=>detail.current?.showModal()}>상세·수정</button><small>{row.internal_note}</small><p role="status">{pending?'저장 중…':message}</p>{message.includes('최신 목록')&&<button type="button" onClick={()=>router.refresh()}>최신 목록 불러오기</button>}
+ <dialog ref={detail} className="applicant-detail-dialog" aria-label={`${row.name} 상세·수정`}><button type="button" onClick={()=>detail.current?.close()}>닫기</button>{row.event_slug&&<ApplicantEditor slug={row.event_slug} row={row}/>}</dialog></td>
+ </tr>;
 }
