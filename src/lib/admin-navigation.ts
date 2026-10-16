@@ -21,8 +21,8 @@ export const adminGroups = [
       },
       {
         "slug": "recruitment",
-        "title": "모집 페이지",
-        "description": "전체 이벤트에 연결된 공개 모집 페이지를 관리합니다."
+        "title": "신청자관리",
+        "description": "전체 이벤트의 신청자와 유입경로를 조회합니다."
       },
       {
         "slug": "messages",
@@ -135,7 +135,7 @@ export const eventTabs = [
   },
   {
     "slug": "recruitment",
-    "title": "모집 페이지",
+    "title": "신청자관리",
     "description": "해당 이벤트에 연결된 공개 페이지"
   },
   {

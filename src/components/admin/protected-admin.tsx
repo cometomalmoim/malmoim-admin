@@ -32,7 +32,7 @@ export async function ProtectedAdmin({ segments = [], page, query }: { segments?
     return <SuggestionsView email={access.email} id={segments[1]} status={query?.status} page={page} />;
   }
   if (segments[0] === "events" && segments[2] === "resources") return <ResourceView email={access.email} slug={segments[1]} parts={segments.slice(3)} query={query} />;
-  if (segments.length === 1 && ["events", "recruitment"].includes(segments[0])) return <RecruitmentView email={access.email} recruitment={segments[0] === "recruitment"} />;
+  if (segments.length === 1 && ["events", "recruitment"].includes(segments[0])) return <RecruitmentView email={access.email} recruitment={segments[0] === "recruitment"} page={page} query={query} />;
   if (segments.length === 3 && segments[0] === "events" && segments[2] === "applicants") return <RecruitmentView email={access.email} slug={segments[1]} page={page} query={query} />;
   // No event lookup exists yet. Never render an unknown ID as a real event.
   if (segments.length > 1 || !adminPages.some(p => p.slug === (segments[0] ?? ""))) notFound();
