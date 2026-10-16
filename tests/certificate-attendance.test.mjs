@@ -7,6 +7,7 @@ import ts from 'typescript';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import * as model from '../src/lib/certificate-model.ts';
+import * as delivery from '../src/lib/certificate-delivery.ts';
 const require=createRequire(import.meta.url);
 const row={event_id:'event',source:'manual',application_id:'app',name:'동명이인',attendance:'attended',confirmation:'confirmed'};
 const template={id:'template',placement:model.defaultPlacement};
@@ -34,16 +35,23 @@ test('rendered certificate screen disables 12 ineligible checkboxes out of 32',(
  const boxes=html.match(/<input[^>]*aria-label="[^>]*선택"[^>]*>/g)||[];
  assert.equal(boxes.length,32);assert.equal(boxes.filter(s=>s.includes('disabled=""')).length,12);
 });
-function api({attendance='attended',action='issue',rpcError=null}={}){
+function api({attendance='attended',action='issue',rpcError=null,storeError=null,existingJob=null,signError=null}={}){
  let rpcCalls=0,pdfCalls=0;
- const db={from:name=>({select:()=>({eq:()=>({single:async()=>({data:name==='certificate_issues'?{...row,id:'old',template_id:'template'}:template})})})}),rpc:async()=>{rpcCalls++;return {error:rpcError};}};
+ const db={from:name=>({select:()=>({eq:()=>({
+  maybeSingle:async()=>({data:name==='certificate_jobs'?existingJob:null}),
+  single:async()=>({data:name==='certificate_issues'?{...row,id:'old',template_id:'template'}:name==='certificate_jobs'?{id:'11111111-1111-4111-8111-111111111111',status:'ready',path:'path',mime:'application/pdf',expires_at:new Date(Date.now()+60000).toISOString()}:template}),
+ })})}),storage:{from:()=>({upload:async()=>({error:storeError}),createSignedUrl:async()=>({error:signError,data:{signedUrl:'http://127.0.0.1/file'}}),remove:async()=>({})})},rpc:async name=>{
+  if(name==='begin_certificate_job')return {data:'claimed'};
+  if(name==='finish_certificate_job'){rpcCalls++;return {error:rpcError};}
+  return {};
+ }};
  const route=load('src/app/api/admin/certificates/route.ts',{
   '@/lib/auth':{getAdminAccess:async()=>({status:'admin'})},'@/lib/supabase/server':{createClient:async()=>db},
   '@/lib/certificates':{certificatesEnabled:()=>true,certificateData:async()=>({candidates:[{...row,attendance}]}),templateBackground:async()=>({})},
-  '@/lib/certificate-model':model,'@/lib/certificate-pdf':{certificatePdf:async()=>{pdfCalls++;return new Uint8Array([1]);},certificateZip:()=>new Uint8Array([2])},
-  '@/lib/pdf-validation':{},'node:fs/promises':{readFile:async()=>new Uint8Array()},
+  '@/lib/certificate-model':model,'@/lib/certificate-delivery':delivery,'@/lib/certificate-pdf':{certificatePdf:async()=>{pdfCalls++;return new Uint8Array([1]);},certificateZip:()=>new Uint8Array([2])},
+  '@/lib/pdf-validation':{},'@/lib/certificate-cleanup':{cleanCertificateFiles:async()=>({removed:0})},'node:fs/promises':{readFile:async()=>new Uint8Array()},
  });
- const request=new Request('http://127.0.0.1:3100/api/admin/certificates',{method:'POST',headers:{host:'127.0.0.1:3100',origin:'http://127.0.0.1:3100','content-type':'application/json'},body:JSON.stringify({action,template:'template',event:'event',keys:[model.identity(row)],confirm:true,issue:'old'})});
+ const request=new Request('http://127.0.0.1:3100/api/admin/certificates',{method:'POST',headers:{host:'127.0.0.1:3100',origin:'http://127.0.0.1:3100','content-type':'application/json'},body:JSON.stringify({job:'11111111-1111-4111-8111-111111111111',action,template:'template',event:'event',keys:[model.identity(row)],confirm:true,issue:'old'})});
  return {run:()=>route.POST(request),counts:()=>({rpcCalls,pdfCalls})};
 }
 for(const action of ['issue','reissue'])for(const attendance of ['absent','unrecorded','no_show'])test(`API ${action} rejects ${attendance} before PDF or RPC`,async()=>{
@@ -111,4 +119,24 @@ test('filtered screen keeps global counts and selected hidden applicants, and fu
  const cleared=render('');assert.equal((cleared.match(/aria-label="[^>]*선택"/g)||[]).length,3);assert.equal((cleared.match(/checked=""/g)||[]).length,2);
  assert.match(render('notfound'),/검색 결과가 없습니다/);
  const preview=render('하늘',true);assert.match(preview,/type="search"/);assert.match(preview,/<input type="checkbox"[^>]*disabled=""/);
+});
+
+test('actual issuance API returns a small JSON link, never a PDF response',async()=>{
+ const a=api();const response=await a.run();assert.equal(response.status,200);
+ assert.match(response.headers.get('content-type'),/application\/json/);
+ const text=await response.text();assert.ok(text.length<2048);assert.equal(JSON.parse(text).url,'http://127.0.0.1/file');
+});
+test('Storage upload failure never calls the final issuance recorder',async()=>{
+ const a=api({storeError:{message:'storage unavailable'}});assert.equal((await a.run()).status,409);
+ assert.deepEqual(a.counts(),{rpcCalls:0,pdfCalls:1});
+});
+test('ready same-job retry returns existing download without generating or recording again',async()=>{
+ const a=api({existingJob:{request:{action:'issue',event:'event',template:'template',issue:'old',keys:[model.identity(row)],zip:false}}});
+ assert.equal((await a.run()).status,200);assert.deepEqual(a.counts(),{rpcCalls:0,pdfCalls:0});
+});
+test('same job ID cannot be reused with a different request',async()=>{
+ const a=api({existingJob:{request:{action:'reissue'}}});assert.equal((await a.run()).status,409);assert.deepEqual(a.counts(),{rpcCalls:0,pdfCalls:0});
+});
+test('URL signing failure returns retryable error after one finalization',async()=>{
+ const a=api({signError:{message:'network error'}});assert.equal((await a.run()).status,503);assert.equal(a.counts().rpcCalls,1);
 });

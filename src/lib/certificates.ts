@@ -28,7 +28,9 @@ export async function certificateData(eventId?: string) {
   if (eventId) q = q.eq('event_id', eventId);
   const r = await q.range(from, to); if (r.error) throw new Error('발급 기록 조회 실패'); return r.data;
  });
- return { events: events.data, templates: templates.data as Template[], candidates, history };
+ const jobs = await db.from('certificate_jobs').select('id,status,mime,created_at,expires_at,error_code,spec').order('created_at', { ascending: false }).limit(50);
+ if (jobs.error) throw new Error('다운로드 작업 마이그레이션을 확인해주세요.');
+ return { events: events.data, templates: templates.data as Template[], candidates, history, jobs: jobs.data.map(({ spec, ...job }) => ({ ...job, preview: Boolean(spec && typeof spec === 'object' && !Array.isArray(spec) && spec.preview === true) })) };
 }
 export async function templateBackground(template: Template) {
  if (!certificatesEnabled() || (await getAdminAccess()).status !== 'admin') throw new Error('관리자 접근 권한을 확인해주세요.');
