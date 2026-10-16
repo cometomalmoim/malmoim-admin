@@ -1,0 +1,79 @@
+/* Only recruitment/event workspaces opt in. Certificates and other menus keep their styles. */
+.ops-event-workspace{--work-line:#dce3e0;--work-muted:#606b65;--work-control:44px}
+.ops-event-workspace .ops-main{padding:32px;line-height:1.6}
+.ops-event-workspace .ops-breadcrumb{margin:0 0 16px}
+.ops-event-workspace .ops-heading{display:flex;align-items:center;flex-wrap:wrap;gap:12px 20px;margin:0 0 24px}
+.ops-event-workspace .ops-heading h1{margin:0;font-size:28px;line-height:1.4}
+.ops-event-workspace .ops-heading>.ops-link{margin-left:auto}
+.ops-event-workspace .ops-heading>p{flex-basis:100%;margin:0;color:var(--work-muted);font-size:14px;line-height:1.8}
+.ops-event-workspace .ops-panel{padding:24px;border-color:var(--work-line);border-radius:12px;margin-bottom:24px;min-width:0}
+.ops-event-workspace .ops-panel h2{font-size:16px;line-height:1.5;margin:0 0 12px}
+.ops-event-workspace .ops-panel>p{font-size:13px;line-height:1.8}
+.ops-event-workspace .ops-shortcuts{align-items:center;gap:12px;margin:0 0 24px}
+.ops-event-workspace .ops-panel>.ops-shortcuts{margin:16px 0 0}
+.ops-event-workspace :is(.ops-link,.ops-shortcuts a,.ops-tabs a,.evt-primary){display:inline-flex;align-items:center;justify-content:center;min-height:var(--work-control);padding:10px 16px;border-radius:8px;font-size:13px;line-height:22px;box-sizing:border-box;margin-bottom:0}
+.ops-event-workspace .ops-tabs{gap:8px;padding-bottom:4px;margin:0 0 24px}
+.ops-event-workspace :is(.participation-search,.applicant-filters,.event-attendance-header){display:flex;flex-wrap:wrap;align-items:flex-end;gap:16px;margin:16px 0}
+/* Global form labels have a bottom margin; removing it aligns controls with actions. */
+.ops-event-workspace :is(.participation-search,.applicant-filters,.event-attendance-header) label{display:grid;gap:8px;margin:0;font-size:13px;line-height:20px;min-width:180px;max-width:100%}
+.ops-event-workspace :is(.participation-search,.applicant-filters,.event-attendance-header) :is(input,select){height:var(--work-control);min-height:var(--work-control);padding:10px 12px;font-size:14px;line-height:22px;border:1px solid #b8c8c1;border-radius:8px;box-sizing:border-box;width:100%;max-width:100%;margin:0;background:white;color:#171918}
+.ops-event-workspace :is(.participation-search,.applicant-filters,.event-attendance-header)>:is(button,a){height:var(--work-control);min-height:var(--work-control);margin:0;display:inline-flex;align-items:center;justify-content:center;font-size:13px;line-height:22px;padding:10px 18px;box-sizing:border-box}
+.ops-event-workspace .participation-search label{width:320px}
+.ops-event-workspace .applicant-filters label{flex:1 1 180px}
+.ops-event-workspace .applicant-filters>label:has(input[name=q]){flex:2 1 280px}
+.ops-event-workspace .evt-form{max-width:860px}
+.ops-event-workspace .evt-fields{gap:20px;align-items:start}
+.ops-event-workspace .evt-form label{gap:8px;margin:16px 0;font-size:13px;line-height:20px}
+.ops-event-workspace .evt-fields>label{margin:0}
+.ops-event-workspace .evt-form :is(input:not([type=checkbox]):not([type=hidden]),select){height:var(--work-control);min-height:var(--work-control);padding:10px 12px;font-size:14px;line-height:22px}
+.ops-event-workspace .evt-form textarea{padding:10px 12px;font-size:14px;line-height:1.7}
+.ops-event-workspace .evt-form legend{margin-bottom:20px}
+.ops-event-workspace .evt-form small{font-size:12px;line-height:1.6}
+.ops-event-workspace .applicant-add{padding:18px;margin:20px 0;border-color:var(--work-line)}
+.ops-event-workspace .applicant-status-control select{height:40px;min-width:104px;font-size:13px;padding:8px 10px}
+.ops-event-workspace .ops-applications :is(th,td){padding:16px;vertical-align:middle}
+.ops-event-workspace .ops-applications th{font-size:12px;color:#52615a}
+.ops-event-workspace .applicant-table td:last-child small{max-width:220px;white-space:normal;overflow-wrap:anywhere}
+.ops-event-workspace .applicant-detail-dialog{line-height:1.6}
+.ops-event-workspace .applicant-detail-dialog>button{min-height:40px}
+.ops-event-workspace .participation-people{margin:20px 0 0}
+.ops-event-workspace .participation-people li{display:grid;grid-template-columns:minmax(160px,1.4fr) minmax(150px,1fr) minmax(120px,.8fr) minmax(100px,.7fr);gap:16px;padding:18px 0;align-items:center;font-size:13px}
+.ops-event-workspace .participation-people small{color:var(--work-muted)}
+.ops-event-workspace :is(.evt-overview-stats,.participation-stats){gap:20px;margin-bottom:24px;align-items:stretch}
+.ops-event-workspace .evt-overview-stats>.ops-panel{margin-bottom:0;display:flex;flex-direction:column}
+.ops-event-workspace .evt-overview-stats strong{margin:8px 0;font-size:28px;line-height:1.4}
+.ops-event-workspace .evt-overview-stats p{margin:8px 0}
+.ops-event-workspace .evt-overview-stats a{margin-top:auto}
+.ops-event-workspace .evt-overview-tools{gap:20px;align-items:stretch}
+.ops-event-workspace .evt-overview-tools article{padding:20px;min-height:180px;display:flex;flex-direction:column;border-color:var(--work-line)}
+.ops-event-workspace .evt-overview-tools article>a{margin-top:auto;align-self:flex-start;min-height:40px;display:inline-flex;align-items:center}
+.ops-event-workspace .evt-overview-tools article>p{margin:12px 0;min-height:0}
+.ops-event-workspace .applicant-summary-grid a{min-height:100px;display:flex;flex-direction:column;justify-content:space-between}
+.ops-event-workspace .messaging{--msg-blue:#087f8c;--msg-line:var(--work-line);--msg-muted:var(--work-muted);color:#171918}
+.ops-event-workspace :is(.messaging-hero,.messaging-event,.messaging-card){border-radius:12px;margin-bottom:24px}
+.ops-event-workspace .messaging-title{padding:24px;align-items:center}
+.ops-event-workspace .messaging-title h1{font-size:28px;line-height:1.4}
+.ops-event-workspace .messaging-title p{font-size:13px;line-height:1.8}
+.ops-event-workspace .messaging-columns{gap:20px;align-items:stretch}
+.ops-event-workspace .messaging-card{padding:24px}
+.ops-event-workspace .messaging-card h2{font-size:16px}
+.ops-event-workspace .messaging-event select,.ops-event-workspace .messaging-field input{height:var(--work-control);min-height:var(--work-control);padding:10px 12px;font-size:14px;line-height:22px}
+.ops-event-workspace .messaging-field,.ops-event-workspace .messaging-event>label{margin-bottom:0;gap:8px;font-size:13px}
+.ops-event-workspace .messaging-templates button{min-height:40px;border-radius:8px}
+.ops-event-workspace .messaging-templates button[aria-pressed=true]{color:#086c77;background:#e7f5f5;border-color:#80b6b4}
+.ops-event-workspace .messaging-title>span:first-child{color:#087f8c;background:#e7f5f5}
+.ops-event-workspace .messaging-links{flex-wrap:wrap;align-items:center}
+@media(max-width:1100px){.ops-event-workspace .participation-people li{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){
+ .ops-event-workspace .ops-main{padding:24px 16px}
+ .ops-event-workspace .ops-heading h1,.ops-event-workspace .messaging-title h1{font-size:24px}
+ .ops-event-workspace .ops-panel,.ops-event-workspace .messaging-card,.ops-event-workspace .messaging-title,.ops-event-workspace .messaging-event{padding:20px}
+ .ops-event-workspace :is(.participation-search,.applicant-filters,.event-attendance-header){gap:12px}
+ .ops-event-workspace :is(.participation-search,.applicant-filters,.event-attendance-header) label{min-width:0;flex:1 1 100%;width:100%}
+ .ops-event-workspace .applicant-filters>label:has(input[name=q]){flex-basis:100%}
+ .ops-event-workspace .evt-overview-tools{grid-template-columns:1fr}
+ .ops-event-workspace .evt-overview-stats{gap:16px}
+ .ops-event-workspace .participation-people li{grid-template-columns:1fr;gap:8px}
+ .ops-event-workspace .evt-fields{gap:16px;grid-template-columns:1fr}
+ .ops-event-workspace .messaging-title{flex-wrap:wrap}
+}

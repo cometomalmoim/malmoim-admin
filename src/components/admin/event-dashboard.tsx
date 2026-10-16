@@ -50,6 +50,6 @@ export async function EventDashboard({email}:{email:string}) {
     <section className="ops-panel"><div className="dash-section-heading"><h2>예정된 이벤트</h2><span>가까운 시작일 순 · 한국시간</span></div><p className="ops-muted">시작 전 이벤트를 최대 5개 표시합니다. 모집 마감 여부와 행사 일정은 별개입니다.</p>{data.upcoming.length?<EventRows events={data.upcoming} upcoming/>:<p className="ops-empty">시작일이 지정된 예정 이벤트가 없습니다.</p>}</section>
     <section className="ops-panel"><div className="dash-section-heading"><h2>이벤트 목록</h2><Link className="ops-link" href="/admin/events">이벤트 관리 →</Link></div><p className="ops-muted">테스트를 제외하고 최근 등록한 이벤트 최대 6개입니다. 날짜가 미정인 이벤트도 표시합니다.</p>{data.events.length?<EventRows events={data.events}/>:<div className="ops-empty"><p>아직 등록된 이벤트가 없습니다.</p><Link className="ops-link" href="/admin/events/new">첫 이벤트 등록</Link></div>}</section>
     </>}
-    <section className="ops-panel"><h2>운영 메뉴 바로가기</h2><div className="ops-shortcuts"><Link href="/admin/events">이벤트 관리 →</Link><Link href="/admin/recruitment">모집 페이지 →</Link><Link href="/admin/resources">자료실 →</Link><Link href="/admin/schedule">스케줄 →</Link></div></section>
+    <section className="ops-panel"><h2>운영 메뉴 바로가기</h2><div className="ops-shortcuts"><Link href="/admin/events">이벤트 관리 →</Link><Link href="/admin/recruitment">전체 신청자관리 →</Link><Link href="/admin/resources">자료실 →</Link><Link href="/admin/schedule">스케줄 →</Link></div></section>
   </AdminShell>;
 }

@@ -1,5 +1,6 @@
 import {CertificateView} from './certificate-view';
 import {certificatesEnabled} from '@/lib/certificates';
+import {EventAttendanceView} from './event-attendance-view';
 import {MessageView} from './message-view';
 import {ParticipationView} from './participation-view';
 import { EventRegistrationForm } from '../event-registration-form';
@@ -25,6 +26,7 @@ export async function ProtectedAdmin({ segments = [], page, query }: { segments?
   if ((segments.length === 1 && segments[0] === 'certificates') || (segments.length === 3 && segments[0] === 'events' && segments[2] === 'certificates')) return <CertificateView email={access.email} enabled={certificatesEnabled()} slug={segments[1]}/>;
   if(segments.length===1&&segments[0]==='participants')return <ParticipationView email={access.email} query={query}/>;
   if(segments.length===5&&segments[0]==='events'&&segments[2]==='participants')return <ParticipationView email={access.email} slug={segments[1]} source={segments[3]} id={segments[4]} query={query}/>;
+  if(segments.length===3&&segments[0]==='events'&&segments[2]==='attendance')return <EventAttendanceView email={access.email} slug={segments[1]} page={page} query={query}/>;
   if(segments.length===1&&segments[0]==='messages')return <MessageView email={access.email}/>;
   if (segments.length === 0) return <EventDashboard email={access.email}/>;
   if (segments.length === 2 && segments[0] === "events" && segments[1] === "new") return <EventView email={access.email}/>;
@@ -35,7 +37,7 @@ export async function ProtectedAdmin({ segments = [], page, query }: { segments?
     return <SuggestionsView email={access.email} id={segments[1]} status={query?.status} page={page} />;
   }
   if (segments[0] === "events" && segments[2] === "resources") return <ResourceView email={access.email} slug={segments[1]} parts={segments.slice(3)} query={query} />;
-  if (segments.length === 1 && ["events", "recruitment"].includes(segments[0])) return <RecruitmentView email={access.email} recruitment={segments[0] === "recruitment"} />;
+  if (segments.length === 1 && ["events", "recruitment"].includes(segments[0])) return <RecruitmentView email={access.email} recruitment={segments[0] === "recruitment"} page={page} query={query} />;
   if (segments.length === 3 && segments[0] === "events" && segments[2] === "applicants") return <RecruitmentView email={access.email} slug={segments[1]} page={page} query={query} />;
   // No event lookup exists yet. Never render an unknown ID as a real event.
   if (segments.length > 1 || !adminPages.some(p => p.slug === (segments[0] ?? ""))) notFound();
