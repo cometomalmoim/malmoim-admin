@@ -39,3 +39,13 @@ test('contact change invalidates pending demo access without deleting history',a
  await assert.rejects(flow.action(link.token,auth.session,{operation:'document'}),/CANCELLED/);
  const saved=await repo.get(row.id,[key.event_id]);assert.equal(saved.status,'cancelled');assert.ok(saved.history.length>1);
 });
+
+test('cancellation during asynchronous PDF generation wins over completion',async()=>{
+ const {repo,service,row}=await setup();let release,started;
+ const entered=new Promise(resolve=>{started=resolve;}),gate=new Promise(resolve=>{release=resolve;});
+ const flow=new DemoFlow(repo,service,'fixture-admin',{render:async()=>{started();await gate;return new TextEncoder().encode('%PDF-test');}});
+ const link=await flow.issue(row.id,key.event_id),auth=await flow.action(link.token,null,{operation:'verify',code:link.code});await flow.action(link.token,auth.session,{operation:'document'});
+ const submission=flow.action(link.token,auth.session,submit(row.name));const rejected=assert.rejects(submission,/CANCELLED/);
+ await entered;await service.execute('fixture-admin',{operation:'cancel',eventId:key.event_id,requestId:row.id});release();await rejected;
+ assert.equal((await repo.get(row.id,[key.event_id])).status,'cancelled');await assert.rejects(flow.adminPdf(row.id),/PDF_NOT_READY/);
+});

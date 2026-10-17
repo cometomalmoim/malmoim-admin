@@ -7,10 +7,10 @@ export const denyAdminSession:AdminSessionAdapter={async currentAdmin(){return n
 export type ApplicantSnapshot=TargetApplicant&{contactType:string;archived?:boolean|null};
 export interface EsignApplicantReader { find(key:ApplicantKey):Promise<ApplicantSnapshot|undefined> }
 export function validApplicantKey(value:unknown,mode:'database'|'preview'='database'):value is ApplicantKey{
- if(!value||typeof value!=='object')return false;
+ if(!value||typeof value!=='object'||Array.isArray(value))return false;
  const v=value as Record<string,unknown>;
  const id=(x:unknown)=>typeof x==='string'&&(mode==='database'?/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(x):/^[a-zA-Z0-9-]{1,80}$/.test(x));
- return id(v.event_id)&&id(v.application_id)&&['season9','registration','manual'].includes(String(v.source));
+ return id(v.event_id)&&id(v.application_id)&&typeof v.source==='string'&&['season9','registration','manual'].includes(v.source);
 }
 /** Temporary preview policy, not an approved operating policy. Unknown archive state is held for real adapters. */
 export function signingEligibility(a:ApplicantSnapshot,event:string,requireArchive=false):string{
@@ -33,10 +33,11 @@ export function signingEligibility(a:ApplicantSnapshot,event:string,requireArchi
 export async function inspectSigningTarget(auth:AdminSessionAdapter,reader:EsignApplicantReader,key:unknown){
  const actor=await auth.currentAdmin();if(!actor)return {code:'UNAUTHENTICATED'};
  if(!validApplicantKey(key))return {code:'INVALID_APPLICANT_KEYS'};
- if(!actor.eventIds.includes(key.event_id))return {code:'EVENT_FORBIDDEN'};
- const row=await reader.find(key);if(!row)return {code:'APPLICANT_NOT_FOUND'};
- if(applicantKey(row)!==applicantKey(key))return {code:'EVENT_MISMATCH'};
- return {code:signingEligibility(row,key.event_id,true)};
+ const normalized=normalizeApplicantKey(key);
+ if(!actor.eventIds.includes(normalized.event_id))return {code:'EVENT_FORBIDDEN'};
+ const row=await reader.find(normalized);if(!row)return {code:'APPLICANT_NOT_FOUND'};
+ if(applicantKey(normalizeApplicantKey(row))!==applicantKey(normalized))return {code:'EVENT_MISMATCH'};
+ return {code:signingEligibility({...row,event_id:normalized.event_id},normalized.event_id,true)};
 }
 export type ReplayRecord={payload:string;ids:string[]};
 export interface AsyncRequestTransaction{
@@ -49,4 +50,10 @@ export interface AsyncRequestRepository{
  transaction<T>(work:(tx:AsyncRequestTransaction)=>Promise<T>):Promise<T>;
  list(eventIds:string[]):Promise<TargetRequest[]>;
  get(id:string,eventIds:string[]):Promise<TargetRequest|undefined>;
+}
+
+/** UUID spelling is normalized only after validation; preview identifiers are not accepted here. */
+export function normalizeApplicantKey(key:unknown):ApplicantKey{
+ if(!validApplicantKey(key))throw new Error('INVALID_APPLICANT_KEYS');
+ return {event_id:key.event_id.toLowerCase(),source:key.source,application_id:key.application_id.toLowerCase()};
 }
