@@ -11,7 +11,7 @@ export function SurveyCreateForm({ defaultOpensAt, defaultClosesAt }: { defaultO
   const [state, action, pending] = useActionState(createSurveyAction, initialState);
   return <form className="sv-create-form" action={action}>
     <h2>기수 설문 등록</h2><p className="ops-muted">기수를 등록하면 공유 URL과 QR이 만들어집니다. 시작·종료 시각은 한국시간 기준이며 기본 응답 기간은 7일입니다.</p>
-    <div className="sv-create-fields"><label>기수 이름<input name="cohort_name" required maxLength={80} placeholder="예: 말모임 10기" /></label><label>공개 시작 (한국시간)<input name="opens_at" type="datetime-local" required defaultValue={defaultOpensAt} /></label><label>공개 종료 (한국시간)<input name="closes_at" type="datetime-local" required defaultValue={defaultClosesAt} /></label></div>
+    <div className="sv-create-fields"><label>기수 이름<input name="cohort_name" required maxLength={80} placeholder="예: 말모임 10기" /></label><label>공개 시작<input name="opens_at" type="datetime-local" required defaultValue={defaultOpensAt} /></label><label>공개 종료<input name="closes_at" type="datetime-local" required defaultValue={defaultClosesAt} /></label></div>
     <Message state={state} /><button className="sv-primary" disabled={pending}>{pending ? "등록 중…" : "기수 설문 만들기"}</button>
   </form>;
 }
@@ -21,8 +21,8 @@ export function SurveySettingsForm({ id, status, opensAt, closesAt }: { id: stri
   return <form className="sv-settings-form" action={action}>
     <input type="hidden" name="id" value={id} />
     <label>설문 상태<select name="status" defaultValue={status}><option value="draft">준비 중</option><option value="open">공개</option><option value="closed">종료</option></select></label>
-    <label>공개 시작 (한국시간)<input name="opens_at" type="datetime-local" required defaultValue={opensAt} /></label>
-    <label>공개 종료 (한국시간)<input name="closes_at" type="datetime-local" required defaultValue={closesAt} /></label>
+    <label>공개 시작<input name="opens_at" type="datetime-local" required defaultValue={opensAt} /></label>
+    <label>공개 종료<input name="closes_at" type="datetime-local" required defaultValue={closesAt} /></label>
     <Message state={state} /><button className="sv-secondary" disabled={pending}>{pending ? "저장 중…" : "상태·기간 저장"}</button>
   </form>;
 }
