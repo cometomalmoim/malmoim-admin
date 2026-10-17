@@ -43,6 +43,7 @@
 .public-survey-form { display: grid; gap: 13px; }
 .public-survey-question { min-width: 0; margin: 0; border: 1px solid #e0e9e5; border-radius: 16px; padding: clamp(20px, 3vw, 28px); background: #fff; box-shadow: 0 8px 24px rgb(29 66 57 / 4%); }
 .public-survey-question legend,.public-survey-question-title { display: flex; align-items: flex-start; gap: 11px; color: #294b45; font-size: 15px; font-weight: 700; line-height: 1.65; }
+.public-survey-question legend { max-width: 100%; padding: 0 8px; border-radius: 6px; background: #fff; }
 .public-survey-question legend>span,.public-survey-question-title>span { flex: none; color: #488477; font-size: 12px; font-weight: 800; letter-spacing: .06em; }
 .public-survey-question small { margin-left: auto; border-radius: 999px; padding: 5px 9px; color: #3b7669; background: #edf6f2; font-size: 10px; font-weight: 700; white-space: nowrap; }
 .public-survey-scale { display: flex; justify-content: center; gap: clamp(18px, 4vw, 42px); margin: 25px 0 12px; }
@@ -50,7 +51,9 @@
 .public-survey-scale input { width: 19px; height: 19px; accent-color: #34786c; }
 .public-survey-scale label span { display: grid; width: 46px; height: 46px; place-items: center; border: 1px solid #e1eae6; border-radius: 50%; color: #47635d; background: #f6f9f7; font-weight: 700; transition: all .16s ease; }
 .public-survey-scale input:checked+span { border-color: #34786c; color: #fff; background: #34786c; box-shadow: 0 5px 13px rgb(52 120 108 / 23%); }
-.public-survey-scale-labels { display: flex; max-width: 520px; justify-content: space-between; margin: 0 auto; color: #84928d; font-size: 11px; }
+.public-survey-scale-labels { display: grid; grid-template-columns: repeat(5, 46px); gap: clamp(18px, 4vw, 42px); width: max-content; margin: 0 auto; color: #84928d; font-size: 11px; }
+.public-survey-scale-labels span { position: relative; left: 50%; width: max-content; text-align: center; white-space: nowrap; transform: translateX(-50%); }
+.public-survey-scale-labels span:last-child { grid-column: 5; }
 .public-survey-aspects { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
 .public-survey-aspects label { display: flex; min-height: 48px; align-items: flex-start; gap: 11px; border: 1px solid #e2eae6; border-radius: 11px; padding: 13px 14px; color: #52655f; background: #fff; font-size: 13px; line-height: 1.6; cursor: pointer; transition: border-color .16s ease, background .16s ease; }
 .public-survey-aspects label:has(input:checked) { border-color: #91b8ac; color: #28584f; background: #f2f8f5; }
@@ -96,4 +99,5 @@
   .public-survey-aspects { grid-template-columns: 1fr; }
   .public-survey-scale { gap: 14px; }
   .public-survey-scale label span { width: 40px; height: 40px; }
+  .public-survey-scale-labels { grid-template-columns: repeat(5, 40px); gap: 14px; }
 }
