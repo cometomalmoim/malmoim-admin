@@ -4,6 +4,10 @@ import type { StoredPreviewService } from './esign-request-service.ts';
 import {createDemoDocument,completeDemoPdf,type DemoDocument} from './esign-demo-pdf.ts';
 import {requireSigningReady,type ConsentAnswers,type Ink} from './pdf-signing.ts';
 export class DemoError extends Error{status:number;constructor(code:string,status=409){super(code);this.status=status;}}
+// Registry entries can outlive their module during development hot reload.
+export function isDemoError(error:unknown):error is DemoError{
+ return error instanceof DemoError||(error instanceof Error&&'status' in error&&typeof error.status==='number'&&[400,401,403,404,409,410,413,422,429].includes(error.status)&&/^[A-Z][A-Z0-9_]*$/.test(error.message));
+}
 type Entry={requestId:string;code:string;document?:DemoDocument;documentTask?:Promise<DemoDocument>;session?:string;sessionExpires?:number;phase:'waiting'|'verified'|'signing'|'completed';pdf?:Uint8Array;receipt?:{key:string;hash:string}};
 export class DemoFlow{
  private links=new Map<string,Entry>();private queue:Promise<unknown>=Promise.resolve();
