@@ -15,12 +15,21 @@ create function realtime.send(jsonb,text,text,boolean) returns void language sql
 insert into auth.users values('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'),('bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
 insert into public.admin_users values('aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa');`);
 // Use the actual event schema and constraints, not a hand-made event approximation.
-for(const file of ['003_recruitment_applications.sql','006_event_management.sql','007_event_draft_period_theme.sql','008_event_test_flag.sql','018_schedule_management.sql'])await db.exec(await readFile(`supabase/${file}`,'utf8'));
+for(const file of ['003_recruitment_applications.sql','006_event_management.sql','007_event_draft_period_theme.sql','008_event_test_flag.sql','018_schedule_management.sql','019_schedule_times.sql'])await db.exec(await readFile(`supabase/${file}`,'utf8'));
 await db.exec(`select set_config('test.uid','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',false);set role authenticated;`);
 const tags=(await db.query('select * from schedule_tags')).rows;
 const input={title:'수동 회의',start_date:'2026-10-16',end_date:'2026-10-18',tag_id:tags[0].id};
 const save=async(id,version,patch={})=>db.query('select save_schedule($1,$2,$3::jsonb) as id',[id,version,JSON.stringify({...input,...patch})]);
 const id=(await save(null,0)).rows[0].id;
+const timedId=(await save(null,0,{title:'시간 검증',end_date:'2026-10-16',start_time:'09:30',end_time:'10:45'})).rows[0].id;
+assert.equal((await db.query('select start_time from schedules where id=$1',[timedId])).rows[0].start_time,'09:30:00');
+await save(timedId,1,{end_date:'2026-10-16'}); // Legacy clients omit time keys.
+assert.equal((await db.query('select start_time from schedules where id=$1',[timedId])).rows[0].start_time,'09:30:00');
+await save(timedId,2,{start_time:null,end_time:null});
+assert.equal((await db.query('select start_time from schedules where id=$1',[timedId])).rows[0].start_time,null);
+await assert.rejects(()=>save(null,0,{end_date:'2026-10-16',start_time:'10:00',end_time:'09:00'}));
+await assert.rejects(()=>save(null,0,{start_time:'24:00'}));
+await save(null,0,{start_time:'23:00',end_time:'01:00'}); // Different dates permit overnight times.
 await assert.rejects(()=>db.query(`update schedules set title='forged'`));
 await assert.rejects(()=>save(id,0));
 await save(id,1,{notes:'updated'});
@@ -30,6 +39,8 @@ assert.equal((await db.query('select t.color from schedules s join schedule_tags
 await db.exec(`reset role;insert into recruitment_events(slug,title,starts_at,ends_at,opens_at,closes_at) values('sync','연동 행사','2026-10-16T09:00+09','2026-10-19T00:00+09','2026-10-01T09:00+09','2026-10-15T00:00+09');set role authenticated;`);
 let linked=(await db.query(`select * from schedules where source_kind<>'manual' order by source_kind`)).rows;
 assert.equal(linked.length,2);assert.equal(linked[0].end_date.toISOString().slice(0,10),'2026-10-18');
+assert.equal(linked[0].start_time,'09:00:00');assert.equal(linked[0].end_time,'23:59:00');
+await assert.rejects(()=>save(linked[0].id,linked[0].version,{title:linked[0].title,start_date:linked[0].start_date.toISOString().slice(0,10),end_date:linked[0].end_date.toISOString().slice(0,10),start_time:'08:00',end_time:'23:59'}));
 await assert.rejects(()=>save(linked[0].id,linked[0].version,{title:'forged',start_date:linked[0].start_date.toISOString().slice(0,10),end_date:linked[0].end_date.toISOString().slice(0,10)}));
 await db.query('select delete_schedule($1,$2)',[linked[0].id,linked[0].version]);
 await db.exec(`reset role;update recruitment_events set title='연동 수정' where slug='sync';set role authenticated;`);
@@ -49,4 +60,4 @@ assert.equal((await db.query('select * from admin_profiles')).rows.length,0);
 await assert.rejects(()=>save(null,0));
 await db.exec('reset role;set role anon');await assert.rejects(()=>db.query('select * from schedules'));
 await assert.rejects(()=>save(null,0));
-await db.close();console.log('Schedule DB: RLS, RPC protection, stale writes, tag replacement, event sync and midnight boundary passed.');
+await db.close();console.log('Schedule DB: RLS, RPC protection, optional times, stale writes, tag replacement, event sync and midnight boundary passed.');

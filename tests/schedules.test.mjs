@@ -22,3 +22,12 @@ test('manual schedule validates dates, required tag, title and note limits',()=>
  assert.equal(scheduleInput(form()).assignee_id,null);
  for(const patch of [{title:' '},{tag_id:''},{start_date:'2026-02-30'},{end_date:'2026-10-15'},{notes:'x'.repeat(5001)}])assert.throws(()=>scheduleInput(form(patch)));
 });
+
+test('optional minute times allow omission, partial input and overnight dates',()=>{
+ function form(p={}){const f=new FormData();Object.entries({title:'회의',start_date:'2026-10-17',end_date:'2026-10-17',tag_id:'tag',...p}).forEach(([k,v])=>f.set(k,v));return f;}
+ assert.equal(scheduleInput(form()).start_time,null);
+ assert.equal(scheduleInput(form({start_time:'09:30'})).end_time,null);
+ assert.equal(scheduleInput(form({end_time:'00:00'})).end_time,'00:00');
+ assert.equal(scheduleInput(form({start_time:'23:00',end_time:'01:00',end_date:'2026-10-18'})).start_time,'23:00');
+ for(const p of [{start_time:'24:00'},{start_time:'9:30'},{end_time:'12:60'},{start_time:'09:00:00'},{start_time:'10:00',end_time:'09:00'}])assert.throws(()=>scheduleInput(form(p)));
+});

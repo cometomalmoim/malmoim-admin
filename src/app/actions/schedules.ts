@@ -10,7 +10,9 @@ export async function changeSchedule(data:FormData):Promise<string> {
     const id=String(data.get('id')??''), version=Number(data.get('version'));
     let result;
     if(operation==='delete') result=await client.rpc('delete_schedule',{p_id:id,p_version:version});
-    else {const input=scheduleInput(data); result=await client.rpc('save_schedule',{p_id:id||null,p_version:version||0,p_input:input});}
+    else {let input;try{input=scheduleInput(data);}catch(error){return error instanceof Error?error.message:'입력 내용을 확인해주세요.';}
+      if(input.start_time||input.end_time){const schema=await client.from('schedules').select('start_time,end_time').limit(1);if(schema.error)return '시간 저장을 위해 Supabase에 019_schedule_times.sql을 먼저 적용해주세요.';}
+      result=await client.rpc('save_schedule',{p_id:id||null,p_version:version||0,p_input:input});}
     if(result.error)return '저장 실패: 입력값 또는 최신 수정 여부를 확인해주세요.';
     revalidatePath('/admin/schedule'); return '';
   }catch{return '입력 내용과 연결을 확인해주세요.';}
