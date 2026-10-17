@@ -42,7 +42,7 @@ export async function SurveyView({ email, surveyId, group, page = 1 }: { email: 
   const now = new Date();
   const defaultOpen = koreaDateTimeLocal(now.toISOString());
   const defaultClose = koreaDateTimeLocal(new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000).toISOString());
-  return <AdminShell email={email} current="surveys" title="참가자 설문조사"><nav className="ops-breadcrumb" aria-label="페이지 이동 경로"><Link href="/admin">홈</Link><span>/</span><span>참가자 설문조사</span></nav><div className="ops-heading"><h1>기수별 참가자 설문조사</h1><p>6주 활동 경험과 만족도를 익명으로 수집하고 결과를 확인합니다.</p></div>
+  return <AdminShell email={email} current="surveys" title="참가자 설문조사"><nav className="ops-breadcrumb" aria-label="페이지 이동 경로"><Link href="/admin">홈</Link><span>/</span><span>참가자 설문조사</span></nav><div className="ops-heading"><h1>참가자 설문조사</h1><p>6주 활동 경험과 만족도를 익명으로 수집하고 결과를 확인합니다.</p></div>
     {result.kind === "error" ? <section className="ops-panel sv-error" role="alert"><h2>설문 정보를 불러오지 못했습니다</h2><p>새 마이그레이션 적용 여부와 관리자 DB 권한을 확인해주세요. 임시 결과는 표시하지 않습니다.</p></section> : <div className="sv-layout"><div className="sv-main-column"><section className="ops-panel"><SurveyCreateForm defaultOpensAt={defaultOpen} defaultClosesAt={defaultClose} /></section>
       {result.selected && result.stats ? <>
         <section className="ops-panel sv-selected-head"><div><span className={`sv-state ${effectiveStatus(result.selected).className}`}>{effectiveStatus(result.selected).label}</span><h2>{result.selected.cohort_name}</h2><p className="ops-muted">응답 기간: {timeLabel(result.selected.opens_at)} – {timeLabel(result.selected.closes_at)}</p></div><span className="sv-version">문항 v1</span></section>
