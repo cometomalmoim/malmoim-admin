@@ -22,7 +22,7 @@ export async function getRecruitment(slug?: string, page = 1, query:ApplicantQue
     const safePage = Number.isSafeInteger(page) && page > 0 ? Math.min(page, 100000) : 1;
     let request=client.from("event_application_admin_list").select("id,name,contact,contact_type,preferred_class,status,created_at,participation_history,history_detail,source,birth_year,nationality,payment_status,internal_note,revision,source_note,event_id,utm_source,utm_medium,utm_campaign,is_archived,archive_revision",{count:'exact'});
     request=request.eq('is_archived',!slug&&query.archived==='1');
-    const pageSize=slug?25:10;
+    const pageSize=slug?25:20;
     if(event)request=request.eq('event_id',event.id);else if(query.event)request=request.eq('event_id',query.event);
     for(const key of ['utm_source','utm_medium'] as const){const value=(query[key]??'').slice(0,150);if(value==='__unknown')request=request.or(`${key}.is.null,${key}.eq.`);else if(value)request=request.eq(key,value);}
     const search=(query.q??'').slice(0,100).replace(/[^\p{L}\p{N}\s+@_-]/gu,'').trim();
