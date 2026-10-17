@@ -32,3 +32,45 @@
 .schedule-detail button.schedule-primary:hover{filter:brightness(.97)}
 .schedule-detail .schedule-day-list{border-bottom-color:var(--schedule-mode-border)}
 .schedule-detail .schedule-day-list button[aria-pressed=true]{background:var(--schedule-mode-soft);border-color:var(--schedule-mode-border)}
+/* A single main column owns both cards, keeping their edges aligned in every layout. */
+.schedule-main-column{min-width:0;display:grid;gap:24px}
+.schedule-main-column>.schedule-calendar-card{width:100%;max-width:none}
+.schedule-layout.is-clean{grid-template-columns:minmax(0,1fr);max-width:1120px}
+.schedule-detail{border-radius:18px;overflow:hidden;max-height:none;isolation:isolate}
+.schedule-detail-scroll{max-height:calc(100dvh - 40px);overflow:auto;scrollbar-width:thin;scrollbar-color:#cdd6d0 transparent}
+.schedule-detail-topline{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.schedule button.schedule-detail-close{border:0;background:transparent;color:#6d7972;font-size:11px;padding:5px;white-space:nowrap}
+.schedule button.schedule-detail-close:hover{background:#00000006;color:#273e30}
+.schedule-agenda{width:100%;min-width:0;border:1px solid #e1e7e3;border-radius:18px;background:#fff;box-shadow:0 5px 24px #24352f04;padding:24px}
+.schedule-agenda-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}
+.schedule-agenda-heading h2{margin:7px 0 6px;font-size:18px;letter-spacing:-.035em;color:#2c3f32}
+.schedule-agenda-heading h2>span{font-size:12px;color:#9b8752;font-weight:500;letter-spacing:0}
+.schedule-agenda-heading p{margin:0;color:#87918b;font-size:11px;line-height:1.7}
+.schedule-agenda-heading p>span{display:inline-block;margin-left:5px;color:#9ca59e}
+.schedule-agenda-count{flex-shrink:0;padding:5px 10px;border-radius:20px;background:#fff7de;color:#8d743a;font-size:11px;font-weight:700}
+.schedule-agenda-list{list-style:none;padding:0;margin:0;display:grid;gap:8px}
+.schedule button.schedule-agenda-item{width:100%;min-width:0;display:flex;align-items:center;gap:14px;text-align:left;padding:14px;border:1px solid #edf0eb;border-radius:12px;background:#fcfdfb}
+.schedule button.schedule-agenda-item:hover{background:#fffcf0;border-color:#e8dbb1}
+.schedule button.schedule-agenda-item[aria-pressed=true]{border-color:#d7c590;background:#fffbeb}
+.schedule-countdown{flex-shrink:0;display:inline-flex;align-items:center;justify-content:center;min-width:58px;max-width:85px;padding:7px 8px;border-radius:8px;background:#f2f5f0;color:#62745b;font-size:11px;font-weight:800;overflow-wrap:anywhere}
+.schedule-countdown.is-due{background:#fff0c2;color:#946622}
+.schedule-agenda-info{flex:1;min-width:0;overflow-wrap:anywhere}
+.schedule-agenda-info strong{display:block;font-size:13px;color:#3b493f;line-height:1.6;font-weight:600}
+.schedule-agenda-info small{display:flex;align-items:center;gap:5px;flex-wrap:wrap;margin-top:4px;color:#8e9890;font-size:10px;line-height:1.5}
+.schedule-agenda-info .schedule-ongoing{color:#8b7847;border-radius:4px;background:#fff7de;padding:1px 5px}
+.schedule-agenda-arrow{color:#a0aca2;font-size:14px}
+.schedule button.schedule-agenda-more{display:block;margin:14px auto 0;background:transparent;border:0;color:#7d8a80;font-size:11px}
+.schedule-archive{margin-top:24px;border-top:1px solid #edf0eb;padding-top:18px}
+.schedule-archive>summary{display:flex;justify-content:space-between;align-items:center;gap:12px;cursor:pointer;font-size:13px;font-weight:600;color:#78867c;list-style:none;padding:6px 0}
+.schedule-archive>summary::-webkit-details-marker{display:none}
+.schedule-archive>summary>span:last-child{font-size:11px;color:#9aa39d}
+.schedule-archive-chevron{display:inline-block;margin-left:6px;transition:transform .15s}
+.schedule-archive[open] .schedule-archive-chevron{transform:rotate(180deg)}
+.schedule-archive>p,.schedule-agenda-empty{font-size:12px;color:#98a19a;line-height:1.8;margin:14px 0}
+.schedule button.schedule-agenda-item.is-closed{background:#fafbfa;border-color:#edf0ee}
+.schedule button.schedule-agenda-item.is-closed:hover{background:#f0f3f1;border-color:#dce3de}
+.schedule button.schedule-agenda-item.is-closed[aria-pressed=true]{background:#f0f3f1;border-color:#c4cec7}
+.schedule-agenda-item.is-closed .schedule-countdown{color:#919b94;background:#edf0ee}
+.schedule-agenda-item.is-closed strong{color:#7a867e}
+@media(max-width:740px){.schedule-detail-scroll{max-height:none;overflow:visible}.schedule-agenda{padding:18px}.schedule-agenda-heading h2{font-size:16px}.schedule button.schedule-agenda-item{gap:10px;padding:12px}.schedule-main-column{gap:18px}}
+@media(prefers-reduced-motion:reduce){.schedule-archive-chevron{transition:none}}
