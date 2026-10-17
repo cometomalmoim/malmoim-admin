@@ -55,3 +55,5 @@
 .board-pagination button[aria-current=page]{background:#fde68a;border-color:#fcd34d;font-weight:700;color:#78350f}
 .board-pagination button:disabled{cursor:not-allowed;opacity:.4}
 .board-page-numbers>span{color:#9ca3af;font-size:12px}
+.board-title-with-image{display:inline-flex;align-items:center;gap:6px;min-width:0;max-width:100%}
+.board-image-indicator{display:inline-flex;align-items:center;flex-shrink:0;font-size:12px;line-height:20px;color:#6b7280}
