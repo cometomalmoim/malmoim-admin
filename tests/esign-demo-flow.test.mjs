@@ -12,3 +12,11 @@ test('another request session, expired session and new-server state cannot acces
 test('simultaneous submission completes once and shares idempotent result',async()=>{const {flow,row,link}=await setup();const auth=await flow.action(link.token,null,{operation:'verify',code:link.code});await flow.action(link.token,auth.session,{operation:'document'});const results=await Promise.all([flow.action(link.token,auth.session,submit(row.name)),flow.action(link.token,auth.session,submit(row.name))]);assert.deepEqual(results.map(r=>r.code),['DEMO_COMPLETED_IN_MEMORY','IDEMPOTENT_COMPLETION']);});
 
 test('concurrent link requests reuse one request-specific link',async()=>{const {flow,row,link}=await setup();const [a,b]=await Promise.all([flow.issue(row.id,key.event_id),flow.issue(row.id,key.event_id)]);assert.deepEqual(a,b);assert.deepEqual(a,link);});
+
+test('development errors remain recognizable after module reload', async () => {
+ const {isDemoError}=await import('../src/lib/esign-demo-flow.ts');
+ const stale=new Error('DEMO_VERIFICATION_REQUIRED');stale.status=401;
+ assert.equal(isDemoError(stale),true);
+ assert.equal(isDemoError(new Error('internal detail')),false);
+ assert.equal(isDemoError(Object.assign(new Error('private path /tmp/file'),{status:500})),false);
+});

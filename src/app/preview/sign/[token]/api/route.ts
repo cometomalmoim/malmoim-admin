@@ -1,5 +1,5 @@
 import {demoContext,localDemoGuard,demoJson} from '@/lib/esign-demo-state';
-import {DemoError} from '@/lib/esign-demo-flow';
+import {isDemoError} from '@/lib/esign-demo-flow';
 export async function POST(request:Request,{params}:{params:Promise<{token:string}>}){
  const guard=localDemoGuard(request);if(guard)return guard;
  try{
@@ -8,5 +8,5 @@ export async function POST(request:Request,{params}:{params:Promise<{token:strin
   const headers={'Cache-Control':'no-store','Referrer-Policy':'no-referrer'};
   if(result instanceof Uint8Array)return new Response(result.slice().buffer,{headers:{...headers,'Content-Type':'application/pdf','Content-Disposition':'inline; filename="malmoim-demo.pdf"'}});
   return Response.json(result,{headers});
- }catch(error){return Response.json({code:error instanceof DemoError?error.message:'INVALID_REQUEST_OR_DEMO_FAILED'},{status:error instanceof DemoError?error.status:400});}
+ }catch(error){const known=isDemoError(error);return Response.json({code:known?error.message:'DEMO_PROCESSING_FAILED'},{status:known?error.status:500});}
 }
