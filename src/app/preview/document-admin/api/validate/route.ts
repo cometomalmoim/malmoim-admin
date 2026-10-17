@@ -1,7 +1,7 @@
 import { type StoredCommand } from '@/lib/esign-request-service';
 import {fixtureAuth} from '@/lib/esign-preview-server';
 import {previewContext,bindDemoLink} from '@/lib/esign-demo-state';
-import {DemoError} from '@/lib/esign-demo-flow';
+import {isDemoError} from '@/lib/esign-demo-flow';
 export async function POST(request:Request){
  if(process.env.NODE_ENV!=='development')return new Response(null,{status:404});
  const url=new URL(request.url);
@@ -30,5 +30,5 @@ export async function POST(request:Request){
    return Response.json(await ctx.demo.summary(input.requestId),{headers:{'Cache-Control':'no-store'}});
   }
   const result=await ctx.service.execute(credential,input);return Response.json(result.body,{status:result.http,headers:{'Cache-Control':'no-store'}});
- }catch(error){return Response.json({code:error instanceof DemoError?error.message:'DEMO_PROCESSING_FAILED'},{status:error instanceof DemoError?error.status:500});}
+ }catch(error){const known=isDemoError(error);return Response.json({code:known?error.message:'DEMO_PROCESSING_FAILED'},{status:known?error.status:500});}
 }
