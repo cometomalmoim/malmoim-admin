@@ -1,4 +1,5 @@
 import { ScheduleView } from './schedule-view';
+import { PeopleView } from './people-view';
 import {CertificateView} from './certificate-view';
 import {certificatesEnabled} from '@/lib/certificates';
 import {EventAttendanceView} from './event-attendance-view';
@@ -30,6 +31,7 @@ export async function ProtectedAdmin({ segments = [], page, query }: { segments?
   if(segments.length===3&&segments[0]==='events'&&segments[2]==='attendance')return <EventAttendanceView email={access.email} slug={segments[1]} page={page} query={query}/>;
   if(segments.length===1&&segments[0]==='messages')return <MessageView email={access.email}/>;
   if(segments.length===1&&segments[0]==='schedule')return <ScheduleView email={access.email}/>;
+  if(segments.length===1&&segments[0]==='people')return <PeopleView email={access.email}/>;
   if (segments.length === 0) return <EventDashboard email={access.email}/>;
   if (segments.length === 2 && segments[0] === "events" && segments[1] === "new") return <EventView email={access.email}/>;
   if (segments.length === 3 && segments[0] === "events" && ["overview", "information", "edit"].includes(segments[2])) return <EventView email={access.email} slug={segments[1]} edit={segments[2] === "edit"} information={segments[2] === "information"}/>;
