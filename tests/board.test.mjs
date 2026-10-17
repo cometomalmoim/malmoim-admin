@@ -32,3 +32,11 @@ test('date filters include both Korean calendar boundaries and combine with auth
  assert.deepEqual(quickPeriod('month',new Date('2026-03-31T00:00:00Z')),{start:'2026-02-28',end:'2026-03-31'});
  assert.deepEqual(quickPeriod('all'),{start:'',end:''});
 });
+
+test('author name search filters posts directly and combines with my posts toggle', () => {
+ const rows=[{...post('a','공지',true,'2026-10-17'),author_id:'me',author_name:'주호'}, {...post('b','자유',false,'2026-10-16'),author_id:'other',author_name:'주호'}, {...post('c','자유',false,'2026-10-15'),author_id:'me',author_name:'다른 이름'}];
+ assert.deepEqual(filterPosts(rows,'','',false,{authorSearch:' 주호 '}).map(p=>p.id),['a','b']);
+ assert.deepEqual(filterPosts(rows,'','',false,{authorSearch:'주호',authorId:'me'}).map(p=>p.id),['a']);
+ assert.deepEqual(filterPosts(rows,'','',false,{authorId:'me'}).map(p=>p.id),['a','c']);
+ assert.equal(filterPosts(rows,'','',false,{}).length,3);
+});
