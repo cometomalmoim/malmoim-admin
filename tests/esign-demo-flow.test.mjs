@@ -20,3 +20,22 @@ test('development errors remain recognizable after module reload', async () => {
  assert.equal(isDemoError(new Error('internal detail')),false);
  assert.equal(isDemoError(Object.assign(new Error('private path /tmp/file'),{status:500})),false);
 });
+
+test('PDF generation and persistence failures leave request pending and allow retry',async()=>{
+ for(const stage of ['render','store']){
+  const {repo,service,row}=await setup();let fail=true;
+  const deps=stage==='render'?{render:async(...args)=>{if(fail)throw new Error('RENDER_FAILED');const {completeDemoPdf}=await import('../src/lib/esign-demo-pdf.ts');return completeDemoPdf(...args);}}:{store:async bytes=>{if(fail)throw new Error('STORE_FAILED');return bytes;}};
+  const flow=new DemoFlow(repo,service,'fixture-admin',deps),link=await flow.issue(row.id,key.event_id);
+  const auth=await flow.action(link.token,null,{operation:'verify',code:link.code});await flow.action(link.token,auth.session,{operation:'document'});
+  await assert.rejects(flow.action(link.token,auth.session,submit(row.name)),/FAILED/);
+  assert.equal((await repo.get(row.id,[key.event_id])).status,'pending');await assert.rejects(flow.adminPdf(row.id),/PDF_NOT_READY/);
+  fail=false;assert.equal((await flow.action(link.token,auth.session,submit(row.name))).phase,'completed');
+ }
+});
+test('contact change invalidates pending demo access without deleting history',async()=>{
+ const {service,repo,flow,row,link}=await setup();
+ const auth=await flow.action(link.token,null,{operation:'verify',code:link.code});
+ await service.execute('fixture-admin',{operation:'scenario',eventId:key.event_id,keys:[key],scenario:'phone'});
+ await assert.rejects(flow.action(link.token,auth.session,{operation:'document'}),/CANCELLED/);
+ const saved=await repo.get(row.id,[key.event_id]);assert.equal(saved.status,'cancelled');assert.ok(saved.history.length>1);
+});

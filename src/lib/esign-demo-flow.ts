@@ -9,9 +9,11 @@ export function isDemoError(error:unknown):error is DemoError{
  return error instanceof DemoError||(error instanceof Error&&'status' in error&&typeof error.status==='number'&&[400,401,403,404,409,410,413,422,429].includes(error.status)&&/^[A-Z][A-Z0-9_]*$/.test(error.message));
 }
 type Entry={requestId:string;code:string;document?:DemoDocument;documentTask?:Promise<DemoDocument>;session?:string;sessionExpires?:number;phase:'waiting'|'verified'|'signing'|'completed';pdf?:Uint8Array;receipt?:{key:string;hash:string}};
+export type DemoPdfDependencies={render?:typeof completeDemoPdf;store?:(bytes:Uint8Array)=>Promise<Uint8Array>};
 export class DemoFlow{
  private links=new Map<string,Entry>();private queue:Promise<unknown>=Promise.resolve();
- constructor(repository:RequestRepository,service:StoredPreviewService,actor:string){this.repo=repository;this.service=service;this.actor=actor;}
+ constructor(repository:RequestRepository,service:StoredPreviewService,actor:string,pdf:DemoPdfDependencies={}){this.pdf=pdf;this.repo=repository;this.service=service;this.actor=actor;}
+ private pdf:DemoPdfDependencies;
  private repo:RequestRepository;private service:StoredPreviewService;private actor:string;
  private async row(e:Entry,now:number){
   const row=await this.repo.get(e.requestId,['preview-event-1','preview-event-2']);if(!row)throw new DemoError('REQUEST_NOT_FOUND',404);
@@ -56,7 +58,9 @@ export class DemoFlow{
    if(row.status==='completed')throw new DemoError('ALREADY_COMPLETED_WITHOUT_DEMO_PDF');
    if(body.name!==row.name||body.read!==true||body.confirmed!==true||!body.answers||!body.ink||!e.document)throw new DemoError('FINAL_CONFIRMATION_REQUIRED',422);
    try{requireSigningReady(body.answers,body.ink,e.document.settings.fields,body.read);}catch(error){throw new DemoError(error instanceof Error?error.message:'INVALID_SIGNATURE',422);}
-   const bytes=await completeDemoPdf(e.document,row.name,row.id,body.answers,body.ink,new Date(now).toISOString());
+   const generated=await (this.pdf.render??completeDemoPdf)(e.document,row.name,row.id,body.answers,body.ink,new Date(now).toISOString());
+   // Memory-only default. Real Storage needs a durable job/cleanup protocol before wiring.
+   const bytes=this.pdf.store?await this.pdf.store(generated):generated;
    // Recheck after asynchronous generation, then atomically mark complete; cancel wins.
    await this.row(e,Date.now());
    await this.repo.transaction(tx=>{const current=tx.get(row.id);if(!current||current.status!=='pending'||Date.parse(current.expiresAt)<=Date.now())throw new DemoError('REQUEST_NO_LONGER_PENDING',410);
