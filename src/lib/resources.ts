@@ -4,7 +4,7 @@ import { createClient } from './supabase/server';
 import { validUuid } from './resource-validation';
 export type ResourceFile={id:string;resource_id:string;original_name:string;size_bytes:number;state:string};
 export type ResourceRow={id:string;title:string;kind:string;event_id:string|null;season:number|null;session_number:number|null;cumulative_week:number|null;topic:string;description:string;external_url:string;author_email:string;created_at:string;updated_at:string;resource_files:ResourceFile[]};
-export type ResourceQuery={q?:string;kind?:string;event?:string;season?:string;session?:string;page?:string;order?:string};
+export type ResourceQuery={view?:string;from?:string;to?:string;pending?:string;q?:string;kind?:string;event?:string;season?:string;session?:string;page?:string;order?:string};
 export async function resourceData(query:ResourceQuery={},id?:string,slug?:string){
  if((await getAdminAccess()).status!=='admin') return {error:true as const};
  const client=await createClient();
