@@ -3,7 +3,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
 import { deleteReview, loadReviews, saveReview } from "./review-actions";
-import { MAX_PHOTOS, PHOTO_LIMIT, reviewCategories, reviewDate, type Review, type ReviewFilter, type ReviewPage } from "./review-types";
+import { MAX_PHOTOS, ORIGINAL_PHOTO_LIMIT, reviewCategories, reviewDate, type Review, type ReviewFilter, type ReviewPage } from "./review-types";
+import { prepareReviewPhoto } from "./review-photo-client";
 
 export function ReviewDialog({ title, children, close, busy = false, editor = false }: { title: string; children: ReactNode; close: () => void; busy?: boolean; editor?: boolean }) {
   const dialog = useRef<HTMLDialogElement>(null);
@@ -46,6 +47,9 @@ export function ReviewEditor({ review, close, saved, preview = false }: { review
   const [busy, start] = useTransition();
   const [error, setError] = useState("");
   const [photoError, setPhotoError] = useState("");
+  const [processingPhotos, setProcessingPhotos] = useState(false);
+  const processing = useRef(false);
+  const photoTask = useRef(0);
   const [title, setTitle] = useState(review?.title ?? "");
   const [content, setContent] = useState(review?.content ?? "");
   const [category, setCategory] = useState(review?.category ?? "");
@@ -56,7 +60,8 @@ export function ReviewEditor({ review, close, saved, preview = false }: { review
   const formRef = useRef<HTMLFormElement>(null);
   const lastFocus = useRef<HTMLElement | null>(null);
   const keptCount = (review?.photo_paths.length ?? 0) - removed.length;
-  const dirty = title !== (review?.title ?? "") || content !== (review?.content ?? "") || category !== (review?.category ?? "") || files.length > 0 || removed.length > 0;
+  const dirty = processingPhotos || title !== (review?.title ?? "") || content !== (review?.content ?? "") || category !== (review?.category ?? "") || files.length > 0 || removed.length > 0;
+  useEffect(() => () => { photoTask.current += 1; }, []);
   useEffect(() => {
     if (!dirty) return;
     const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ""; };
@@ -65,7 +70,7 @@ export function ReviewEditor({ review, close, saved, preview = false }: { review
   }, [dirty]);
   useEffect(() => { if (discard) keepEditing.current?.focus(); }, [discard]);
   function requestClose() {
-    if (busy) return;
+    if (busy || processing.current) return;
     if (!dirty) { close(); return; }
     lastFocus.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     setDiscard(true);
@@ -74,13 +79,14 @@ export function ReviewEditor({ review, close, saved, preview = false }: { review
     setDiscard(false);
     requestAnimationFrame(() => { if (lastFocus.current?.isConnected && !lastFocus.current.closest("[hidden]")) lastFocus.current.focus(); else formRef.current?.querySelector<HTMLInputElement>("#review-title")?.focus(); });
   }
-  return <ReviewDialog editor title={review ? "참여 후기 수정" : "참여 후기 등록"} close={discard ? resume : requestClose} busy={busy}>
+  return <ReviewDialog editor title={review ? "참여 후기 수정" : "참여 후기 등록"} close={discard ? resume : requestClose} busy={busy || processingPhotos}>
     {discard && <div className="review-confirm" role="group" aria-labelledby="review-discard-title">
       <h4 id="review-discard-title">작성 중인 내용을 버릴까요?</h4><p>아직 저장하지 않은 내용과 선택한 사진이 사라집니다.</p>
       <div className="review-actions"><button type="button" className="review-create" ref={keepEditing} onClick={resume}>계속 작성하기</button><button type="button" className="review-danger" onClick={close}>내용 버리고 닫기</button></div>
     </div>}
-    <form ref={formRef} hidden={discard} aria-busy={busy} onSubmit={(event) => {
+    <form ref={formRef} hidden={discard} aria-busy={busy || processingPhotos} onSubmit={(event) => {
       event.preventDefault();
+      if (processing.current || busy) return;
       if (!title.trim() || !content.trim()) { setError("제목과 내용을 공백만으로 입력할 수 없습니다."); (!title.trim() ? formRef.current?.querySelector<HTMLInputElement>("#review-title") : formRef.current?.querySelector<HTMLTextAreaElement>("#review-content"))?.focus(); return; }
       if (keptCount + files.length > MAX_PHOTOS) { setPhotoError("기존 사진을 포함해 최대 3장까지 첨부할 수 있어요."); return; }
       if (preview) { setError("개발용 미리보기입니다. 입력을 확인했으며 실제 저장 요청은 보내지 않았습니다."); return; }
@@ -95,31 +101,43 @@ export function ReviewEditor({ review, close, saved, preview = false }: { review
     }}>
       <p className="review-form-intro">제목·카테고리·내용을 입력해주세요.</p>
       {preview && <p className="review-demo-notice">개발용 미리보기 · 실제 등록·수정·업로드가 실행되지 않습니다.</p>}
-      <fieldset disabled={busy}>
+      <fieldset disabled={busy || processingPhotos}>
         {review && <input type="hidden" name="id" value={review.id} />}
         <label htmlFor="review-title">제목 <span className="review-required">필수</span></label><input id="review-title" name="title" required maxLength={120} value={title} onChange={(e) => setTitle(e.target.value)} aria-describedby="review-title-count" placeholder="어떤 경험을 하셨나요?" />
         <p id="review-title-count" className="review-count">{title.length.toLocaleString()} / 120자</p>
         <label htmlFor="review-category">카테고리 <span className="review-required">필수</span></label><select id="review-category" name="category" required value={category} onChange={(e) => setCategory(e.target.value)}><option value="" disabled>카테고리를 선택해주세요</option>{Object.entries(reviewCategories).map(([key, label]) => <option key={key} value={key}>{label}</option>)}</select>
         <label htmlFor="review-content">내용 <span className="review-required">필수</span></label><textarea id="review-content" name="content" required maxLength={10000} rows={5} value={content} onChange={(e) => setContent(e.target.value)} aria-describedby="review-content-count" placeholder="기억에 남는 순간이나 느낀 점을 자유롭게 적어주세요." />
         <p id="review-content-count" className="review-count">{content.length.toLocaleString()} / 10,000자</p>
-        <label htmlFor="review-photos">사진 첨부 <span className="review-optional">선택 · {keptCount + files.length} / 3장</span></label><p id="review-photo-help">최대 3장(기존 사진 포함) · JPG·PNG·WebP · 장당 200KB 이하. 후기와 사진은 공개됩니다.</p>
+        <label htmlFor="review-photos">사진 첨부 <span className="review-optional">선택 · {keptCount + files.length} / 3장</span></label><p id="review-photo-help">최대 3장(기존 사진 포함) · JPG·PNG·WebP · 원본 장당 5MB 이하. 긴 변 최대 1600px·장당 1MB 이하로 자동 처리합니다. 후기와 사진은 공개됩니다.</p>
         {!!review?.photos.length && <div className="review-attachments">{review.photos.map((url, index) => {
           const path = review.photo_paths[index]; const isRemoved = removed.includes(path);
           return <div className={`review-attachment${isRemoved ? " is-removed" : ""}`} key={path}>{url ? <Image unoptimized src={url} alt={`기존 첨부 사진 ${index + 1}`} width={180} height={120} /> : <p>사진을 불러오지 못했어요.</p>}<p>기존 사진 {index + 1}{isRemoved ? " · 삭제 예정" : ""}</p><button type="button" aria-label={`기존 사진 ${index + 1} ${isRemoved ? "유지" : "삭제"}`} aria-pressed={isRemoved} onClick={() => { if (isRemoved && keptCount + files.length >= MAX_PHOTOS) { setPhotoError("새로 선택한 사진을 취소한 뒤 기존 사진을 복원해주세요."); return; } setRemoved(isRemoved ? removed.filter((p) => p !== path) : [...removed, path]); setPhotoError(""); }}>{isRemoved ? "사진 유지하기" : "사진 삭제"}</button></div>;
         })}</div>}
-        <input id="review-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple aria-describedby={`review-photo-help${photoError ? " review-photo-error" : ""}`} aria-invalid={!!photoError} onChange={(event) => {
+        <input id="review-photos" type="file" accept="image/jpeg,image/png,image/webp" multiple aria-describedby={`review-photo-help${photoError ? " review-photo-error" : ""}`} aria-invalid={!!photoError} onChange={async (event) => {
           const added = Array.from(event.target.files ?? []); event.target.value = "";
-          if (!added.length) return;
+          if (!added.length || processing.current || busy) return;
           if (added.some((file) => !["image/jpeg", "image/png", "image/webp"].includes(file.type))) { setPhotoError("JPG, PNG, WebP 사진만 선택할 수 있어요."); return; }
-          if (added.some((file) => !file.size || file.size > PHOTO_LIMIT)) { setPhotoError("사진은 장당 200KB 이하로 선택해주세요. 빈 파일은 첨부할 수 없어요."); return; }
+          if (added.some((file) => !file.size || file.size > ORIGINAL_PHOTO_LIMIT)) { setPhotoError("원본 사진은 장당 5MB 이하로 선택해주세요. 빈 파일은 첨부할 수 없어요."); return; }
           if (keptCount + files.length + added.length > MAX_PHOTOS) { setPhotoError("사진은 기존 사진을 포함해 최대 3장까지 첨부할 수 있어요."); return; }
-          setFiles([...files, ...added]); setPhotoError("");
+          const task = ++photoTask.current;
+          processing.current = true; setProcessingPhotos(true); setPhotoError("");
+          try {
+            const prepared: File[] = [];
+            // Decode one photo at a time to limit peak memory use on phones.
+            for (const file of added) prepared.push(await prepareReviewPhoto(file));
+            if (photoTask.current === task) setFiles((current) => [...current, ...prepared]);
+          } catch (error) {
+            if (photoTask.current === task) setPhotoError(error instanceof Error ? error.message : "사진을 처리하지 못했어요. 다른 사진을 선택해주세요.");
+          } finally {
+            processing.current = false;
+            if (photoTask.current === task) setProcessingPhotos(false);
+          }
         }} />
         {photoError && <p id="review-photo-error" role="alert" className="review-error">{photoError}</p>}
         {!!files.length && <div className="review-attachments">{files.map((file, index) => <div className="review-attachment" key={`${index}-${file.name}-${file.lastModified}`}><PhotoPreview file={file} /><p>{file.name}</p><small>{Math.ceil(file.size / 1024)}KB · 첨부 예정</small><button type="button" aria-label={`${file.name} 첨부 취소`} onClick={() => { setFiles(files.filter((_, i) => i !== index)); setPhotoError(""); }}>첨부 취소</button></div>)}</div>}
         <div className="review-actions"><button type="submit" className="review-create">{busy ? "저장 중…" : review ? "수정 저장" : "후기 등록"}</button><button type="button" onClick={requestClose}>취소</button></div>
       </fieldset>
-      <p role="status" className="review-notice">{busy ? "후기를 저장하고 있어요. 잠시만 기다려주세요." : ""}</p>
+      <p role="status" className="review-notice">{processingPhotos ? "사진 크기와 용량을 조정하고 있어요. 잠시만 기다려주세요." : busy ? "후기를 저장하고 있어요. 잠시만 기다려주세요." : ""}</p>
       {error && <p role="alert" className="review-error">{error}</p>}
     </form>
   </ReviewDialog>;
