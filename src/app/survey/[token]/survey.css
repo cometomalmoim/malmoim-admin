@@ -55,7 +55,8 @@
 .public-survey-scale-labels span { position: relative; left: 50%; width: max-content; text-align: center; white-space: nowrap; transform: translateX(-50%); }
 .public-survey-scale-labels span:last-child { grid-column: 5; }
 .public-survey-aspects { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin-top: 18px; }
-.public-survey-aspects label { display: flex; min-height: 48px; align-items: flex-start; gap: 11px; border: 1px solid #e2eae6; border-radius: 11px; padding: 13px 14px; color: #52655f; background: #fff; font-size: 13px; line-height: 1.6; cursor: pointer; transition: border-color .16s ease, background .16s ease; }
+.public-survey-aspects label { display: flex; min-height: 48px; align-items: center; justify-content: flex-start; gap: 11px; border: 1px solid #e2eae6; border-radius: 11px; padding: 13px 14px; color: #52655f; background: #fff; font-size: 13px; line-height: 1.6; text-align: left; cursor: pointer; transition: border-color .16s ease, background .16s ease; }
+.public-survey-aspects label>span { flex: 1; text-align: left; }
 .public-survey-aspects label:has(input:checked) { border-color: #91b8ac; color: #28584f; background: #f2f8f5; }
 .public-survey-aspects input { flex: none; width: 17px; height: 17px; margin: 2px 0 0; accent-color: #34786c; }
 .public-survey-hint,.public-survey-footnote { color: #84928d; font-size: 11px; line-height: 1.7; }

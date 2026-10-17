@@ -55,7 +55,7 @@ export function SurveyShareTools({ token, cohortName }: { token: string; cohortN
     catch { setMessage("URL 복사 권한이 없습니다. 주소를 직접 선택해 복사해주세요."); }
   }
   return <section className="sv-share" aria-label={`${cohortName} 설문 공유`}>
-    <div className="sv-share-link"><label htmlFor={`sv-url-${token}`}>공유 URL</label><input id={`sv-url-${token}`} readOnly value={url || "링크 준비 중…"} /><button className="sv-secondary" type="button" disabled={!url} onClick={copyUrl}>URL 복사</button></div>
+    <div className="sv-share-link"><label htmlFor={`sv-url-${token}`}>공유 URL</label><div className="sv-share-url-row"><input id={`sv-url-${token}`} readOnly value={url || "링크 준비 중…"} /><button className="sv-secondary" type="button" disabled={!url} onClick={copyUrl}>URL 복사</button></div></div>
     <div className="sv-qr-area"><div><h3>현장 QR 코드</h3>{message && <p role="status" className="sv-message">{message}</p>}{image && <a className="sv-secondary" href={image} download={`malmoim-${cohortName}-survey-qr.png`}>QR 이미지 저장</a>}</div>{image ? <Image className="sv-qr" src={image} alt={`${cohortName} 참가자 설문 QR 코드`} width={220} height={220} unoptimized /> : <div className="sv-qr-placeholder" role="status">QR 생성 중…</div>}</div>
   </section>;
 }
