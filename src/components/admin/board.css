@@ -44,3 +44,14 @@
 .board button.board-file-button:hover{background:#e5e7eb}
 .board-file-names{font-size:13px;color:#6b7280;min-width:0;overflow-wrap:anywhere}
 .board-image-input input[type=file][hidden]{display:none}
+/* Keep every first-row child centered with identical inline metrics. */
+.board-row .board-row-title{display:flex;align-items:center;gap:8px;line-height:20px}
+.board-row .board-row-title .board-badge{display:inline-flex;align-items:center;justify-content:center;align-self:center;line-height:20px;height:24px;padding:2px 8px;margin:0;vertical-align:middle;box-sizing:border-box}
+.board-row .board-row-title .board-row-pin{display:inline-flex;align-items:center;justify-content:center;line-height:20px;height:24px;margin:0;flex-shrink:0}
+.board-row .board-row-title strong{display:block;line-height:20px;margin:0}
+.board-pagination{display:flex;align-items:center;justify-content:center;gap:8px;padding:12px;border-top:1px solid #f3f4f6;flex-wrap:wrap}
+.board-page-numbers{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap}
+.board-pagination button{min-width:32px;min-height:32px;padding:6px 9px;font-size:12px;line-height:18px}
+.board-pagination button[aria-current=page]{background:#fde68a;border-color:#fcd34d;font-weight:700;color:#78350f}
+.board-pagination button:disabled{cursor:not-allowed;opacity:.4}
+.board-page-numbers>span{color:#9ca3af;font-size:12px}
