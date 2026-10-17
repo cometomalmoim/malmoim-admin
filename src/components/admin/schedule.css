@@ -99,8 +99,8 @@
 .schedule-toolbar .schedule-toolbar-actions{display:flex;flex:0 1 auto;min-width:0;margin-left:auto;justify-content:flex-end;flex-wrap:wrap;gap:8px}
 .schedule .schedule-toolbar-actions>button{flex-shrink:0;background:#fffbeb;border-color:#fcd34d;color:#92400e;font-weight:700;transition:background .15s,border-color .15s,color .15s}
 .schedule .schedule-toolbar-actions>button:hover{background:#fef3c7;border-color:#fbbf24;color:#78350f}
-.schedule .schedule-toolbar-actions>button[aria-controls="schedule-detail-panel"]{background:#fbbf24;border-color:#fbbf24;color:#451a03}
-.schedule .schedule-toolbar-actions>button[aria-controls="schedule-detail-panel"]:hover{background:#f59e0b;border-color:#f59e0b}
+.schedule .schedule-toolbar-actions>button[aria-controls="schedule-detail-panel"]{background:#fde68a;border-color:#fde68a;color:#78350f}
+.schedule .schedule-toolbar-actions>button[aria-controls="schedule-detail-panel"]:hover{background:#fcd34d;border-color:#fcd34d}
 .schedule .schedule-toolbar-actions>button:focus-visible{outline-color:#b45309}
 .schedule-sr-only{position:absolute;width:1px;height:1px;margin:-1px;padding:0;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}
 .schedule-times{margin-top:12px}
