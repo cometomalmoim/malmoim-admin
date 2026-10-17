@@ -1,6 +1,6 @@
 export const boardCategories = ['공지', '자유', '아이디어', '행사', '시스템'] as const;
-export type BoardPost = { id: string; author_id: string; author_name: string; title: string; body: string; category: string; is_pinned: boolean; created_at: string; updated_at: string };
-export type BoardComment = { id: string; post_id: string; author_id: string; author_name: string; body: string; created_at: string };
+export type BoardPost = { images: string[]; id: string; author_id: string; author_name: string; title: string; body: string; category: string; is_pinned: boolean; created_at: string; updated_at: string };
+export type BoardComment = { updated_at: string; id: string; post_id: string; author_id: string; author_name: string; body: string; created_at: string };
 export type BoardData = { userId: string; posts: BoardPost[]; comments: BoardComment[] };
 export function pinned(post: BoardPost) { return post.category === '공지' && post.is_pinned; }
 export type BoardFilters = { start?: string; end?: string; authorId?: string; authorSearch?: string };

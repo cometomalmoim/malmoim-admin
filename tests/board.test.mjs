@@ -40,3 +40,12 @@ test('author name search filters posts directly and combines with my posts toggl
  assert.deepEqual(filterPosts(rows,'','',false,{authorId:'me'}).map(p=>p.id),['a','c']);
  assert.equal(filterPosts(rows,'','',false,{}).length,3);
 });
+
+test('image attachment paths reject forged URLs and excessive selections', async () => {
+ const { retainedImages } = await import('../src/lib/board-images.ts');
+ const f=new FormData(); f.append('retained_images','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb.png');
+ assert.equal(retainedImages(f).length,1);
+ f.append('retained_images','https://evil.test/image.svg');assert.throws(()=>retainedImages(f));
+ const many=new FormData();for(let i=0;i<5;i++)many.append('retained_images','aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa/bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb.png');
+ assert.throws(()=>retainedImages(many));
+});
