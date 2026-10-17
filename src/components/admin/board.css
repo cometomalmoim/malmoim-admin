@@ -29,3 +29,18 @@
 .board-thumbnails{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:12px}.board-thumbnails>div{min-width:0}.board-thumbnails img{width:100%;height:100px;object-fit:cover;border-radius:8px;display:block;background:#f3f4f6}.board-thumbnails button{margin-top:6px;font-size:12px;padding:5px 8px}
 .board-post-images{display:grid;gap:16px;margin-bottom:24px}.board-post-images img{max-width:100%;height:auto;border-radius:12px;display:block}
 .board-comment-header,.board-comment-header>div,.board-comment-actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.board-comment-header{justify-content:space-between}.board-comment-header button{font-size:12px;padding:4px 8px}.board-comment-actions{justify-content:flex-end;font-size:13px}
+/* All list cards share the same two-line geometry, including pinned notices. */
+.board button.board-row{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:14px;margin:0;min-height:0}
+.board-row>.board-row-copy{display:flex;flex-direction:column;align-items:stretch;gap:6px;min-width:0;flex:1}
+.board-row-title{display:flex;align-items:center;gap:6px;min-width:0;line-height:24px;height:24px}
+.board-row-title .board-badge{line-height:16px;flex-shrink:0}
+.board-row-title strong{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0;line-height:24px}
+.board-row .board-row-copy small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:16px;margin:0}
+.board-row>.board-comment-count{display:inline-flex;align-items:center;flex-shrink:0;gap:4px;padding:4px 7px;border-radius:7px;background:#f3f4f6;color:#9ca3af;font-size:12px;line-height:18px;white-space:nowrap}
+.board-row>.board-comment-count.has-comments{background:#fef3c7;color:#92400e}
+.board-image-label{display:block;font-size:14px;font-weight:700;margin-bottom:8px}
+.board-file-picker{display:flex;align-items:center;gap:12px;min-width:0}
+.board button.board-file-button{padding:6px 12px;background:#f3f4f6;border:0;border-radius:8px;font-size:14px;line-height:20px;flex-shrink:0}
+.board button.board-file-button:hover{background:#e5e7eb}
+.board-file-names{font-size:13px;color:#6b7280;min-width:0;overflow-wrap:anywhere}
+.board-image-input input[type=file][hidden]{display:none}
