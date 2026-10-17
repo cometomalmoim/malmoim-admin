@@ -9,7 +9,10 @@ export type Review = {
 };
 export type ReviewPage = { reviews: Review[]; more: boolean; error: string };
 export type ReviewResult = { ok: boolean; message: string };
-export const PHOTO_LIMIT = 200 * 1024;
+// Original selections stay in the browser; only processed files reach Storage.
+export const ORIGINAL_PHOTO_LIMIT = 5 * 1024 * 1024;
+export const PHOTO_LIMIT = 1024 * 1024;
+export const PHOTO_MAX_EDGE = 1600;
 export const MAX_PHOTOS = 3;
 export function reviewDate(value: string) {
   return new Intl.DateTimeFormat("ko-KR", { timeZone: "Asia/Seoul", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date(value));

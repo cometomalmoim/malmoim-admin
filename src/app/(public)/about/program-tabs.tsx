@@ -29,6 +29,12 @@ const programs = [
   },
 ] as const;
 
+const sessionStages = [
+  { number: "01", title: "영어 세션", duration: "45분", description: ["외국인 참가자가 리더가 되어", "말모임 활동지를 활용한 영어 자유 대화"] },
+  { number: "02", title: "한국어 세션", duration: "45분", description: ["한국인 참가자가 리더가 되어", "말모임 활동지를 활용한 한국어 자유 대화"] },
+  { number: "03", title: "단체 활동", duration: "40분", description: ["한국인 2명과 외국인 2명이 한 팀을 이루어", "함께 즐기는 다양한 단체 활동"] },
+] as const;
+
 type FeatureIconName = "status" | "tent" | "sun" | "party-popper" | "calendar-heart" | "language" | "friends" | "calendar" | "party" | "picnic" | "trip" | "clock" | "screen" | "location";
 
 function FeatureIcon({ name }: { name: FeatureIconName }) {
@@ -78,19 +84,38 @@ export function ProgramTabs() {
       </div>
       </div>
       <div className="about-program-panels">
-      {programs.map((program, index) => <div key={program.id} id={`about-panel-${program.id}`} className="about-tab-panel" role="tabpanel" aria-labelledby={`about-tab-${program.id}`} data-inactive={selected !== index ? "" : undefined} inert={selected !== index} aria-hidden={selected !== index} tabIndex={selected === index ? 0 : -1}><div className="about-program-layout">
+      {programs.map((program, index) => <div key={program.id} id={`about-panel-${program.id}`} className="about-tab-panel" role="tabpanel" aria-labelledby={`about-tab-${program.id}`} data-inactive={selected !== index ? "" : undefined} inert={selected !== index} aria-hidden={selected !== index} tabIndex={selected === index ? 0 : -1}><div className={`about-program-layout${program.id === "session" ? " about-session-layout" : ""}`}>
         <figure className={`about-program-photo${program.id === "session" ? " about-session-photo" : ""}`}>
           {/* Only the session photo is an actual activity record; the other images remain illustrative. */}
-          <Image className="about-image" src={program.image} alt={program.id === "session" ? "테이블에 둘러앉아 대화하는 말모임 정규 언어교환 세션 참가자들" : program.id === "culture" ? "여러 사람이 함께 대화하는 모습을 표현한 AI 생성 임시 이미지" : "두 사람이 마주 앉아 대화하는 모습을 표현한 AI 생성 임시 이미지"} width={program.id === "session" ? 4000 : 1448} height={program.id === "session" ? 2252 : 1086} sizes="(max-width: 480px) calc(100vw - 40px), (max-width: 800px) calc(100vw - 48px), (max-width: 1160px) 43vw, 489px" />
+          <Image className="about-image" src={program.image} alt={program.id === "session" ? "테이블에 둘러앉아 대화하는 말모임 정규 언어교환 세션 참가자들" : program.id === "culture" ? "여러 사람이 함께 대화하는 모습을 표현한 AI 생성 임시 이미지" : "두 사람이 마주 앉아 대화하는 모습을 표현한 AI 생성 임시 이미지"} width={program.id === "session" ? 4000 : 1448} height={program.id === "session" ? 2252 : 1086} sizes={program.id === "session" ? "(max-width: 480px) calc(100vw - 40px), (max-width: 800px) calc(100vw - 48px), 1024px" : "(max-width: 480px) calc(100vw - 40px), (max-width: 800px) calc(100vw - 48px), (max-width: 1160px) 43vw, 489px"} />
           {program.id !== "session" && <figcaption>AI 생성 임시 이미지 · 실제 활동 사진이 아닙니다.</figcaption>}
         </figure>
-        <div className="about-program-copy">
+        <div className={`about-program-copy${program.id === "session" ? " about-session-copy" : ""}`}>
+          {program.id === "session" ? (
+            <div className="about-session-heading">
+              <p className="about-program-number">PROGRAM {program.number}</p>
+              <h3>{program.title}</h3>
+            </div>
+          ) : (
+            <>
           <p className="about-program-number">PROGRAM {program.number}</p>
           <h3>{program.title}</h3>
+            </>
+          )}
           {program.id === "session" ? (
-            <div className="about-session-description">
-              <p>한국인과 외국인이 함께 <strong>한국어와 영어로 자유롭게 대화하는 모임</strong>.</p>
-              <p>4명씩 조를 이루고, 일정 시간마다 대화 상대를 바꾸는 <strong>로테이션 방식</strong>으로 진행됩니다.</p>
+            <div className="about-session-body">
+              <div className="about-session-description">
+                <p>한국인과 외국인이 서로의 언어를 배우고<br />함께 어울리는 정기 언어교환 모임</p>
+              </div>
+              <ol className="about-session-stages" aria-label="정규 세션 진행 순서">
+                {sessionStages.map((stage) => <li key={stage.number}>
+                  <span className="about-session-stage-number" aria-hidden="true">{stage.number}.</span>
+                  <div>
+                    <h4>{stage.title}<span className="about-session-duration">| {stage.duration}</span></h4>
+                    <p>{stage.description[0]}<br />{stage.description[1]}</p>
+                  </div>
+                </li>)}
+              </ol>
             </div>
           ) : (
           <div className="about-program-blocks">
@@ -100,14 +125,7 @@ export function ProgramTabs() {
             </div>)}
           </div>
           )}
-          {program.id === "session" ? (
-            <div className="about-session-operations">
-              <dl className="about-session-info">
-                <div><FeatureIcon name="calendar" /><dt>운영 요일·시간</dt><dd><span>매주 목요일 또는 토요일</span><span>목요일 00:00~00:00</span><span>또는 토요일 00:00~00:00</span><small>시간 미확정 · 임시 표기</small></dd></div>
-                <div><FeatureIcon name="location" /><dt>활동 장소</dt><dd>서울청년센터 은평</dd></div>
-              </dl>
-            </div>
-          ) : (
+          {program.id !== "session" && (
             <ul className="about-program-features" aria-label={`${program.title} 특징`}>
               {program.features.map((feature, featureIndex) => <li key={feature}><FeatureIcon name={program.icons[featureIndex]} /><span>{feature}</span></li>)}
             </ul>

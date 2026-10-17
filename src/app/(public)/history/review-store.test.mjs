@@ -102,7 +102,7 @@ test("cards, details and editing retain usable photos and controls for a failed 
   const { ReviewCard, ReviewDetail, ReviewEditor } = load("./history-reviews.tsx", {
     "next/image": { default: ({ unoptimized, ...props }) => { void unoptimized; return createElement("img", props); } },
     "next/link": { default: props => createElement("a", props) },
-    "./review-actions": {}, "./review-types": types,
+    "./review-actions": {}, "./review-types": types, "./review-photo-client": {},
   });
   const review = { ...row("test-review", ["private/failed.jpg", "private/healthy.jpg"]), photos: [null, "https://example.test/healthy"] };
   const card = renderToStaticMarkup(createElement(ReviewCard, { review, open() {} }));

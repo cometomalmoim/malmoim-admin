@@ -3,16 +3,11 @@ import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { readReviews, REVIEW_BUCKET } from "./review-store";
 import { MAX_PHOTOS, PHOTO_LIMIT, reviewCategories, type ReviewFilter, type ReviewResult } from "./review-types";
+import { reviewPhotoExtension } from "./review-photo-format";
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function loadReviews(filter: ReviewFilter, offset: number) {
   if (!(filter === "all" || Object.hasOwn(reviewCategories, filter)) || !Number.isSafeInteger(offset) || offset < 0) return { reviews: [], more: false, error: "잘못된 조회 요청입니다." };
   return readReviews(filter, offset);
-}
-function fileExtension(bytes: Uint8Array, mime: string) {
-  if (mime === "image/jpeg" && bytes[0] === 255 && bytes[1] === 216 && bytes[2] === 255) return "jpg";
-  if (mime === "image/png" && [137,80,78,71,13,10,26,10].every((b, i) => bytes[i] === b)) return "png";
-  if (mime === "image/webp" && String.fromCharCode(...bytes.slice(0,4)) === "RIFF" && String.fromCharCode(...bytes.slice(8,12)) === "WEBP") return "webp";
-  return null;
 }
 export async function saveReview(form: FormData): Promise<ReviewResult> {
   const title = String(form.get("title") ?? "").trim();
@@ -20,8 +15,9 @@ export async function saveReview(form: FormData): Promise<ReviewResult> {
   const category = String(form.get("category") ?? "");
   const existingId = String(form.get("id") ?? "");
   if (!title || title.length > 120 || !content || content.length > 10000 || !Object.hasOwn(reviewCategories, category) || (existingId && !uuid.test(existingId))) return { ok: false, message: "제목(120자 이내), 카테고리, 내용(10,000자 이내)을 확인해주세요." };
-  const files = form.getAll("photos").filter((f): f is File => f instanceof File && f.size > 0);
-  if (files.length > MAX_PHOTOS || files.some((f) => f.size > PHOTO_LIMIT)) return { ok: false, message: "사진은 최대 3장, 각 200KB 이하로 첨부해주세요." };
+  const attachments = form.getAll("photos");
+  if (attachments.length > MAX_PHOTOS || attachments.some((file) => !(file instanceof File) || !file.size || file.size > PHOTO_LIMIT)) return { ok: false, message: "사진은 최대 3장, 자동 처리 후 장당 1MB 이하로 첨부해주세요. 빈 파일은 첨부할 수 없어요." };
+  const files = attachments as File[];
   try {
     const db = await createClient();
     const { data: { user }, error: authError } = await db.auth.getUser();
@@ -37,7 +33,7 @@ export async function saveReview(form: FormData): Promise<ReviewResult> {
     if (kept.length + files.length > MAX_PHOTOS) return { ok: false, message: "기존 사진을 포함해 최대 3장까지 등록할 수 있습니다." };
     const validated = await Promise.all(files.map(async (file) => {
       const bytes = new Uint8Array(await file.arrayBuffer());
-      return { file, extension: fileExtension(bytes, file.type) };
+      return { file, extension: reviewPhotoExtension(bytes, file.type) };
     }));
     if (validated.some((f) => !f.extension)) return { ok: false, message: "실제 JPG, PNG, WebP 사진만 첨부할 수 있습니다." };
     const id = existingId || crypto.randomUUID();
