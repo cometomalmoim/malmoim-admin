@@ -1,8 +1,9 @@
 "use server";
 import { randomBytes } from "node:crypto";
 import { revalidatePath } from "next/cache";
+import { redirect } from "next/navigation";
 import { getAdminAccess } from "@/lib/auth";
-import { createSurvey, updateSurvey, submitSurveyResponse } from "@/lib/surveys";
+import { createSurvey, updateSurvey, submitSurveyResponse, deleteSurvey } from "@/lib/surveys";
 import { surveyPeriod, surveyResponseInput } from "@/lib/survey-validation";
 
 export type SurveyActionState = { message: string; ok: boolean };
@@ -32,6 +33,15 @@ export async function updateSurveyAction(_previous: SurveyActionState, data: For
     revalidatePath("/admin/surveys");
     return { ok: true, message: "설문 공개 상태와 기간을 저장했습니다." };
   } catch { return { ok: false, message: "공개 시작·종료 시각을 확인해주세요." }; }
+}
+
+export async function deleteSurveyAction(_previous: SurveyActionState, data: FormData): Promise<SurveyActionState> {
+  if ((await getAdminAccess()).status !== "admin") return { ok: false, message: "관리자 권한을 확인해주세요." };
+  const id = String(data.get("id") ?? "");
+  const result = await deleteSurvey(id);
+  if (!result.ok) return { ok: false, message: result.reason === "forbidden" ? "관리자 권한을 확인해주세요." : "설문을 삭제하지 못했습니다. DB 마이그레이션 적용 여부를 확인해주세요." };
+  revalidatePath("/admin/surveys");
+  redirect("/admin/surveys");
 }
 
 export async function submitSurveyResponseAction(token: string, _previous: SurveyActionState, data: FormData): Promise<SurveyActionState> {

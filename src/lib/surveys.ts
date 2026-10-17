@@ -88,6 +88,19 @@ export async function updateSurvey(id: string, status: string, opensAt: string, 
   } catch { return { ok: false, reason: "error" }; }
 }
 
+export type SurveyDeleteResult = { ok: true } | { ok: false; reason: "forbidden" | "invalid" | "error" };
+
+export async function deleteSurvey(id: string): Promise<SurveyDeleteResult> {
+  if ((await getAdminAccess()).status !== "admin") return { ok: false, reason: "forbidden" };
+  if (!UUID.test(id)) return { ok: false, reason: "invalid" };
+  try {
+    const client = await createClient();
+    const result = await client.rpc("delete_participant_survey", { p_survey_id: id });
+    if (result.error || result.data !== "deleted") return { ok: false, reason: "error" };
+    return { ok: true };
+  } catch { return { ok: false, reason: "error" }; }
+}
+
 export async function submitSurveyResponse(token: string, input: SurveyResponseInput): Promise<"saved" | "closed" | "invalid" | "busy" | "error"> {
   if (!TOKEN.test(token)) return "closed";
   try {

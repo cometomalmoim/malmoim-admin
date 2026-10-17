@@ -2,7 +2,7 @@ import Link from "next/link";
 import { AdminShell } from "./admin-shell";
 import { getSurveyDashboard, type SurveyRecord, type SurveyStats } from "@/lib/surveys";
 import { koreaDateTimeLocal, surveyAspectKeys, type SurveyAspect, type SurveyGroup } from "@/lib/survey-validation";
-import { SurveyCreateForm, SurveySettingsForm, SurveyShareTools } from "./survey-controls";
+import { SurveyCreateForm, SurveySettingsForm, SurveyShareTools, SurveyDeleteForm } from "./survey-controls";
 import "./surveys.css";
 
 const groupNames = { korean: "한국인", international: "외국인" } as const;
@@ -48,6 +48,7 @@ export async function SurveyView({ email, surveyId, group, page = 1 }: { email: 
       {result.selected && result.stats ? <>
         <section className="ops-panel sv-selected-head"><div><span className={`sv-state ${effectiveStatus(result.selected).className}`}>{effectiveStatus(result.selected).label}</span><h2>{result.selected.cohort_name}</h2><p className="ops-muted">응답 기간: {timeLabel(result.selected.opens_at)} – {timeLabel(result.selected.closes_at)}</p></div><span className="sv-version">문항 v1</span></section>
         <div className="sv-management-grid"><section className="ops-panel"><h2>공개·종료 관리</h2><p className="ops-muted">상태를 ‘공개’로 저장해도 공개 시작 시각 전에는 응답할 수 없습니다. 종료 시각이 지나면 자동으로 제출이 차단됩니다.</p><SurveySettingsForm id={result.selected.id} status={result.selected.status} opensAt={koreaDateTimeLocal(result.selected.opens_at)} closesAt={koreaDateTimeLocal(result.selected.closes_at)} /></section><section className="ops-panel"><h2>URL 및 QR</h2><SurveyShareTools token={result.selected.public_token} cohortName={result.selected.cohort_name} /></section></div>
+        <section className="ops-panel sv-delete-panel"><h2>테스트 설문 정리</h2><p className="ops-muted">필요 없는 설문을 정리할 수 있습니다. 설문을 삭제하면 저장된 익명 응답도 함께 영구 삭제됩니다.</p><SurveyDeleteForm id={result.selected.id} cohortName={result.selected.cohort_name} responseCount={result.stats.total} /></section>
         <section className="sv-stats-grid"><StatCard label="전체 응답" value={`${result.stats.total}`} hint="익명 제출 건수"/><StatCard label="전체 평균 만족도" value={result.stats.average === null ? "—" : `${result.stats.average} / 5`} hint="질문 1 · 1~5점"/><StatCard label="한국인 그룹" value={`${result.stats.korean.count}`} hint={`평균 ${result.stats.korean.average === null ? "—" : `${result.stats.korean.average} / 5`}`}/><StatCard label="외국인 그룹" value={`${result.stats.international.count}`} hint={`평균 ${result.stats.international.average === null ? "—" : `${result.stats.international.average} / 5`}`}/></section>
         <div className="sv-group-grid"><GroupStats stats={result.stats} group="korean"/><GroupStats stats={result.stats} group="international"/></div>
         <section className="ops-panel sv-responses"><div className="sv-response-heading"><div><h2>자유 응답</h2><p className="ops-muted">질문별로 표시합니다. 응답에는 작성자 식별 정보가 없습니다.</p></div><nav aria-label="응답 그룹 필터">{(["all", "korean", "international"] as const).map(value => <Link key={value} href={selectedSurveyHref(result.selected!.id, value)} aria-current={result.group === value ? "page" : undefined}>{value === "all" ? "전체 그룹" : groupNames[value]}</Link>)}</nav></div>

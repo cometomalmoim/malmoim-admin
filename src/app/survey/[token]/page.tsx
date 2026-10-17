@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
 import { connection } from "next/server";
 import { getPublicSurveyState } from "@/lib/surveys";
 import { PublicSurveyForm } from "@/components/surveys/public-survey-form";
@@ -6,7 +7,31 @@ import "./survey.css";
 
 export const metadata: Metadata = { title: "말모임 참가자 설문", robots: { index: false, follow: false }, referrer: "no-referrer" };
 
-export default async function Page({ params }: { params: Promise<{ token: string }> }) {
+type SurveyPageProps = { params: Promise<{ token: string }> };
+
+export default function Page({ params }: SurveyPageProps) {
+  return (
+    <Suspense fallback={<SurveyLoading />}>
+      <SurveyContent params={params} />
+    </Suspense>
+  );
+}
+
+function SurveyLoading() {
+  return (
+    <main className="public-survey-page">
+      <div className="public-survey-wrap">
+        <span className="public-survey-kicker">MALMOIM · PARTICIPANT SURVEY</span>
+        <section className="public-survey-choice" role="status" aria-busy="true">
+          <h1>설문 정보를 불러오는 중입니다</h1>
+          <p lang="en">Loading survey...</p>
+        </section>
+      </div>
+    </main>
+  );
+}
+
+async function SurveyContent({ params }: SurveyPageProps) {
   await connection();
   const { token } = await params;
   const survey = await getPublicSurveyState(token);

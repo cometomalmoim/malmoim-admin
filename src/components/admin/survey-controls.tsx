@@ -2,7 +2,7 @@
 import { useActionState, useEffect, useState } from "react";
 import QRCode from "qrcode";
 import Image from "next/image";
-import { createSurveyAction, updateSurveyAction, type SurveyActionState } from "@/app/actions/surveys";
+import { createSurveyAction, updateSurveyAction, deleteSurveyAction, type SurveyActionState } from "@/app/actions/surveys";
 
 const initialState: SurveyActionState = { message: "", ok: false };
 function Message({ state }: { state: SurveyActionState }) { return state.message ? <p className={`sv-message${state.ok ? " is-success" : ""}`} role={state.ok ? "status" : "alert"}>{state.message}</p> : null; }
@@ -24,6 +24,19 @@ export function SurveySettingsForm({ id, status, opensAt, closesAt }: { id: stri
     <label>공개 시작 (한국시간)<input name="opens_at" type="datetime-local" required defaultValue={opensAt} /></label>
     <label>공개 종료 (한국시간)<input name="closes_at" type="datetime-local" required defaultValue={closesAt} /></label>
     <Message state={state} /><button className="sv-secondary" disabled={pending}>{pending ? "저장 중…" : "상태·기간 저장"}</button>
+  </form>;
+}
+
+export function SurveyDeleteForm({ id, cohortName, responseCount }: { id: string; cohortName: string; responseCount: number }) {
+  const [state, action, pending] = useActionState(deleteSurveyAction, initialState);
+  return <form className="sv-delete-form" action={action} onSubmit={event => {
+    const confirmed = window.confirm(`‘${cohortName}’ 설문과 익명 응답 ${responseCount}건을 영구 삭제할까요? 삭제한 데이터는 복구할 수 없습니다.`);
+    if (!confirmed) event.preventDefault();
+  }}>
+    <input type="hidden" name="id" value={id} />
+    <div><strong>설문 영구 삭제</strong><p>이 기수 설문과 익명 응답 {responseCount}건이 함께 삭제됩니다. 삭제 후에는 복구할 수 없습니다.</p></div>
+    <Message state={state} />
+    <button className="sv-danger" type="submit" disabled={pending}>{pending ? "삭제 중…" : "설문과 응답 삭제"}</button>
   </form>;
 }
 
