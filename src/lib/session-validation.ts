@@ -5,7 +5,7 @@ export function sessionInput(data:FormData){
  return {id:id||null,date,title,revision};
 }
 export function sessionAttendanceInput(data:FormData){
- const session=String(data.get('session_id')??''),attendance=String(data.get('attendance')??''),revision=Number(data.get('revision')),participationRevision=Number(data.get('participation_revision'));
- if(!validId(session)||!Object.hasOwn(attendances,attendance)||!Number.isSafeInteger(revision)||revision<0||!Number.isSafeInteger(participationRevision)||participationRevision<1)throw new Error('invalid');
- return {session,attendance,revision,participationRevision};
+ const session=String(data.get('session_id')??''),attendance=String(data.get('attendance')??''),revision=Number(data.get('revision')),participationRevision=Number(data.get('participation_revision')),sessionRevision=Number(data.get('session_revision'));
+ if(!Number.isSafeInteger(sessionRevision)||sessionRevision<1||!validId(session)||!Object.hasOwn(attendances,attendance)||!Number.isSafeInteger(revision)||revision<0||!Number.isSafeInteger(participationRevision)||participationRevision<1)throw new Error('invalid');
+ return {session,attendance,revision,participationRevision,sessionRevision};
 }
