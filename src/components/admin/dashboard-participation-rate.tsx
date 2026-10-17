@@ -22,7 +22,7 @@ const getRate=cache(async(eventIds:string[])=>{
 });
 export async function DashboardParticipationRate({eventIds}:{eventIds:string[]}){
  const data=await getRate(eventIds);
- return <article className="ops-panel dash-rate"><h2>이벤트 참여율</h2>{!data?<><strong>조회 실패</strong><p className="ops-muted">출석 현황을 다시 확인해주세요.</p></>:<><strong>{data.percent===null?'집계 전':`${data.percent}%`}</strong><p className="ops-muted">출석 {data.attended} / 참가 확정 {data.confirmed}명 · {data.sessions}회차</p>{data.unrecorded>0&&<p className="dash-rate-warning">출석 미입력 {data.unrecorded}명 · 잠정 수치</p>}<details><summary>참여율 기준</summary><p>지난 날짜의 회차별 출석 ÷ 참가 확정 인원입니다. 같은 사람이 여러 회차에 참여하면 회차마다 집계합니다. 오늘·예정 회차, 테스트·삭제 이벤트, 날짜 없는 과거 출석은 제외합니다. 미입력도 확정 인원에 포함하므로 출석 입력 후 수치가 바뀔 수 있습니다.</p></details></>}<Link href="/admin/participants?view=sessions">회차별 현황 →</Link></article>;
+ return <article className="ops-panel dash-rate"><h2>이벤트 참여율</h2>{!data?<><strong>조회 실패</strong><p className="ops-muted">출석 현황을 다시 확인해주세요.</p></>:<><strong>{data.percent===null?'집계 전':`${data.percent}%`}</strong><p className="ops-muted">출석 {data.attended} / 참가 확정 {data.confirmed}명 · {data.sessions}회차</p>{data.unrecorded>0&&<p className="dash-rate-warning">출석 미입력 {data.unrecorded}명 · 잠정 수치</p>}<details><summary>참여율 기준</summary><p>지난 날짜의 회차별 출석 ÷ 참가 확정 인원입니다. 같은 사람이 여러 회차에 참여하면 회차마다 집계합니다. 오늘·예정 회차, 테스트·삭제 이벤트, 날짜 없는 과거 출석은 제외합니다. 미입력도 확정 인원에 포함하므로 출석 입력 후 수치가 바뀔 수 있습니다.</p></details></>}</article>;
 }
 
 export async function DashboardParticipationTrend({eventIds}:{eventIds:string[]}){
