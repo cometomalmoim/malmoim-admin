@@ -26,7 +26,7 @@ export function PublicSurveyForm({ token }: { token: string }) {
     <div className="public-survey-wrap">
       <div className="public-survey-brand-row"><span className="public-survey-kicker">MALMOIM · 6 WEEK EXPERIENCE</span><span className="public-survey-brand-note">A community that grows together</span></div>
       {!group ? <section className="public-survey-choice">
-        <header className="public-survey-intro-row"><div><span className="public-survey-eyebrow">PARTICIPANT SURVEY</span><h1>말모임 피드백</h1></div><p>응답 언어를 선택하면 해당 언어로 설문이 표시됩니다.<br/><span lang="en">Choose a language to begin your feedback.</span></p></header>
+        <header className="public-survey-intro-row"><div><span className="public-survey-eyebrow">PARTICIPANT SURVEY</span><h1>참가자 설문조사</h1></div><p>응답 언어를 선택하면 해당 언어로 설문이 표시됩니다.<br/><span lang="en">Choose a language to begin your feedback.</span></p></header>
         <p className="public-survey-anonymity">이 설문은 익명으로 진행되며 이름이나 연락처를 수집하지 않습니다.<br/><span lang="en">Your responses are anonymous. We do not collect your name or contact information.</span></p>
         <div className="public-survey-language-row"><div><h2>{copy.korean.group}</h2><p lang="en">Choose your response language</p></div><div className="public-survey-group-choice"><button type="button" onClick={() => setGroup("korean")}><span>{copy.korean.korean}</span><span aria-hidden="true">↗</span></button><button type="button" onClick={() => setGroup("international")}><span>{copy.international.international}</span><span aria-hidden="true">↗</span></button></div></div>
       </section> : <>
