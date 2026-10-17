@@ -45,7 +45,7 @@
 .ops-event-workspace .evt-overview-stats p{margin:8px 0}
 .ops-event-workspace .evt-overview-stats a{margin-top:auto}
 .ops-event-workspace .evt-overview-tools{gap:20px;align-items:stretch}
-.ops-event-workspace .evt-overview-tools article{padding:20px;min-height:180px;display:flex;flex-direction:column;border-color:var(--work-line)}
+.ops-event-workspace .evt-overview-tools article{padding:20px;min-height:220px;display:flex;flex-direction:column;border-color:var(--work-line)}
 .ops-event-workspace .evt-overview-tools article>a{margin-top:auto;align-self:flex-start;min-height:40px;display:inline-flex;align-items:center}
 .ops-event-workspace .evt-overview-tools article>p{margin:12px 0;min-height:0}
 .ops-event-workspace .applicant-summary-grid a{min-height:100px;display:flex;flex-direction:column;justify-content:space-between}
@@ -77,3 +77,4 @@
  .ops-event-workspace .evt-fields{gap:16px;grid-template-columns:1fr}
  .ops-event-workspace .messaging-title{flex-wrap:wrap}
 }
+
