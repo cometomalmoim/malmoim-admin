@@ -1,27 +1,13 @@
+import {signingEligibility,validApplicantKey} from './esign-server-contracts.ts';
 // Server adapter contract and isolated synthetic implementation. Never imports Supabase.
-import { applicantKey, targetEligibility, targetFixtures, type ApplicantKey, type TargetApplicant, type TargetRequest } from './signing-targets.ts';
+import { applicantKey, targetFixtures, type ApplicantKey, type TargetApplicant, type TargetRequest } from './signing-targets.ts';
 export type PreviewActor={id:string;events:string[]};
 export interface PreviewAuth { authenticate(credential:string|null):PreviewActor|null }
 export const fixtureAuth:PreviewAuth={authenticate(value){return value==='fixture-admin'?{id:'fixture-admin',events:['preview-event-1','preview-event-2']}:value==='fixture-limited'?{id:'fixture-limited',events:['preview-event-1']}:null;}};
 export type ServerApplicant=TargetApplicant&{contactType:string};
 export interface ApplicantAdapter { find(key:ApplicantKey):ServerApplicant|undefined }
 export function serverFixtures():ServerApplicant[]{return targetFixtures().map((a,i)=>({...a,phone:a.phone?`+82100000${String(i+1).padStart(4,'0')}`:null,contactType:'phone'}));}
-export function eligibilityCode(a:ServerApplicant,event:string):string {
- const base=targetEligibility(a,event);
- if(a.event_id!==event)return 'EVENT_MISMATCH';
- if(a.selectionRevoked)return 'ACCEPTANCE_REVOKED';
- if(a.status==='withdrawn')return 'WITHDRAWN';
- if(a.confirmation==='cancelled')return 'PARTICIPATION_CANCELLED';
- if(!['received','reviewing','accepted','waitlisted','declined','withdrawn'].includes(a.status))return 'UNKNOWN_APPLICATION_STATUS';
- if(a.confirmation!==null&&!['unconfirmed','confirmed','cancelled'].includes(a.confirmation))return 'UNKNOWN_CONFIRMATION';
- if(['waitlisted','declined'].includes(a.status)&&a.confirmation==='confirmed')return 'STATUS_CONFLICT';
- if(a.status==='waitlisted')return 'WAITLISTED';
- if(a.status==='declined')return 'DECLINED';
- if(!base.eligible)return 'NOT_ACCEPTED_OR_CONFIRMED';
- if(a.status!=='accepted')return 'POLICY_HOLD';
- if(a.contactType!=='phone'||!a.phone||!/^\+?[0-9]{8,15}$/.test(a.phone.replace(/[ ()-]/g,'')))return 'INVALID_PHONE';
- return 'OK';
-}
+export function eligibilityCode(a:ServerApplicant,event:string):string {return signingEligibility(a,event);}
 export type PreviewCommand={operation:'validate'|'scenario'|'cancel';eventId:string;documentId?:string;version?:number;keys?:ApplicantKey[];days?:number;idempotencyKey?:string;scenario?:'withdraw'|'revoke'|'phone'|'waitlist'|'confirmOnly'|'complete';requestId?:string};
 export class PreviewService {
  applicants=serverFixtures();requests:TargetRequest[]=[];
@@ -39,7 +25,7 @@ export class PreviewService {
   const r=this.requests.find(r=>r.id===input.requestId&&r.key.event_id===input.eventId);if(!r)return fail(404,'REQUEST_NOT_FOUND');if(r.status==='completed')return fail(409,'COMPLETED_IMMUTABLE');
   r.status='cancelled';r.history.push(`${now} 테스트 서버 취소 · 실제 접근 권한 없음`);return {http:200,body:{code:'CANCELLED',request:structuredClone(r)}};
  }
- if(!Array.isArray(input.keys)||!input.keys.length||input.keys.length>50||input.keys.some(k=>!k||typeof k.application_id!=='string'||!['manual','season9','registration'].includes(k.source)||k.event_id!==input.eventId)||new Set(input.keys.map(applicantKey)).size!==input.keys.length)return fail(400,'INVALID_APPLICANT_KEYS');
+ if(!Array.isArray(input.keys)||!input.keys.length||input.keys.length>50||input.keys.some(k=>!validApplicantKey(k,'preview')||k.event_id!==input.eventId)||new Set(input.keys.map(applicantKey)).size!==input.keys.length)return fail(400,'INVALID_APPLICANT_KEYS');
  if(input.operation==='scenario'){
   if(input.keys.length!==1||!['withdraw','revoke','phone','waitlist','confirmOnly','complete'].includes(input.scenario??''))return fail(400,'INVALID_SCENARIO');
   const a=find(input.keys[0]);if(!a)return fail(404,'APPLICANT_NOT_FOUND');

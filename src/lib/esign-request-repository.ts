@@ -1,3 +1,4 @@
+import type {AsyncRequestRepository,AsyncRequestTransaction} from './esign-server-contracts.ts';
 import { applicantKey, type TargetRequest } from './signing-targets.ts';
 export type RequestTransaction = {
  list():TargetRequest[];
@@ -34,3 +35,13 @@ export class MemoryRequestRepository implements RequestRepository {
  async get(id:string,eventIds:string[]){return (await this.list(eventIds)).find(r=>r.id===id);}
 }
 export function reissueDecision(r:TargetRequest){return r.status==='completed'?{allowed:false,code:'COMPLETED_IMMUTABLE'}:r.status==='pending'?{allowed:false,code:'ACTIVE_REQUEST_EXISTS'}:{allowed:true,code:'REQUIRES_LATEST_ELIGIBILITY_AND_CONTACT_CHECK'};}
+
+/** Bridge for exercising the future async contract against isolated memory only. */
+export class AsyncMemoryRequestRepository implements AsyncRequestRepository {
+ private memory=new MemoryRequestRepository();
+ async transaction<T>(work:(tx:AsyncRequestTransaction)=>Promise<T>):Promise<T>{
+  return this.memory.transaction(tx=>work({list:async()=>tx.list(),get:async id=>tx.get(id),save:async row=>tx.save(row),replay:async key=>tx.replay(key),remember:async(key,value)=>tx.remember(key,value)}));
+ }
+ list(eventIds:string[]){return this.memory.list(eventIds);}
+ get(id:string,eventIds:string[]){return this.memory.get(id,eventIds);}
+}
