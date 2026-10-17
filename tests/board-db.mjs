@@ -11,6 +11,7 @@ insert into auth.users values('${owner}','owner@example.test','{}'),('${other}',
 insert into admin_users values('${owner}'),('${other}');
 grant usage on schema auth to authenticated;grant select on admin_users to authenticated;`);
 await db.exec(await readFile('supabase/021_internal_board.sql','utf8'));
+await db.exec(await readFile('supabase/022_board_idea_category.sql','utf8'));
 const login=uid=>db.exec(`reset role;select set_config('test.uid','${uid}',false);set role authenticated;`);
 const mutate=(kind,id=null,v=null,input={})=>db.query('select manage_internal_board($1,$2,$3,$4::jsonb) id',[kind,id,v,JSON.stringify(input)]);
 await login(owner);
@@ -26,7 +27,7 @@ for(const kind of ['save','delete','pin']) await assert.rejects(()=>mutate(kind,
 await mutate('comment',id,null,{body:'댓글'});
 assert.equal((await db.query('select * from internal_board_comments')).rows.length,1);
 await login(owner);
-await mutate('save',id,await version(),{title:'수정',body:'본문',category:'자유',is_pinned:true});
+await mutate('save',id,await version(),{title:'수정',body:'본문',category:'아이디어',is_pinned:true});
 assert.equal((await db.query('select is_pinned from internal_board_posts')).rows[0].is_pinned,false);
 await assert.rejects(async()=>mutate('pin',id,await version(),{is_pinned:true}));
 await mutate('delete',id,await version());
