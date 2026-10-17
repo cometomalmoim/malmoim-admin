@@ -7,7 +7,7 @@ export async function EventApplicantSummary({eventId,slug}:{eventId:string;slug:
  const client=await createClient();
  const filters=[['전체 신청','',''],['접수','status','received'],['검토 중','status','reviewing'],['합격','status','accepted'],['대기','status','waitlisted'],['미입금','payment_status','unpaid']] as const;
  const counts=await Promise.all(filters.map(async([label,field,value])=>{
-  let request=client.from('event_application_list').select('id',{count:'exact',head:true}).eq('event_id',eventId);
+  let request=client.from('event_application_admin_list').select('id',{count:'exact',head:true}).eq('is_archived',false).eq('event_id',eventId);
   if(field)request=request.eq(field,value);
   const result=await request;
   return {label,count:result.error?null:result.count,field,value};

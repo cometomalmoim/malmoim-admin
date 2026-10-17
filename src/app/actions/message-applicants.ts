@@ -7,7 +7,7 @@ export async function loadMessageApplicants(eventId:string,page:number,search:st
  if((await getAdminAccess()).status!=='admin'||!/^[-0-9a-f]{36}$/i.test(eventId)||!Number.isSafeInteger(page)||page<1||page>100000)return {kind:'error'};
  try{
   const client=await createClient();
-  let request=client.from('event_application_list').select('id,source,name,contact,contact_type,status',{count:'exact'}).eq('event_id',eventId);
+  let request=client.from('event_application_admin_list').select('id,source,name,contact,contact_type,status',{count:'exact'}).eq('is_archived',false).eq('event_id',eventId);
   const q=search.slice(0,100).replace(/[^\p{L}\p{N}\s+@_-]/gu,'').trim();
   if(q)request=request.or(`name.ilike.%${q}%,contact.ilike.%${q}%`);
   if(Object.hasOwn(applicationStatuses,status))request=request.eq('status',status);
