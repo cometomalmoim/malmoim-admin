@@ -5,6 +5,7 @@ import { applicationStatuses } from '@/lib/applicant-validation';
 import { applicantKey, reconcileApplicantChange, changeRequest, duplicateRequest, prepareRequests, requestAccessReason, requestStates, targetEligibility, targetFixtures, type RequestDocument, type TargetApplicant, type TargetRequest } from '@/lib/signing-targets';
 import type { DocumentTemplate } from '@/lib/document-admin-model';
 import styles from './document-admin.module.css';
+import {DemoRequestControls} from './demo-request-controls';
 const events=[['preview-event-1','가상 기수 행사'],['preview-event-2','가상 단기 행사']];
 const date=previewKstDate;
 const label=(s:string)=>applicationStatuses[s as keyof typeof applicationStatuses]??'미확인';
@@ -27,6 +28,11 @@ export function SigningTargetPreview({templates}:{templates:DocumentTemplate[]})
   const data=await response.json();if(!response.ok)throw new Error(`${data.code} ${data.results?.map((r:{key:{application_id:string};code:string})=>`${r.key.application_id}: ${r.code}`).join(', ')??''}`);return data;
  }
 
+ async function demoPdf(requestId:string,eventId:string){
+  if(!testAuth)throw new Error('UNAUTHENTICATED');
+  const response=await fetch('/preview/document-admin/api/validate',{method:'POST',headers:{'Content-Type':'application/json','x-esign-test-actor':'fixture-admin','x-esign-test-session':session.current},body:JSON.stringify({operation:'demo-pdf',eventId,requestId})});
+  if(!response.ok)throw new Error((await response.json()).code);return response.blob();
+ }
  async function reloadServer(authorized=testAuth,selectedEvent=event){
   const data=await api({operation:'list',eventId:selectedEvent},authorized);
   setRequests(rows=>[...rows.filter(r=>!r.id.startsWith('server-preview-')||r.key.event_id!==selectedEvent),...data.requests]);
@@ -51,7 +57,7 @@ export function SigningTargetPreview({templates}:{templates:DocumentTemplate[]})
  const keys=review.keys.map(key=>{const a=applicants.find(a=>applicantKey(a)===key);if(!a)throw new Error('신청자 미확인');return {event_id:a.event_id,source:a.source,application_id:a.application_id};});
  const data=await api({operation:'validate',eventId:event,documentId:template.id,version:template.revision,keys,days,idempotencyKey:commandId.current});
  const added=data.result.requests as TargetRequest[];
- await reloadServer();invalidate();setNotice(`${data.code} · ${added.length}명 서버 메모리 저장 후 재조회. 영구 저장·링크·문자·PDF 저장 없음.`);
+ await reloadServer();invalidate();setNotice(`${data.code} · ${added.length}명 서버 메모리 저장 후 재조회. 영구 저장·실제 문자 없음. 개발 링크·테스트 PDF는 별도 시연 기능입니다.`);
  }catch(e){setNotice((e as Error).message);}finally{setBusy(false);}}
 
  async function serverScenario(a:TargetApplicant,scenario:string){if(busy)return;setBusy(true);try{await api({operation:'scenario',eventId:a.event_id,keys:[{event_id:a.event_id,source:a.source,application_id:a.application_id}],scenario});await reloadServer();setNotice('테스트 서버 가상 상태 변경 완료 · 브라우저 상태와 별도로 관리됩니다.');}catch(e){setNotice((e as Error).message);}finally{setBusy(false);}}
@@ -59,7 +65,7 @@ export function SigningTargetPreview({templates}:{templates:DocumentTemplate[]})
  function seedComplete(a:TargetApplicant){if(!template||duplicateRequest(requests,a,template.id))return;const now=new Date().toISOString();try{const [r]=prepareRequests(applicants,[applicantKey(a)],event,template,requests,now,days);setRequests(rows=>[...rows,{...r,status:'completed',completedAt:now,history:[...r.history,'가상 완료 이력 주입 · 실제 서명/PDF 없음']}]);invalidate();}catch(e){setNotice((e as Error).message);}}
  return <section className={styles.panel} aria-label="합격자 요청 준비 미리보기">
  <h2>6단계 · 합격자·참가 확정자 요청 준비</h2>
- <p className={styles.alert}>모든 신청자·연락처·이력은 가상입니다. TEST-PHONE은 전화번호가 아닌 표식입니다. 실제 요청, 링크, 토큰, 문자, 저장된 PDF는 생성하지 않습니다.</p>
+ <p className={styles.alert}>모든 신청자·연락처·이력은 가상입니다. TEST-PHONE은 전화번호가 아닌 표식입니다. 운영 요청·문자·OTP는 생성하지 않습니다. 10단계 개발 링크와 테스트 PDF만 별도로 서버 메모리에 보관합니다.</p>
  <label className={styles.testAuthToggle}><input type="checkbox" checked={testAuth} onChange={e=>{setTestAuth(e.target.checked);if(e.target.checked)void reloadServer(true).catch(error=>setNotice(error.message));}}/><span>테스트 관리자 역할 사용 (실제 인증 아님 · 기본 거부)</span></label>
  <p>8단계 서버 임시 정책: accepted만 허용, received/reviewing + confirmed는 POLICY_HOLD. 브라우저 상태 시험은 서버 값을 바꾸지 않습니다. 아래 별도 서버 시험 버튼으로만 가상 서버 상태를 변경합니다. 9단계 요청은 서버 메모리에만 저장되며 서버 재시작 시 사라집니다. 새로고침 후 테스트 역할을 다시 선택하면 같은 탭의 요청을 재조회합니다. 영구 저장이 아닙니다.</p>
  <p>합격과 참가 확정은 별도 판단합니다. 대기·불합격·취소 및 서로 충돌하는 상태는 제외합니다. 아래 기준과 7일 기본 유효기간은 미리보기용 제안이며 운영 정책이 아닙니다.</p>
@@ -74,8 +80,8 @@ export function SigningTargetPreview({templates}:{templates:DocumentTemplate[]})
  {review&&<div className={styles.detail}><h3>최종 확인 · 메모리 요청 준비</h3><p>{events.find(([id])=>id===event)?.[1]} / {review.document.name} v{review.document.revision} / {review.keys.length}명 / 유효기간 {days}일</p><ul>{review.keys.map(k=><li key={k}>{applicants.find(a=>applicantKey(a)===k)?.name} · {k}</li>)}</ul><p>생성 시 현재 상태를 다시 검증합니다. 향후에는 서버가 관리자 권한·이벤트 소속·신청 상태·버전·중복을 트랜잭션으로 재검증해야 합니다.</p><button disabled={busy} onClick={()=>void create()}>6. 서버 검증 후 메모리 목록 반영</button><button onClick={()=>setReview(null)}>확인 취소</button></div>}
  <p role="status">{notice}</p><button disabled={!testAuth||busy} onClick={()=>void reloadServer().catch(e=>setNotice(e.message))}>서버 메모리 요청 재조회</button><p>서버 저장 건은 server-preview 식별자로 표시됩니다. 브라우저 전용 상태 시험은 서버 요청을 수정하지 않습니다.</p>
  <h3>가상 요청 목록 · {requests.length}건 (모든 이벤트)</h3><p>완료·취소·만료 이력도 중복 생성이 차단됩니다. 미완료 요청의 재발급 예정 처리는 아래에서 명시적으로 수행하세요. 완료 이력은 삭제·덮어쓰기하지 않습니다.</p>
- <div className={styles.tableScroll}><table><caption>요청·상태 변경 이력 · 실제 접근 주소 없음</caption><thead><tr>{['이벤트 / 참가자','신청 상태 (당시 → 현재)','서류 / 버전','요청 상태','생성 / 만료 / 완료','접근·연락처 판정','관리 / 이력'].map(v=><th key={v}>{v}</th>)}</tr></thead><tbody>{requests.map(r=>{const a=applicants.find(a=>applicantKey(a)===applicantKey(r.key));return <tr key={r.id}><td>{events.find(([id])=>id===r.key.event_id)?.[1]}<br/>{r.name}</td><td>{label(r.applicantStatus)} → {a?label(a.status):'미확인'}</td><td>{r.document.name} v{r.document.revision}</td><td>{requestStates[r.status]}<br/>링크 미발급 · 세대 {r.generation}</td><td>{date(r.createdAt)}<br/>{date(r.expiresAt)}<br/>{date(r.completedAt)}</td><td>{r.id.startsWith('server-preview-')?`${requestStates[r.status]} · 서버 가상 검증 기록 / 실제 접근 없음`:requestAccessReason(r,a,new Date().toISOString())}</td><td><button disabled={r.status==='completed'} onClick={()=>act(r,'cancel')}>요청 취소 시험</button><button disabled={r.status==='completed'} onClick={()=>act(r,'expire')}>만료 시험</button><button disabled={r.status==='completed'||!a||!targetEligibility(a,r.key.event_id).sendable} onClick={()=>act(r,'reissue')}>현재 연락처 확인·재발급 예정</button><button onClick={()=>setMessage(r.id)}>문자 미리보기</button><details><summary>가상 이력</summary><ol>{r.history.map((h,i)=><li key={i}>{h}</li>)}</ol></details></td></tr>;})}</tbody></table></div>
- {requests.find(r=>r.id===message)&&<pre className={styles.messagePreview}>{(()=>{const r=requests.find(r=>r.id===message)!;const a=applicants.find(a=>applicantKey(a)===applicantKey(r.key));return `[테스트 전용 · 실제 발송 불가]\n${r.name}님, ${r.document.name} v${r.document.revision} 서명 안내\n링크: {미발급_접근불가_자리표시자}\n만료 예정: ${date(r.expiresAt)}\n${r.id.startsWith('server-preview-')?`${requestStates[r.status]} · 서버 가상 검증 기록 / 실제 접근 없음`:requestAccessReason(r,a,new Date().toISOString())}`;})()}</pre>}
+ <div className={styles.tableScroll}><table><caption>요청·상태 변경 이력 · 개발 링크는 테스트 전용</caption><thead><tr>{['이벤트 / 참가자','신청 상태 (당시 → 현재)','서류 / 버전','요청 상태','생성 / 만료 / 완료','접근·연락처 판정','관리 / 이력'].map(v=><th key={v}>{v}</th>)}</tr></thead><tbody>{requests.map(r=>{const a=applicants.find(a=>applicantKey(a)===applicantKey(r.key));return <tr key={r.id}><td>{events.find(([id])=>id===r.key.event_id)?.[1]}<br/>{r.name}</td><td>{label(r.applicantStatus)} → {a?label(a.status):'미확인'}</td><td>{r.document.name} v{r.document.revision}</td><td>{requestStates[r.status]}<br/>운영 링크 미발급 · 개발 링크는 아래 별도 제공 · 세대 {r.generation}</td><td>{date(r.createdAt)}<br/>{date(r.expiresAt)}<br/>{date(r.completedAt)}</td><td>{r.id.startsWith('server-preview-')?`${requestStates[r.status]} · 서버 개발 시연 기록 / 운영 접근 없음`:requestAccessReason(r,a,new Date().toISOString())}</td><td>{r.id.startsWith('server-preview-')&&<DemoRequestControls row={r} call={body=>api(body)} getPdf={()=>demoPdf(r.id,r.key.event_id)} refresh={()=>reloadServer()}/>}<button disabled={r.status==='completed'} onClick={()=>act(r,'cancel')}>요청 취소 시험</button><button disabled={r.status==='completed'} onClick={()=>act(r,'expire')}>만료 시험</button><button disabled={r.status==='completed'||!a||!targetEligibility(a,r.key.event_id).sendable} onClick={()=>act(r,'reissue')}>현재 연락처 확인·재발급 예정</button><button onClick={()=>setMessage(r.id)}>문자 미리보기</button><details><summary>가상 이력</summary><ol>{r.history.map((h,i)=><li key={i}>{h}</li>)}</ol></details></td></tr>;})}</tbody></table></div>
+ {requests.find(r=>r.id===message)&&<pre className={styles.messagePreview}>{(()=>{const r=requests.find(r=>r.id===message)!;const a=applicants.find(a=>applicantKey(a)===applicantKey(r.key));return `[테스트 전용 · 실제 발송 불가]\n${r.name}님, ${r.document.name} v${r.document.revision} 서명 안내\n링크: {미발급_접근불가_자리표시자}\n만료 예정: ${date(r.expiresAt)}\n${r.id.startsWith('server-preview-')?`${requestStates[r.status]} · 서버 개발 시연 기록 / 운영 접근 없음`:requestAccessReason(r,a,new Date().toISOString())}`;})()}</pre>}
  <button disabled>실제 문자 발송 · 미구현</button><button disabled>실제 링크·OTP 발급 · 미구현</button>
  </section>;
 }

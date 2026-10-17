@@ -1,6 +1,7 @@
-import { StoredPreviewService, type StoredCommand } from '@/lib/esign-request-service';
-import { MemoryRequestRepository } from '@/lib/esign-request-repository';
-const sessions=new Map<string,{service:StoredPreviewService}>();
+import { type StoredCommand } from '@/lib/esign-request-service';
+import {fixtureAuth} from '@/lib/esign-preview-server';
+import {previewContext,bindDemoLink} from '@/lib/esign-demo-state';
+import {DemoError} from '@/lib/esign-demo-flow';
 export async function POST(request:Request){
  if(process.env.NODE_ENV!=='development')return new Response(null,{status:404});
  const url=new URL(request.url);
@@ -15,8 +16,19 @@ export async function POST(request:Request){
  const reader=request.body?.getReader();if(!reader)return Response.json({code:'INVALID_JSON'},{status:400});
  let size=0;const chunks:Uint8Array[]=[];
  for(;;){const {done,value}=await reader.read();if(done)break;size+=value.length;if(size>16000){await reader.cancel();return Response.json({code:'BODY_TOO_LARGE'},{status:413});}chunks.push(value);}
- let input:StoredCommand;try{const bytes=new Uint8Array(size);let offset=0;for(const c of chunks){bytes.set(c,offset);offset+=c.length;}input=JSON.parse(new TextDecoder().decode(bytes));if(!input||typeof input!=='object')throw new Error();}catch{return Response.json({code:'INVALID_JSON'},{status:400});}
- // No TTL eviction: refresh can retrieve rows for this server process lifetime.
- const key=`${credential}:${session}`;let state=sessions.get(key);if(!state){if(sessions.size>=50)return Response.json({code:'PREVIEW_CAPACITY'},{status:429});state={service:new StoredPreviewService(new MemoryRequestRepository())};sessions.set(key,state);}
- const result=await state.service.execute(credential,input);return Response.json(result.body,{status:result.http,headers:{'Cache-Control':'no-store'}});
+ let input:StoredCommand | {operation:'demo-link'|'demo-status'|'demo-pdf';eventId:string;requestId:string};try{const bytes=new Uint8Array(size);let offset=0;for(const c of chunks){bytes.set(c,offset);offset+=c.length;}input=JSON.parse(new TextDecoder().decode(bytes));if(!input||typeof input!=='object')throw new Error();}catch{return Response.json({code:'INVALID_JSON'},{status:400});}
+ const ctx=previewContext(credential!,session);if(!ctx)return Response.json({code:'PREVIEW_CAPACITY'},{status:429});
+ if(!fixtureAuth.authenticate(credential)?.events.includes(input.eventId))return Response.json({code:'EVENT_FORBIDDEN'},{status:403});
+ try{
+  if(input.operation==='demo-link'){
+   const link=await ctx.demo.issue(input.requestId,input.eventId);bindDemoLink(link.token,ctx);
+   return Response.json({code:'DEVELOPMENT_TEST_LINK',path:`/preview/sign/${link.token}`,verificationCode:link.code},{headers:{'Cache-Control':'no-store'}});
+  }
+  if(input.operation==='demo-status'||input.operation==='demo-pdf'){
+   if(!await ctx.repository.get(input.requestId,[input.eventId]))return Response.json({code:'REQUEST_NOT_FOUND'},{status:404});
+   if(input.operation==='demo-pdf')return new Response((await ctx.demo.adminPdf(input.requestId)).buffer as ArrayBuffer,{headers:{'Content-Type':'application/pdf','Content-Disposition':'inline; filename="malmoim-demo-completed.pdf"','Cache-Control':'no-store'}});
+   return Response.json(await ctx.demo.summary(input.requestId),{headers:{'Cache-Control':'no-store'}});
+  }
+  const result=await ctx.service.execute(credential,input);return Response.json(result.body,{status:result.http,headers:{'Cache-Control':'no-store'}});
+ }catch(error){return Response.json({code:error instanceof DemoError?error.message:'DEMO_PROCESSING_FAILED'},{status:error instanceof DemoError?error.status:500});}
 }
