@@ -1,4 +1,5 @@
-import { PreviewService, fixtureAuth, type PreviewCommand } from './esign-preview-server.ts';
+import { PreviewService, fixtureAuth, eligibilityCode, type PreviewCommand } from './esign-preview-server.ts';
+import { applicantKey, type ApplicantKey } from './signing-targets.ts';
 import { type RequestRepository, reissueDecision } from './esign-request-repository.ts';
 export type StoredCommand=Omit<PreviewCommand,'operation'>&{operation:PreviewCommand['operation']|'list'|'detail'|'expire'};
 // Authentication and validation remain server-side; the repository owns request rows.
@@ -6,6 +7,7 @@ export class StoredPreviewService {
  private validator=new PreviewService();
  constructor(privateRepository:RequestRepository){this.repository=privateRepository;}
  private repository:RequestRepository;
+ demoEligibility(key:ApplicantKey){const a=this.validator.applicants.find(a=>applicantKey(a)===applicantKey(key));return a?eligibilityCode(a,key.event_id):'APPLICANT_NOT_FOUND';}
  async execute(credential:string|null,input:StoredCommand,now=new Date().toISOString()){
   const actor=fixtureAuth.authenticate(credential);
   if(!actor)return {http:401,body:{code:'UNAUTHENTICATED'}};

@@ -1,6 +1,6 @@
 import {test} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import ts from 'typescript';
 const path=new URL('../src/app/preview/document-admin/api/validate/route.ts',import.meta.url);
-const source=readFileSync(path,'utf8').replace("@/lib/esign-request-service",new URL('../src/lib/esign-request-service.ts',import.meta.url).href).replace("@/lib/esign-request-repository",new URL('../src/lib/esign-request-repository.ts',import.meta.url).href);
+const source=readFileSync(path,'utf8').replace(/@\/lib\/([a-z-]+)/g,(_,name)=>new URL(`../src/lib/${name}.ts`,import.meta.url).href);
 const compiled=ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.ESNext,target:ts.ScriptTarget.ES2022}}).outputText;
 const {POST}=await import(`data:text/javascript;base64,${Buffer.from(compiled).toString('base64')}`);
 const body={operation:'validate',eventId:'preview-event-1',documentId:'fixture-template-1',version:1,keys:[{event_id:'preview-event-1',source:'season9',application_id:'preview-application-1'}],days:7,idempotencyKey:'route-request-123'};
