@@ -26,7 +26,7 @@ export const adminGroups = [
       },
       {
         "slug": "participants",
-        "title": "참여이력관리",
+        "title": "전체 참여 이력 관리",
         "description": "개인별 실제 참석 횟수와 이벤트 참여 이력을 관리합니다."
       },
       {
