@@ -1,3 +1,4 @@
+import {EventArchiveControl} from './event-archive-control';
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { getEvent } from '@/lib/events';
@@ -11,9 +12,9 @@ export async function EventView({email,slug,edit=false,information=false}:{email
   if (result?.kind === 'missing') notFound();
   const row = result?.kind === 'ready' ? result.row : undefined;
   const title = !slug?'이벤트 등록':edit?'이벤트 수정':row?.title ?? '이벤트 정보';
-  return <AdminShell email={email} current="events" title={title}><nav className="ops-breadcrumb" aria-label="페이지 이동 경로"><Link href="/admin/events">이벤트 관리</Link><span>/</span><span>{title}</span></nav><div className="ops-heading"><h1>{title}</h1></div>
-    {result?.kind === 'error'?<section className="ops-panel" role="alert"><h2>이벤트를 불러오지 못했습니다</h2><p>이벤트 설정 SQL 적용 여부와 조회 권한을 확인해주세요.</p><Link href="/admin/events">목록으로</Link></section>:!slug||edit?<section className="ops-panel">{row&&<p><Link href={`/admin/events/${encodeURIComponent(row.slug)}/information`}>← 이벤트 정보로 돌아가기</Link></p>}<EventEditor row={row}/></section>:row&&<>
-    {information&&<nav className="ops-tabs" aria-label="이벤트 관리"><Link href={`/admin/events/${row.slug}/overview`} aria-current={!information?"page":undefined}>운영 홈</Link><Link href={`/admin/events/${row.slug}/information`} aria-current={information?"page":undefined}>이벤트 정보</Link><Link href={`/admin/events/${encodeURIComponent(row.slug)}/applicants`}>신청자·선발</Link><Link href={`/admin/events/${row.slug}/attendance`}>참여·출석</Link><Link href={`/admin/events/${row.slug}/resources`}>자료</Link><Link href={`/admin/events/${row.slug}/certificates`}>수료증</Link></nav>}
+  return <AdminShell email={email} current="events" title={title}><nav className="ops-breadcrumb" aria-label="페이지 이동 경로"><Link href="/admin/events">이벤트 관리</Link><span>/</span><span>{title}</span></nav><div className="ops-heading"><h1>{title}</h1>{row&&<EventArchiveControl slug={row.slug} title={row.title} revision={row.archive_revision} archived={row.is_archived}/>}</div>{row?.is_archived&&<p className="notice">삭제된 이벤트입니다. 신청 접수는 차단되어 있으며 위의 복원 버튼으로 목록에 되돌릴 수 있습니다.</p>}
+    {result?.kind === 'error'?<section className="ops-panel" role="alert"><h2>이벤트를 불러오지 못했습니다</h2><p>이벤트 설정 SQL 적용 여부와 조회 권한을 확인해주세요.</p><Link href="/admin/events">목록으로</Link></section>:!slug||edit?<section className="ops-panel">{row&&<p><Link className="event-home-return" href={`/admin/events/${encodeURIComponent(row.slug)}/overview`}>← 이벤트 홈</Link> <Link href={`/admin/events/${encodeURIComponent(row.slug)}/information`}>← 이벤트 정보로 돌아가기</Link></p>}<EventEditor row={row}/></section>:row&&<>
+    {information&&<nav className="ops-tabs" aria-label="이벤트 관리"><Link href={`/admin/events/${row.slug}/overview`} aria-current={!information?"page":undefined} className="event-home-return">← 이벤트 홈</Link><Link href={`/admin/events/${row.slug}/information`} aria-current={information?"page":undefined}>이벤트 정보</Link><Link href={`/admin/events/${encodeURIComponent(row.slug)}/applicants`}>신청자·선발</Link><Link href={`/admin/events/${row.slug}/attendance`}>참여·출석</Link><Link href={`/admin/events/${row.slug}/resources`}>자료</Link><Link href={`/admin/events/${row.slug}/certificates`}>수료증</Link></nav>}
     {information?<EventInformation row={row}/>:<EventOverview row={row}/>}</>}
   </AdminShell>;
 }

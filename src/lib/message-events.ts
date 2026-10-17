@@ -10,7 +10,7 @@ export async function getMessageEvents():Promise<{kind:'ready';events:Registered
   const events:RegisteredMessageEvent[]=[];
   // Supabase caps rows per response. Page through the list rather than silently dropping events.
   for(let offset=0;;offset+=100){
-   const result=await client.from('recruitment_events').select('id,slug,title,fee_notice,starts_at,location,status').order('created_at',{ascending:false}).order('id',{ascending:false}).range(offset,offset+99);
+   const result=await client.from('recruitment_events').select('id,slug,title,fee_notice,starts_at,location,status').eq('is_archived',false).order('created_at',{ascending:false}).order('id',{ascending:false}).range(offset,offset+99);
    if(result.error)return {kind:'error'};
    const rows=result.data as RegisteredMessageEvent[];
    events.push(...rows);
