@@ -47,7 +47,8 @@ create policy history_reviews_edit on public.history_reviews for update to authe
 create policy history_reviews_delete on public.history_reviews for delete to authenticated using ((select auth.uid()) = author_id);
 
 insert into storage.buckets (id,name,public,file_size_limit,allowed_mime_types)
-values ('history-review-photos','history-review-photos',false,204800,array['image/jpeg','image/png','image/webp']);
+-- Limit is for processed files (1 MiB); 5 MiB originals stay in the browser.
+values ('history-review-photos','history-review-photos',false,1048576,array['image/jpeg','image/png','image/webp']);
 -- No alterations to storage.objects RLS or other buckets/policies.
 create policy history_review_photos_read on storage.objects for select to anon, authenticated using (
   bucket_id = 'history-review-photos' and (

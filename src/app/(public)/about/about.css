@@ -60,13 +60,6 @@
 .about-page .about-program-features li { display: grid; grid-template-columns: 24px minmax(0, 1fr); align-items: start; gap: 10px; min-height: 36px; min-width: 0; color: var(--about-muted); font-size: 14px; line-height: 1.7; }
 .about-page .about-program-features li span { font-weight: 600; }
 .about-page .about-program-icon { width: 24px; height: 24px; color: var(--about-blue); }
-.about-page .about-session-info { display: grid; grid-template-columns: 1fr; gap: 14px; margin-top: 24px; }
-.about-page .about-session-info > div { display: grid; grid-template-columns: 24px 110px minmax(0, 1fr); gap: 10px; align-content: start; min-height: 28px; min-width: 0; }
-.about-page .about-session-info .about-program-icon { grid-row: 1; align-self: start; }
-.about-page .about-session-info dt { font-size: 14px; font-weight: 700; }
-.about-page .about-session-info dd { grid-column: 3; font-size: 14px; }
-.about-page .about-session-info dd span { display: block; }
-.about-page .about-session-info dd small { display: block; margin-top: 4px; font-size: 12px; }
 
 .about-page .about-recruitment-banner { padding: 28px 24px; background: #faf8f1; }
 .about-page .about-recruitment-top { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.8fr); align-items: center; gap: var(--about-gap); }
@@ -123,7 +116,6 @@
 
 @media (max-width: 1000px) {
   .about-page .about-program-header { flex-direction: column; align-items: stretch; }
-  .about-page .about-session-info { grid-template-columns: 1fr; }
   .about-page .about-recruitment-top { grid-template-columns: 1fr; gap: 24px; }
 }
 @media (max-width: 800px) {
@@ -234,14 +226,24 @@
   .about-page .about-hero .about-photo .about-image { position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; }
 }
 
-/* Preserve the full activity scene while matching the description column height. */
-.about-page .about-program-layout:has(> .about-session-photo) { align-items: stretch; }
-.about-page .about-session-photo { position: relative; min-height: 0; border-radius: 12px; background: #f8f7f5; }
-.about-page .about-session-photo .about-image { position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; object-fit: cover; object-position: 40% center; }
+/* The complete copy sets the row height; the absolute image only fills its column. */
+.about-page .about-session-layout { grid-template-rows: auto; align-items: stretch; }
+.about-page .about-session-copy { display: block; grid-column: 2; grid-row: 1; align-self: stretch; min-width: 0; min-height: 0; }
+.about-page .about-session-body { min-width: 0; margin-top: 14px; }
+.about-page .about-session-photo { grid-column: 1; grid-row: 1; align-self: stretch; position: relative; height: auto; min-height: 0; max-height: none; margin: 0; aspect-ratio: auto; border-radius: 12px; background: #f8f7f5; }
+.about-page .about-session-photo .about-image { position: absolute; inset: 0; width: 100%; height: 100%; aspect-ratio: auto; object-fit: cover; object-position: 66% center; }
 @media (max-width: 800px) {
+  .about-page .about-session-layout { grid-template-rows: auto auto; row-gap: 20px; }
+  .about-page .about-session-copy { grid-column: 1; grid-row: 2; }
+  .about-page .about-session-body { margin-top: 20px; }
   .about-page .about-session-photo .about-image { position: static; height: auto; aspect-ratio: 16 / 9; }
 }
 
-.about-page .about-session-description { display: grid; gap: 12px; margin-top: 20px; }
-.about-page .about-session-description p { font-size: 16px; line-height: 1.7; word-break: keep-all; overflow-wrap: break-word; text-wrap: pretty; }
-.about-page .about-session-description strong { font-weight: 600; }
+.about-page .about-session-description p { font-size: 15px; line-height: 1.65; word-break: keep-all; overflow-wrap: break-word; text-wrap: pretty; }
+.about-page .about-session-stages { display: grid; gap: 0; margin: 18px 0 0; padding: 0; list-style: none; }
+.about-page .about-session-stages li { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; min-width: 0; }
+.about-page .about-session-stages li + li { margin-top: 12px; padding-top: 12px; border-top: 1px solid #ebe8e5; }
+.about-page .about-session-stage-number { font-size: 13px; line-height: 24px; font-weight: 700; color: var(--about-muted); font-variant-numeric: tabular-nums; }
+.about-page .about-session-stages h4 { display: flex; flex-wrap: wrap; align-items: baseline; gap: 10px; font-size: 16px; line-height: 1.5; font-weight: 700; }
+.about-page .about-session-duration { color: var(--about-blue); font-size: 14px; font-weight: 700; white-space: nowrap; }
+.about-page .about-session-stages p { margin-top: 4px; font-size: 15px; line-height: 1.65; word-break: keep-all; overflow-wrap: break-word; }
