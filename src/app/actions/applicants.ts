@@ -4,6 +4,13 @@ import {createClient} from '@/lib/supabase/server';
 import {applicantInput} from '@/lib/applicant-validation';
 import {revalidatePath} from 'next/cache';
 import {applicantDate} from '@/lib/applicant-date';
+import {archiveSelection,type ApplicantSelection} from '@/lib/applicant-selection';
+export async function archiveApplicants(items:ApplicantSelection[],archived:boolean):Promise<string>{
+ if((await getAdminAccess()).status!=='admin')return 'forbidden';
+ let selected;try{selected=archiveSelection(items);if(typeof archived!=='boolean')return 'invalid';}catch{return 'invalid';}
+ try{const client=await createClient();const result=await client.rpc('archive_event_applications',{p_items:selected,p_archived:archived});
+ if(result.error)return 'error';if(result.data==='saved')revalidatePath('/admin','layout');return result.data??'error';}catch{return 'error';}
+}
 export async function saveApplicantDate(slug:string,source:string,id:string,revision:number,value:string):Promise<{code:string}>{
  if((await getAdminAccess()).status!=='admin')return {code:'forbidden'};
  let date;try{date=applicantDate(value);}catch{return {code:'invalid'};}

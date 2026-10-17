@@ -19,7 +19,7 @@ export async function getEventApplicationCount(eventId:string):Promise<number|nu
   if ((await getAdminAccess()).status !== 'admin') return null;
   try {
     const client = await createClient();
-    const result = await client.from('event_application_list').select('id',{count:'exact',head:true}).eq('event_id',eventId);
+    const result = await client.from('event_application_admin_list').select('id',{count:'exact',head:true}).eq('is_archived',false).eq('event_id',eventId);
     return result.error ? null : result.count;
   } catch { return null; }
 }

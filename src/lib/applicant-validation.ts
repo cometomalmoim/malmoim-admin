@@ -8,4 +8,4 @@ export function applicantInput(data:FormData){
  if(year&&(!/^\d{4}$/.test(year)||Number(year)<1900||Number(year)>new Date().getUTCFullYear()))throw new Error('invalid');
  return {source,id:id||null,name,contact,contact_type,nationality,note,source_note,status,payment,birth_year:year?Number(year):null,revision};
 }
-export type ApplicantQuery={q?:string;status?:string;payment?:string;nationality?:string;year?:string;event?:string;utm_source?:string;utm_medium?:string};
+export type ApplicantQuery={archived?:string;q?:string;status?:string;payment?:string;nationality?:string;year?:string;event?:string;utm_source?:string;utm_medium?:string};
