@@ -1,11 +1,13 @@
  'use client';
-import {startTransition,useActionState} from 'react';
+import {startTransition,useActionState,useEffect,useRef} from 'react';
 import {saveApplicant} from '@/app/actions/applicants';
 import {applicationStatuses,paymentStatuses} from '@/lib/applicant-validation';
 import type {ApplicationRow} from '@/lib/recruitment';
 export function ApplicantEditor({slug,row,returnHref}:{slug:string;row?:ApplicationRow;returnHref?:string}){
  const [state,action,pending]=useActionState(saveApplicant.bind(null,slug),{code:''});
- const messages:Record<string,string>={saved:'저장했습니다.',invalid:'필수 항목과 입력 형식을 확인해주세요.',duplicate:'이 이벤트에 같은 연락처가 있습니다. 기존 신청자를 확인해주세요.',conflict:'다른 운영진이 먼저 수정했습니다. 새로고침하여 최신 내용을 확인한 뒤 다시 수정해주세요.',missing:'이벤트 또는 신청자를 찾을 수 없습니다.',forbidden:'관리자 권한을 확인해주세요.',error:'저장하지 못했습니다. 입력을 유지한 채 다시 시도해주세요.'};
+ const duplicatePopup=useRef<HTMLDialogElement>(null);
+ useEffect(()=>{if(state.code==='duplicate')duplicatePopup.current?.showModal();},[state]);
+ const messages:Record<string,string>={saved:'저장했습니다.',invalid:'필수 항목과 입력 형식을 확인해주세요.',duplicate:'이미 등록하였습니다.',conflict:'다른 운영진이 먼저 수정했습니다. 새로고침하여 최신 내용을 확인한 뒤 다시 수정해주세요.',missing:'이벤트 또는 신청자를 찾을 수 없습니다.',forbidden:'관리자 권한을 확인해주세요.',error:'저장하지 못했습니다. 입력을 유지한 채 다시 시도해주세요.'};
  if(!row&&state.code==='saved')return <div role="status"><p>신청자를 추가했습니다.</p><a href={returnHref??`/admin/events/${encodeURIComponent(slug)}/applicants`}>목록 새로고침·추가 등록</a></div>;
  return <form className="evt-form applicant-editor" aria-label={row?`신청자 수정 ${row.name}`:'신청자 추가'} onSubmit={event=>{event.preventDefault();const data=new FormData(event.currentTarget);startTransition(()=>action(data));}}>
  <input type="hidden" name="id" value={row?.id??''}/><input type="hidden" name="source" value={row?.source??'manual'}/><input type="hidden" name="revision" value={row?.revision??0}/>
@@ -22,5 +24,6 @@ export function ApplicantEditor({slug,row,returnHref}:{slug:string;row?:Applicat
  <label>운영진 내부 메모<textarea name="internal_note" defaultValue={row?.internal_note??''} maxLength={3000} rows={3}/></label>
  <button className="evt-primary" type="submit">{pending?'저장 중…':row?'변경사항 저장':'신청자 추가'}</button></fieldset>
  <p role="status" aria-live="polite">{messages[state.code]??''}</p>{state.code==='conflict'&&<a href={returnHref??`/admin/events/${encodeURIComponent(slug)}/applicants`}>최신 목록 불러오기</a>}
+ <dialog ref={duplicatePopup} className="applicant-detail-dialog applicant-duplicate" aria-label="중복 등록 안내"><h2>등록할 수 없습니다</h2><p role="alert">이미 등록하였습니다.</p><p>이 이벤트에 같은 연락처의 신청자가 있습니다. 기존 신청자를 확인해주세요.</p><button type="button" onClick={()=>duplicatePopup.current?.close()}>확인</button></dialog>
  </form>;
 }
