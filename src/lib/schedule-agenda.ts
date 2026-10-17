@@ -1,6 +1,14 @@
 import type { Schedule, ScheduleTag } from './schedule-types';
 
 export type ArchivePeriod = '1m' | '3m' | 'year' | 'all';
+export type ScheduleSearchScope = 'all' | 'upcoming' | 'closed';
+
+export function searchSchedules(rows: Schedule[], tags: ScheduleTag[], query: string, scope: ScheduleSearchScope, today: string) {
+  const search = query.normalize('NFKC').trim().toLocaleLowerCase('ko');
+  const names = new Map(tags.map(tag => [tag.id, tag.name]));
+  return rows.filter(row => !row.hidden_at && (scope === 'all' || (scope === 'upcoming' ? row.end_date >= today : row.end_date < today)) &&
+    (!search || `${row.title} ${names.get(row.tag_id) ?? ''} ${row.notes ?? ''}`.normalize('NFKC').toLocaleLowerCase('ko').includes(search)));
+}
 
 export function archiveStartDate(period: ArchivePeriod, today: string) {
   if (period === 'all') return null;
@@ -16,10 +24,7 @@ export function archiveStartDate(period: ArchivePeriod, today: string) {
 
 export function filterClosedSchedules(rows: Schedule[], tags: ScheduleTag[], query: string, period: ArchivePeriod, today: string) {
   const from = archiveStartDate(period, today);
-  const search = query.normalize('NFKC').trim().toLocaleLowerCase('ko');
-  const names = new Map(tags.map(tag => [tag.id, tag.name]));
-  return rows.filter(row => !row.hidden_at && row.end_date < today && (!from || row.end_date >= from) &&
-    (!search || `${row.title} ${names.get(row.tag_id) ?? ''} ${row.notes ?? ''}`.normalize('NFKC').toLocaleLowerCase('ko').includes(search)));
+  return searchSchedules(rows, tags, query, 'closed', today).filter(row => !from || row.end_date >= from);
 }
 
 export function daysUntilSchedule(row: Pick<Schedule, 'start_date'>, today: string) {

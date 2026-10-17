@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { archiveStartDate, daysUntilSchedule, filterClosedSchedules, scheduleAgenda } from '../src/lib/schedule-agenda.ts';
+import { archiveStartDate, daysUntilSchedule, filterClosedSchedules, scheduleAgenda, searchSchedules } from '../src/lib/schedule-agenda.ts';
 
 const row = (id, start_date, end_date = start_date, hidden_at = null) => ({id, title:id, start_date, end_date, hidden_at});
 test('D-Day uses calendar days across month/year and leap-day boundaries', () => {
@@ -40,4 +40,12 @@ test('archive search combines title, tag and note with inclusive end-date filter
   assert.equal(filterClosedSchedules(rows,tags,'비고','3m','2026-10-17').length,1);
   assert.equal(filterClosedSchedules(rows,tags,'','all','2026-10-17').length,2);
   assert.equal(filterClosedSchedules(rows,tags,'없는 검색어','all','2026-10-17').length,0);
+});
+
+test('unified search spans all months and scopes, normalizing case and full-width text', () => {
+  const rows=[{...row('past','2026-01-01'),notes:'Meeting NOTES'}, {...row('future','2027-01-01'),notes:'meeting notes'},row('hidden','2026-01-01','2026-01-01','yes')];
+  assert.equal(searchSchedules(rows,[],'ＭＥＥＴＩＮＧ','all','2026-10-17').length,2);
+  assert.deepEqual(searchSchedules(rows,[],'notes','upcoming','2026-10-17').map(row=>row.id),['future']);
+  assert.deepEqual(searchSchedules(rows,[],'notes','closed','2026-10-17').map(row=>row.id),['past']);
+  assert.equal(searchSchedules(rows,[],'','all','2026-10-17').length,2);
 });
