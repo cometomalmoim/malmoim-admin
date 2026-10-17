@@ -79,6 +79,11 @@ export const adminGroups = [
         "slug": "suggestions",
         "title": "건의함",
         "description": "운영 관련 의견과 건의 사항을 확인합니다."
+      },
+      {
+        "slug": "surveys",
+        "title": "참가자 설문조사",
+        "description": "기수별 익명 설문을 공개하고 응답 결과를 확인합니다."
       }
     ]
   },
