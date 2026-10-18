@@ -15,7 +15,7 @@ export function HalloweenAgeNotice({english=false}:{english?:boolean}){
  },[]);
  return <div className="hw-age-notice" ref={container}>
   <strong>{copy.range}</strong><p>{copy.description}</p>
-  <dialog ref={dialog} className="hw-age-dialog" aria-labelledby={titleId} aria-describedby={bodyId}>
+  <dialog ref={dialog} className="hw-age-dialog" aria-labelledby={titleId} aria-describedby={bodyId} onClose={()=>{container.current?.scrollIntoView({block:'start',behavior:'instant'});container.current?.closest('form')?.querySelector<HTMLInputElement>('input[name="name"]')?.focus({preventScroll:true});}}>
    <span className="hw-age-icon" aria-hidden="true">!</span><h2 id={titleId}>{copy.title}</h2>
    <div id={bodyId}><strong>{copy.range}</strong><p>{copy.description}</p></div>
    <button type="button" onClick={()=>dialog.current?.close()}>{copy.confirm}</button>
