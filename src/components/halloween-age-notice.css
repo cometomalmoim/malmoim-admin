@@ -29,3 +29,11 @@
 @media(max-width:500px){.hw-age-dialog{padding:26px 22px}.hw-welcome-stage{padding:24px 18px;min-height:470px}.hw-dokkaebi{height:260px}.hw-page .hw-age-dialog:not(.hw-welcome-dialog) h2{font-size:23px}}
 
 .hw-page .hw-form .hw-age-dialog button.hw-audio-off{width:auto;min-height:36px;margin:0 0 14px;padding:6px 12px;background:transparent;border-color:#b78b6b;color:#72523b;font-size:12px}
+/* Keep the creature out of sight until entry, then reveal it abruptly. */
+.hw-welcome-choice{display:flex;flex-direction:column;justify-content:center}
+.hw-welcome-choice .hw-dokkaebi{visibility:hidden;height:0;margin:0;opacity:0}
+.hw-welcome-choice .hw-welcome-kicker{margin-bottom:28px}
+.hw-welcome-choice .hw-welcome-actions{width:100%}
+.hw-welcome-arrival .hw-dokkaebi{animation:hw-dokkaebi-jump 2.4s linear both}
+@keyframes hw-dokkaebi-jump{0%,8%{opacity:0;transform:scale(.3);filter:brightness(.1)}9%{opacity:1;transform:scale(1.28);filter:brightness(1.25)}16%{opacity:1;transform:scale(1.08);filter:brightness(1.05)}30%,100%{opacity:1;transform:scale(1);filter:brightness(1)}}
+@media(prefers-reduced-motion:reduce){.hw-welcome-arrival .hw-dokkaebi{animation:none;opacity:1;transform:none}}

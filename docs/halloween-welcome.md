@@ -23,3 +23,6 @@ Popup size: up to 680px desktop, viewport minus 32px on mobile, up to 90dvh. SQL
 ## Raspy goblin and ambience follow-up
 Voice regenerated from the same System.Speech text, lowered to 0.68 speed with interpolation, parallel tanh saturation (35% wet), 38 Hz amplitude modulation (20%), and 75/190/310 ms echoes. Normalized peak remains 24500 PCM16. Duration 5.95 seconds.
 Original 12-second synthesized drone uses 44/55.5/82 Hz layers and quiet detuned 164.75/174.5 Hz tones, with fades and 22% player volume. No external music recording is used. Voice and ambience start only on explicit sound choice. Quiet mode starts neither; skip, JOIN, Escape and unmount stop both. A mute control is available on the JOIN notice. Human listening is needed to assess the intended raspiness.
+
+## Sudden reveal follow-up
+The goblin stays visually hidden in the entry choice. The image loads eagerly so the reveal does not wait for a new network request. After entry, a 192 ms dark lead-in changes abruptly to a 1.28-scale face at 216 ms, settling to normal size. Reduced-motion mode shows a static image. Sound remains opt-in; quiet and skip remain available.
