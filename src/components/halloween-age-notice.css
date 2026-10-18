@@ -9,3 +9,21 @@
 @media(max-width:500px){.hw-age-dialog{padding:24px}.hw-age-dialog strong{font-size:16px}.hw-age-notice{padding:14px}.hw-age-hero{font-size:12px}}
 
 .hw-age-dialog.hw-welcome-dialog{padding:0;background:#17121e;border-color:#684237;color:#ffdfb1;overflow:hidden}.hw-welcome-stage{padding:24px;text-align:center;background:radial-gradient(ellipse at 50% 45%,#44242b 0%,#17121e 65%);min-height:440px;box-sizing:border-box}.hw-welcome-kicker{font-size:10px;font-weight:700;letter-spacing:.2em;color:#d4a276}.hw-dokkaebi{display:block;width:min(100%,300px);height:230px;margin:2px auto -10px}.hw-welcome-choice .hw-dokkaebi{filter:brightness(.55);opacity:.8}.hw-page .hw-welcome-dialog h2{color:#ffd69b;font-size:36px!important;letter-spacing:.15em;margin:4px 0 12px!important;text-shadow:0 2px 18px #df682455}.hw-welcome-stage>p{color:#c8b1ad;font-size:13px;margin:8px 0 18px;line-height:1.7}.hw-welcome-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:18px}.hw-page .hw-form .hw-welcome-dialog .hw-welcome-actions button{min-height:44px;padding:10px;font-size:12px;background:#af4c18;border-color:#cf7540;color:#fff4e6}.hw-page .hw-form .hw-welcome-dialog .hw-welcome-actions button:last-child{background:#302831;border-color:#756571;color:#f3e0d0}.hw-page .hw-form .hw-welcome-dialog button.hw-welcome-skip{background:transparent;border:0;padding:10px;margin-top:8px;font-size:12px;color:#d2c0b5;min-height:40px;text-decoration:underline;text-underline-offset:4px}.hw-welcome-audio{min-height:22px;font-size:11px!important}.hw-welcome-arrival .hw-dokkaebi{animation:hw-dokkaebi-arrive 2.4s cubic-bezier(.18,.8,.2,1) both;transform-origin:50% 65%}.hw-welcome-arrival .hw-dokkaebi-mouth{transform-origin:180px 220px;animation:hw-dokkaebi-talk 1.8s ease-out both}.hw-welcome-arrival h2{animation:hw-welcome-word .5s .2s both}@keyframes hw-dokkaebi-arrive{0%{transform:scale(.25) translateY(30px);opacity:0;filter:brightness(.2)}18%{transform:scale(1.12);opacity:1;filter:brightness(1.2)}35%{transform:scale(.98)}65%,100%{transform:scale(1);opacity:1;filter:brightness(1)}}@keyframes hw-dokkaebi-talk{0%,35%,75%,100%{transform:scaleY(1)}20%,55%{transform:scaleY(1.18)}}@keyframes hw-welcome-word{from{transform:translateY(8px);opacity:0}to{transform:translateY(0);opacity:1}}@media(prefers-reduced-motion:reduce){.hw-welcome-arrival .hw-dokkaebi,.hw-welcome-arrival .hw-dokkaebi-mouth,.hw-welcome-arrival h2{animation:none}}@media(max-width:500px){.hw-welcome-stage{padding:22px 18px;min-height:420px}.hw-dokkaebi{height:210px}.hw-page .hw-welcome-dialog h2{font-size:30px!important}}
+.hw-welcome-stage{background:radial-gradient(ellipse at 50% 35%,#351015 0%,#100b0d 70%)}
+.hw-dokkaebi{width:min(100%,320px);height:250px;object-fit:contain;mask-image:linear-gradient(to bottom,#000 85%,transparent);filter:drop-shadow(0 0 20px #8a17172e)}
+.hw-welcome-choice .hw-dokkaebi{filter:brightness(.42) saturate(.75);opacity:.85}
+.hw-age-prefix{display:block;margin:0 0 8px;font-size:12px;font-weight:700;color:#9a5d36}
+.hw-page .hw-form .hw-age-dialog .hw-join-help{font-size:11px;line-height:1.6;margin:12px 0 0;color:#88664c}
+@media(max-width:500px){.hw-dokkaebi{height:220px}.hw-page .hw-age-dialog:not(.hw-welcome-dialog) h2{font-size:23px}}
+
+.hw-age-dialog{width:min(680px,calc(100vw - 32px));max-height:90dvh;padding:40px}
+.hw-welcome-stage{padding:30px 40px;min-height:560px}
+.hw-dokkaebi{width:min(100%,410px);height:340px}
+.hw-page .hw-age-dialog:not(.hw-welcome-dialog) h2{font-size:30px}
+@media(max-width:500px){.hw-age-dialog{padding:26px 22px}.hw-welcome-stage{padding:24px 18px;min-height:470px}.hw-dokkaebi{height:260px}.hw-page .hw-age-dialog:not(.hw-welcome-dialog) h2{font-size:23px}}
+
+.hw-age-dialog{width:min(680px,calc(100vw - 32px));max-height:90dvh;padding:40px}
+.hw-welcome-stage{padding:30px 40px;min-height:560px}
+.hw-dokkaebi{width:min(100%,410px);height:340px}
+.hw-page .hw-age-dialog:not(.hw-welcome-dialog) h2{font-size:30px}
+@media(max-width:500px){.hw-age-dialog{padding:26px 22px}.hw-welcome-stage{padding:24px 18px;min-height:470px}.hw-dokkaebi{height:260px}.hw-page .hw-age-dialog:not(.hw-welcome-dialog) h2{font-size:23px}}
