@@ -15,3 +15,15 @@
 .hw-age-prefix{display:block;margin:0 0 8px;font-size:12px;font-weight:700;color:#9a5d36}
 .hw-page .hw-form .hw-age-dialog .hw-join-help{font-size:11px;line-height:1.6;margin:12px 0 0;color:#88664c}
 @media(max-width:500px){.hw-dokkaebi{height:220px}.hw-page .hw-age-dialog:not(.hw-welcome-dialog) h2{font-size:23px}}
+
+.hw-age-dialog{width:min(680px,calc(100vw - 32px));max-height:90dvh;padding:40px}
+.hw-welcome-stage{padding:30px 40px;min-height:560px}
+.hw-dokkaebi{width:min(100%,410px);height:340px}
+.hw-page .hw-age-dialog:not(.hw-welcome-dialog) h2{font-size:30px}
+@media(max-width:500px){.hw-age-dialog{padding:26px 22px}.hw-welcome-stage{padding:24px 18px;min-height:470px}.hw-dokkaebi{height:260px}.hw-page .hw-age-dialog:not(.hw-welcome-dialog) h2{font-size:23px}}
+
+.hw-age-dialog{width:min(680px,calc(100vw - 32px));max-height:90dvh;padding:40px}
+.hw-welcome-stage{padding:30px 40px;min-height:560px}
+.hw-dokkaebi{width:min(100%,410px);height:340px}
+.hw-page .hw-age-dialog:not(.hw-welcome-dialog) h2{font-size:30px}
+@media(max-width:500px){.hw-age-dialog{padding:26px 22px}.hw-welcome-stage{padding:24px 18px;min-height:470px}.hw-dokkaebi{height:260px}.hw-page .hw-age-dialog:not(.hw-welcome-dialog) h2{font-size:23px}}

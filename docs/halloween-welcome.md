@@ -4,7 +4,7 @@
 - Flow: application notice enters viewport → optional sound / quiet entrance / skip → 2.4-second reveal → DO YOU WANT TO JOIN US? and age notice → JOIN closes dialog and focuses name input.
 - Audio: Windows System.Speech, Microsoft Zira Desktop, pitch -45%, rate -15%; says “Welcome. Do you want to join us?” WAV mono 22050 Hz. Offline 0.8-speed pitch lowering, 130 ms echo at 24%, short fades and peak normalization to 24500. Playback only after explicit sound selection; closing/skipping stops it. Actual perceived tone still requires human listening.
 - Reduced-motion preference disables reveal animation. Quiet and skip controls remain available.
-- Age notice: birth years 1990–2007 inclusive; informational notice, not server-side age enforcement. JOIN does not submit an application.
+- Age notice: birth years 1990–2007 inclusive. Public Halloween birth year is required in the form, server action and DB wrapper (038). Existing responses and administrator test forms are preserved. JOIN does not submit an application.
 
 ## Generated visual
 
@@ -17,3 +17,5 @@ Create a cinematic realistic horror portrait asset for an adult Halloween party 
 ## Verification
 
 ESLint for changed components and production Webpack build are checked per PR. Browser checks cover optional playback start, quiet/skip, JOIN to form, age copy and mobile layout. No live application is submitted for this presentation change.
+
+Popup size: up to 680px desktop, viewport minus 32px on mobile, up to 90dvh. SQL 038 rollback checks passed against configured DB without public response inserts; required notice version then applied.
