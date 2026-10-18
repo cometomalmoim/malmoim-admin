@@ -2,7 +2,10 @@
 .hw-page.hw-poster-theme{--hw-ink:#11100e;--hw-paper:#11100e;--hw-yellow:#ff751a;--hw-teal:#ffab64;background:#11100e;color:#fff3dd;--edge:#46352a}
 .hw-poster-theme h1,.hw-poster-theme h2,.hw-poster-theme h3{color:inherit}
 .hw-page.hw-poster-theme .hw-header{background:#11100e;color:#fff3dd;border-bottom:1px solid var(--edge);max-width:none;padding-inline:max(24px,calc((100vw - 1216px)/2))}
-.hw-page.hw-poster-theme .hw-brand{background:#fff;padding:10px 14px;border-radius:4px}
+.hw-page.hw-poster-theme .hw-brand{background:transparent;padding:0;border-radius:0}
+.hw-logo-filter{position:absolute;width:0;height:0;overflow:hidden;pointer-events:none}
+.hw-page.hw-poster-theme .hw-brand .brand-logo{background:transparent;filter:drop-shadow(0 0 1px #fff3dd)}
+.hw-page.hw-poster-theme .hw-brand .brand-logo img{filter:url(#hw-logo-cutout)}
 .hw-page.hw-poster-theme .hw-button,.hw-page.hw-poster-theme .hw-nav-cta{background:#ff751a;border-color:#ff751a;border-radius:4px;color:#11100e;font-weight:800}
 .hw-page.hw-poster-theme .hw-button:hover,.hw-page.hw-poster-theme .hw-nav-cta:hover{background:#ffab64;border-color:#ffab64}
 .hw-page.hw-poster-theme .hw-languages [aria-current]{color:#ffab64}
