@@ -4,10 +4,10 @@ import {getAdminAccess} from '@/lib/auth';
 import {readAttribution} from '@/lib/attribution';
 import {registrationInput} from '@/lib/registration-validation';
 import {revalidatePath} from 'next/cache';
-export async function registrationInfo(slug:string,test=false):Promise<{open:boolean;notice?:string;version?:string;marketingNotice?:string}> {
+export async function registrationInfo(slug:string,test=false):Promise<{open:boolean;unavailable?:boolean;notice?:string;version?:string;marketingNotice?:string}> {
  if(test&&(await getAdminAccess()).status!=='admin')return {open:false};
  if(!test&&slug!=='halloween-2026')return {open:false};
- try {const client=await createClient();const result=await client.rpc('event_registration_info',{p_slug:slug,p_test:test});return result.error?{open:false}:result.data??{open:false};}catch{return {open:false};}
+ try {const client=await createClient();const result=await client.rpc('event_registration_info',{p_slug:slug,p_test:test});return result.error?{open:false,unavailable:true}:result.data??{open:false};}catch{return {open:false,unavailable:true};}
 }
 export async function registerEvent(slug:string,test:boolean,_previous:{code:string},data:FormData):Promise<{code:string}> {
  if(test&&(await getAdminAccess()).status!=='admin')return {code:'closed'};

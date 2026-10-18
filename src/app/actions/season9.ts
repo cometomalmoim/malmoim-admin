@@ -1,5 +1,11 @@
 "use server";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
+export async function season9RegistrationInfo(): Promise<{open:boolean;unavailable?:boolean}> {
+  try { const client=await createClient(); const {data,error}=await client.rpc("season9_registration_info");
+    return error ? {open:false,unavailable:true} : {open:data?.open===true};
+  } catch { return {open:false,unavailable:true}; }
+}
 export type SubmissionState = { success: boolean; message: string };
 export async function submitSeason9(_state: SubmissionState, form: FormData): Promise<SubmissionState> {
   const fail = (message:string): SubmissionState => ({success:false,message});
@@ -18,8 +24,9 @@ export async function submitSeason9(_state: SubmissionState, form: FormData): Pr
   for(const key of ["utm_source","utm_medium","utm_campaign","utm_term","utm_content"]) payload[key]=value(key,150)||null;
   try {
     const client=await createClient(); const {data,error}=await client.rpc("submit_season9_application",{payload});
-    if(error){const reason=error.message;return fail(reason.includes("recruitment_closed")?"현재 신청을 받지 않거나 모집이 마감되었습니다. / Applications are not open or have closed.":reason.includes("rate_limited")?"신청이 몰리고 있습니다. 잠시 후 다시 시도해주세요. / Please try again shortly.":"저장하지 못했습니다. 입력은 유지됩니다. 다시 시도해주세요. / Unable to save. Your input is preserved; please retry.");}
+    if(error){const reason=error.message;return fail(reason.includes("recruitment_closed")?"현재 신청을 받지 않거나 모집이 마감되었습니다. / Applications are not open or have closed.":reason.includes("duplicate_application")?"이미 신청한 연락처입니다. 변경은 운영진에게 문의해주세요. / This contact is already registered. Contact the organizers to make changes.":reason.includes("rate_limited")?"신청이 몰리고 있습니다. 잠시 후 다시 시도해주세요. / Please try again shortly.":"저장하지 못했습니다. 입력은 유지됩니다. 다시 시도해주세요. / Unable to save. Your input is preserved; please retry.");}
     if(data?.accepted!==true) return fail("접수를 확인하지 못했습니다. 다시 시도해주세요. / Please retry.");
+    revalidatePath("/admin", "layout");
     return {success:true,message:"신청이 접수되었습니다. 참가 확정과 납부 안내는 확인 후 보내드립니다. / Application received. Confirmation and payment instructions will follow after review."};
   }catch{return fail("서버에 연결하지 못했습니다. 다시 시도해주세요. / Connection failed. Please retry.");}
 }
