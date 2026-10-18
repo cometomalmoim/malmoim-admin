@@ -1,7 +1,7 @@
 import { EventRegistrationForm } from '@/components/event-registration-form';
 import type { Metadata } from "next";
 import Link from "next/link";
-import { BrandLogo } from "@/components/brand-logo";
+import { PartyLogo } from "./party-logo";
 import "./party.css";
 import { HalloweenPoster, PochaSection } from "./pocha-section";
 
@@ -28,7 +28,7 @@ const schedule = [
 ];
 export default function HalloweenParty() {
   return <div className="hw-page hw-poster-theme"><a className="hw-skip" href="#hw-main">본문 바로가기</a>
-    <header className="hw-header"><Link className="hw-brand" href="/" aria-label="말모임 홈페이지"><BrandLogo compact /></Link><nav aria-label="행사 메뉴"><a href="#party">파티 소개</a><a href="#pocha">무제한 포차</a><a href="#schedule">타임테이블</a><a href="#apply" className="hw-nav-cta">신청 안내 ↗</a><div className="hw-languages" aria-label="언어 선택"><span aria-current="page" lang="ko">한국어</span><Link href="/2026halloweenparty/en" hrefLang="en" lang="en">English</Link></div></nav></header>
+    <header className="hw-header"><Link className="hw-brand" href="/" aria-label="말모임 홈페이지"><PartyLogo/></Link><nav aria-label="행사 메뉴"><a href="#party">파티 소개</a><a href="#pocha">무제한 포차</a><a href="#schedule">타임테이블</a><a href="#apply" className="hw-nav-cta">신청 안내 ↗</a><div className="hw-languages" aria-label="언어 선택"><span aria-current="page" lang="ko">한국어</span><Link href="/2026halloweenparty/en" hrefLang="en" lang="en">English</Link></div></nav></header>
     <main id="hw-main">
       <section className="hw-hero" aria-labelledby="hw-title"><div className="hw-wrap hw-hero-grid"><div className="hw-hero-copy"><span className="hw-pill">MALMOIM · HALLOWEEN SOCIAL PARTY</span><p className="hw-kicker">10.31 SAT / 2026</p><h1 id="hw-title">오늘 밤은,<br/><em>할로윈.</em></h1><p className="hw-intro">코스튬 하나, 새로운 이야기 하나.<br/>행사 중 포차도 무제한으로 즐겨요.</p><a className="hw-button" href="#apply">참가 신청 안내 보기 <span aria-hidden="true">↗</span></a><p className="hw-small">2026 말모임 할로윈 파티</p></div><div className="hw-hero-art"><HalloweenPoster/><span className="hw-art-note">OCT 31 · 7PM—12AM · FOOD & DRINKS</span></div></div><div className="hw-facts hw-wrap"><div><span>WHEN</span><strong>10월 31일 토요일</strong><p>19:00 입장 · 24:00 이후 자율 뒤풀이</p></div><div><span>WHERE</span><strong>연신내 하이브 HIVE</strong><p>서울 은평구 연서로27길 16-16, 지하 1층</p></div><div><span>DRESS CODE</span><strong>코스튬 권장</strong><p>간단한 소품으로도 함께해요</p></div></div></section>
       <section id="party" className="hw-section hw-wrap"><p className="hw-eyebrow">MEET. PLAY. CONNECT.</p><h2>무서운 건 잠깐,<br/>즐거운 건 오래.</h2><p className="hw-lead">자유롭게 이야기하고, 함께 게임하고, 서로의 코스튬을 발견하는 밤.<br className="hw-desktop"/> 자유 시간과 프로그램을 번갈아 즐기는 소셜 파티예요.</p><div className="hw-programs">{[["01","처음이어도, 편안하게","오프닝 & 아이스브레이킹","파티의 시작은 서로 알아가는 시간으로 준비합니다."],["02","함께라서 더 재밌게","레크리에이션 & 네트워킹","게임과 자유로운 대화를 번갈아 즐겨요."],["03","오늘만큼은 주인공","코스튬 콘테스트","간단한 소품부터 나만의 코스튬까지. 서로의 스타일을 만나보세요."]].map(([n,heading,title,body])=><article key={n}><span className="hw-number">{n}</span><p>{heading}</p><h3>{title}</h3><p>{body}</p></article>)}</div></section>
