@@ -19,6 +19,7 @@ try{
  await db.exec('alter table public.recruitment_events add column is_archived boolean not null default false; alter table public.event_applications add column revision integer not null default 0,add column is_archived boolean not null default false; create view public.event_application_admin_list with(security_invoker=true) as select id,event_id,revision,is_archived,\'season9\'::text source from public.event_applications;');
  await db.exec(await sql('manual/open_season9_halloween.sql'));
  await db.exec(await sql('036_messaging.sql'));
+ await db.exec(await sql('manual/update_application_sms_details.sql'));
  assert.equal(await one('select sending_enabled as value from public.sms_settings'),false);
  await db.exec('set role anon');
  for(const table of ['sms_settings','sms_jobs','sms_batches','sms_daily_usage'])await denied('select * from public.'+table);
@@ -31,12 +32,18 @@ try{
  const payload={submission_id:randomUUID(),name:'[가상] 알림',nationality:'TEST',date_of_birth:'2000-01-01',contact:'+821000000003',contact_type:'phone',preferred_class:'thursday',notice_version:'season9-2026-10-14-v1',privacy_consent:true,fee_confirmed:true,referral_sources:[],full_attendance:true};
  await db.exec('reset role');await db.exec('set role anon');await db.query('select public.submit_season9_application($1)',[JSON.stringify(payload)]);await db.query('select public.submit_season9_application($1)',[JSON.stringify(payload)]);
  await as(admin);assert.equal(await one("select count(*)::int as value from public.sms_jobs where kind='notification'"),1);
- jobs=await claim();assert.equal(jobs.length,1);assert.equal(jobs[0].body.includes(payload.name),false);assert.equal(jobs[0].body.includes(payload.contact),false);await finish(jobs[0].id,'accepted');assert.equal((await claim()).length,0);
+ jobs=await claim();assert.equal(jobs.length,1);assert.equal(jobs[0].body.includes(payload.name),true);assert.ok(jobs[0].body.includes('이벤트: '));assert.ok(jobs[0].body.includes('/admin/events/season9/applicants'));assert.equal(jobs[0].body.includes(payload.contact),false);await finish(jobs[0].id,'accepted');assert.equal((await claim()).length,0);
+ // Both real intake tables use the same trigger, with sanitized text and no contact details.
+ await db.exec('reset role');
+ const party=(await db.query("select id,title from public.recruitment_events where slug='halloween-2026'")).rows[0];
+ const partyName='가상{이름}\n확인';
+ await db.query("insert into public.event_registration_responses(event_id,submission_id,name,contact,participation_history,privacy_notice_version,privacy_consent,privacy_notice_snapshot) values($1,$2,$3,$4,'new','TEST',true,'TEST')",[party.id,randomUUID(),partyName,'01000000004']);
+ await as(admin);const partyJobs=await claim();assert.equal(partyJobs.length,1);assert.ok(partyJobs[0].body.includes(party.title));assert.ok(partyJobs[0].body.includes('신청자: 가상이름 확인'));assert.ok(partyJobs[0].body.includes('/admin/events/halloween-2026/applicants'));assert.equal(partyJobs[0].body.includes('01000000004'),false);assert.ok(Buffer.byteLength(partyJobs[0].body,'utf8')<=2000);await finish(partyJobs[0].id,'accepted');
  const app=(await db.query('select id,event_id from public.event_applications')).rows[0];
  batch=await prepare('manual',{event:app.event_id,item:{source:'season9',id:app.id,revision:0}});
  await db.exec('reset role');await db.exec('update public.event_applications set revision=1');await as(admin);await denied('select public.sms_approve($1)',[batch]);
  const old=await prepare();await db.exec('reset role');await db.query("update public.sms_batches set created_at=now()-interval '11 minutes' where id=$1",[old]);await as(admin);await denied('select public.sms_approve($1)',[old]);
  batch=await prepare('manual');await db.query('select public.sms_approve($1)',[batch]);await db.exec('reset role');await db.exec('update public.sms_daily_usage set attempts=200');assert.equal((await claim(batch)).length,0);
  await as(admin);await db.exec('select public.sms_toggle(false,false)');assert.equal((await claim(batch)).length,0);
- console.log('PASS: atomic notification outbox, retry deduplication, no personal data in alerts, recipient revisions, preview expiry, daily cap, disabled sending blocked');
+ console.log('PASS: atomic notification outbox, retry deduplication, event/applicant name in alerts without contact details, recipient revisions, preview expiry, daily cap, disabled sending blocked');
 }catch(error){console.error(error.message);process.exitCode=1;}finally{await db.close();}

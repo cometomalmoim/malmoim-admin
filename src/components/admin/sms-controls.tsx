@@ -41,7 +41,7 @@ export function SmsSettings(){
    <button type="button" disabled={busy||!status.ready} onClick={()=>run(()=>toggleMessaging(!status.sending,status.sending?false:!!status.notifications))}>{status.sending?'실제 발송 끄기':'테스트 확인 후 실제 발송 켜기'}</button>
    <button type="button" disabled={busy||!status.ready||!status.sending} onClick={()=>run(()=>toggleMessaging(true,!status.notifications))}>{status.notifications?'신청 알림 끄기':'새 신청 알림 켜기'}</button>
    <button type="button" disabled={busy||!status.ready||!status.notifications} onClick={()=>run(processPendingAlerts)}>대기 중 신청 알림 처리</button><button type="button" disabled={busy} onClick={()=>start(reload)}>기록 새로고침</button></div>
-   <p>수동 문자는 국내 휴대폰 대상 장문(LMS), 신청 알림은 개인정보 없는 단문(SMS)입니다. 한 번에 최대 50명, 하루 전체 발송 시도 최대 200건입니다. 문자 실패로 신청 접수가 취소되지는 않습니다.</p>
+   <p>수동 문자는 국내 휴대폰 대상 장문(LMS), 신청 알림은 이벤트명·신청자명을 포함하며 길이에 따라 SMS 또는 LMS로 과금됩니다. 한 번에 최대 50명, 하루 전체 발송 시도 최대 200건입니다. 문자 실패로 신청 접수가 취소되지는 않습니다.</p>
    <SmsSend disabled={!status.ready||!status.configured} input={{eventId:'',mode:'test',recipients:[],numbers:'',body:'',name:'',due:'',contact:''}}/>
    <h3>최근 발송 기록</h3>
    {status.jobs?.length?<ul className="sms-log">{status.jobs.map(job=><li key={job.id}><span>{new Intl.DateTimeFormat('ko-KR',{dateStyle:'short',timeStyle:'short',timeZone:'Asia/Seoul'}).format(new Date(job.created_at))} · {job.kind==='notification'?'신청 알림':job.kind==='test'?'본인 테스트':'안내 문자'} · {job.recipient}</span><strong>{smsStates[job.state]??job.state}</strong>{job.state==='accepted'&&<button type="button" disabled={busy} onClick={()=>run(()=>refreshSms(job.id))}>도달 결과 확인</button>}{job.state==='unknown'&&<small>중복 발송 방지를 위해 재발송하지 않습니다. SOLAPI 내역을 확인해주세요.</small>}</li>)}</ul>:<p>발송 기록이 없습니다.</p>}
