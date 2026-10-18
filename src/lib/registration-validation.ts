@@ -7,7 +7,10 @@ export function registrationInput(data: FormData) {
  const history=String(data.get('history')??'');
  const detail=history==='new'?'':String(data.get('history_detail')??'').trim();
  const submission=String(data.get('submission_id')??'');
+ const year=String(data.get('birth_year')??'').trim();
+ const currentYear=new Date(Date.now()+9*3600000).getUTCFullYear();
+ if(year&&(!/^\d{4}$/.test(year)||Number(year)<1900||Number(year)>currentYear))throw new Error('birth_year');
  if(!name||name.length>100||raw.length>40||!/^\+?[0-9]{8,15}$/.test(contact)||!['new','returning'].includes(history)||detail.length>300||!/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(submission)) throw new Error('invalid');
  if(data.get('privacy_consent')!=='on') throw new Error('consent');
- return {name,contact,history,detail,submission,version:String(data.get('version')??'')};
+ return {name,contact,history,detail,submission,version:String(data.get('version')??''),birth_year:year?Number(year):null};
 }
