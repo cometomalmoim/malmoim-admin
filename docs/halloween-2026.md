@@ -46,3 +46,6 @@ lint/next typegen/TypeScript 통과. PC 첫 화면 로고·타이포·일러스�
 영어 버전 최종 검증: 독립 worktree lint/TypeScript/운영 build 종료 코드0, KO→EN→KO 링크 이동 및 영어 모바일 신청 CTA 이동 확인. 새 정적 영어 route 생성 확인. 실제 접수는 양쪽 모두 미구현/비활성 유지.
 
 영어 운영 배포: PR11 merge commitbdd99d8 Vercel Production success. https://malmoim.com/2026halloweenparty/en 실제 브라우저 제목/영문 콘텐츠와 한국어→English 왕복 전환 확인. 실제 접수 비활성 유지.
+
+## 참가비 안내 업데이트
+얼리버드 10월25일까지25,000원, 일반 참가10월25~31일30,000원으로 한·영 티켓/신청 안내/FAQ에 표시한다. 25일은 사용자 요청대로 두 구간에 포함하며 자동 요금 계산·결제 로직은 추가하지 않는다. DB에 저장된 운영 안내와 향후 동의 문구의 '참가비 추후 안내' 문장을 갱신하는 수동 SQL은 `supabase/manual/update_halloween_fee.sql`이다. 과거 동의 snapshot·신청 내역·접수 상태·마감은 수정하지 않는다.
