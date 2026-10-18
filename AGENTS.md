@@ -10,7 +10,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 ## 사용자 고정 Git 작업 규칙
 
-이 사용자의 고정 작업 브랜치는 `feat/season9-landing`이다. 이후 작업에도 재사용하고 삭제하지 않는다.
+이 사용자의 고정 작업 브랜치는 `feat/operations-juho`이다. 이후 작업에도 재사용하고 삭제하지 않는다.
 새 작업 브랜치 생성이 필요한 경우 사용자의 명시적인 브랜치 지정이 우선한다.
 
 작업 시작 전 현재 브랜치를 확인하고, 이 사용자의 작업에서는 고정 작업 브랜치에서 최신 origin/main을 fetch·merge한다.

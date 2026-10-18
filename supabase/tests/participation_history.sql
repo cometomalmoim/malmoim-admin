@@ -1,0 +1,40 @@
+-- Every fixture and attendance change rolls back. No actual person is changed.
+begin;
+insert into public.recruitment_events(slug,title,status,applications_open,starts_at,ends_at,is_test)values('participation-fixture-past','[가상] 과거 참석','draft',false,clock_timestamp()-interval '2 days',clock_timestamp()-interval '1 day',false),('participation-fixture-future','[가상] 미래 참석','draft',false,clock_timestamp()+interval '2 days',clock_timestamp()+interval '3 days',false);
+do $$declare admin_id uuid;begin select user_id into admin_id from public.admin_users limit 1;perform set_config('request.jwt.claims',jsonb_build_object('sub',admin_id,'role','authenticated')::text,true);end $$;
+set local role authenticated;
+do $$declare r jsonb;v_app uuid;v_test uuid;v_future uuid;v_person uuid;v_duplicate uuid;begin
+ r:=public.manage_event_application('participation-fixture-past','manual',null,0,'[가상] 참여 검증','01000007777','phone',null,'','received','unknown','','가상 테스트');v_app:=(r->>'id')::uuid;
+ r:=public.link_event_person('participation-fixture-past','manual',v_app,null,0,false);if r->>'code'<>'identity'then raise exception 'Identity confirmation failed';end if;
+ r:=public.link_event_person('participation-fixture-past','manual',v_app,null,0,true);if r->>'code'<>'saved'then raise exception 'Person link failed: %',r;end if;v_person:=(r->>'person')::uuid;
+ if public.record_event_participation('participation-fixture-past','manual',v_app,1,'unconfirmed','attended','')<>'confirmation'then raise exception 'Confirmation guard failed';end if;
+ if public.record_event_participation('participation-fixture-past','manual',v_app,1,'confirmed','attended','가상 출석')<>'saved'then raise exception 'Attendance failed';end if;
+ if not exists(select 1 from public.event_person_totals where id=v_person and attendance_count=1 and application_count=1 and confirmed_count=1)then raise exception 'Actual count failed';end if;
+ r:=public.link_event_person('participation-fixture-past','manual',v_app,v_person,2,true);if r->>'code'<>'saved'then raise exception 'Same person retry failed';end if;
+ if not exists(select 1 from public.event_participation where application_id=v_app and confirmation='confirmed' and attendance='attended' and note='가상 출석' and revision=2)then raise exception 'Same-person retry lost state';end if;
+ if public.record_event_participation('participation-fixture-past','manual',v_app,1,'confirmed','absent','')<>'conflict'then raise exception 'Revision guard failed';end if;
+ if public.record_event_participation('halloween-2026','manual',v_app,2,'confirmed','unrecorded','')<>'missing'then raise exception 'Event isolation failed';end if;
+ r:=public.manage_event_application('event-ade6a5a7-83c2-477b-94f0-a22444a785c3','manual',null,0,'[가상] 같은 사람 테스트','01000007777','phone',null,'','received','unknown','','가상 테스트');v_test:=(r->>'id')::uuid;
+ r:=public.link_event_person('event-ade6a5a7-83c2-477b-94f0-a22444a785c3','manual',v_test,v_person,0,true);if r->>'code'<>'saved'then raise exception 'Cross-event link failed';end if;
+ if public.record_event_participation('event-ade6a5a7-83c2-477b-94f0-a22444a785c3','manual',v_test,1,'confirmed','attended','')<>'saved'then raise exception 'Test attendance failed';end if;
+ if not exists(select 1 from public.event_person_totals where id=v_person and attendance_count=1 and application_count=1 and test_attendance_count=1)then raise exception 'Test exclusion failed';end if;
+ if public.record_event_participation('participation-fixture-past','manual',v_app,2,'confirmed','absent','')<>'saved'then raise exception 'Correction failed';end if;
+ if not exists(select 1 from public.event_person_totals where id=v_person and attendance_count=0)then raise exception 'Correction count failed';end if;
+ r:=public.manage_event_application('participation-fixture-future','manual',null,0,'[가상] 미래','01000007777','phone',null,'','received','unknown','','가상 테스트');v_future:=(r->>'id')::uuid;
+ r:=public.link_event_person('participation-fixture-future','manual',v_future,v_person,0,true);if r->>'code'<>'saved'then raise exception 'Future fixture link failed';end if;
+ if public.record_event_participation('participation-fixture-future','manual',v_future,1,'confirmed','attended','')<>'future'then raise exception 'Future attendance guard failed';end if;
+ r:=public.manage_event_application('participation-fixture-past','manual',null,0,'[가상] 중복 연결','01000007778','phone',null,'','received','unknown','','가상 테스트');v_duplicate:=(r->>'id')::uuid;
+ r:=public.link_event_person('participation-fixture-past','manual',v_duplicate,v_person,0,true);if r->>'code'<>'duplicate'then raise exception 'Per-event deduplication failed';end if;
+ if (select count(*) from public.event_participation_audit where application_id=v_app)<>3 then raise exception 'Audit failed';end if;
+end $$;
+reset role;
+select set_config('request.jwt.claims','{"sub":"00000000-0000-4000-8000-000000000001","role":"authenticated"}',true);
+set local role authenticated;
+do $$begin
+ if exists(select 1 from public.event_person_totals) or exists(select 1 from public.event_participation)or exists(select 1 from public.event_participation_audit)then raise exception 'Nonadmin read exposure';end if;
+ if public.record_event_participation('halloween-2026','manual',gen_random_uuid(),1,'confirmed','attended','')<>'forbidden'then raise exception 'Nonadmin write exposure';end if;
+end $$;
+reset role;
+do $$begin if has_function_privilege('anon','public.link_event_person(text,text,uuid,uuid,integer,boolean)','EXECUTE')or has_function_privilege('anon','public.record_event_participation(text,text,uuid,integer,text,text,text)','EXECUTE')then raise exception 'Anonymous write grant';end if;end $$;
+rollback;
+select 'PASS: identity/link/confirmation/actual counts/conflict/event isolation/cross-event/test exclusion/correction/future guard/one event once/audit/nonadmin read/nonadmin write/anonymous denial; rolled back' as verification;

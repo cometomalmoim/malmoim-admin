@@ -21,13 +21,18 @@ export const adminGroups = [
       },
       {
         "slug": "recruitment",
-        "title": "모집 페이지",
-        "description": "전체 이벤트에 연결된 공개 모집 페이지를 관리합니다."
+        "title": "전체 신청자관리",
+        "description": "전체 이벤트의 신청자와 유입경로를 조회합니다."
+      },
+      {
+        "slug": "participants",
+        "title": "전체 참여 이력 관리",
+        "description": "개인별 실제 참석 횟수와 이벤트 참여 이력을 관리합니다."
       },
       {
         "slug": "messages",
-        "title": "문자 발송",
-        "description": "전체 이벤트의 안내 문자와 발송 내역을 관리합니다."
+        "title": "메시징",
+        "description": "이벤트별 안내 템플릿과 문자 내용을 준비합니다."
       },
       {
         "slug": "certificates",
@@ -74,6 +79,11 @@ export const adminGroups = [
         "slug": "suggestions",
         "title": "건의함",
         "description": "운영 관련 의견과 건의 사항을 확인합니다."
+      },
+      {
+        "slug": "surveys",
+        "title": "참가자 설문조사",
+        "description": "기수별 익명 설문을 공개하고 응답 결과를 확인합니다."
       }
     ]
   },
@@ -135,7 +145,7 @@ export const eventTabs = [
   },
   {
     "slug": "recruitment",
-    "title": "모집 페이지",
+    "title": "신청자관리",
     "description": "해당 이벤트에 연결된 공개 페이지"
   },
   {

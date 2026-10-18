@@ -1,0 +1,7 @@
+import Link from 'next/link';import type {RecruitmentEvent}from '@/lib/recruitment';import {groupEventDirectory}from '@/lib/event-lifecycle';
+import {EventArchiveControl}from './event-archive-control';import {EventDeadline}from './event-deadline';
+export function EventDirectory({events}:{events:RecruitmentEvent[]}){
+ const {active,ended,archived}=groupEventDirectory(events);
+ const rows=(items:RecruitmentEvent[],compact=false)=><ul className={`event-directory ${compact?'event-directory-compact':''}`}>{items.map(event=><li key={event.id}><Link href={`/admin/events/${encodeURIComponent(event.slug)}/overview`}><span>{event.title}{!compact&&<EventDeadline closesAt={event.closes_at}/>}</span><span aria-hidden="true">→</span></Link><EventArchiveControl key={`${event.id}:${event.archive_revision}`} slug={event.slug} title={event.title} revision={event.archive_revision} archived={event.is_archived}/></li>)}</ul>;
+ return <><section className="ops-panel"><h2>운영 이벤트 · {active.length}개</h2><p className="ops-muted">이름을 눌러 이벤트 홈으로 이동합니다. D-DAY는 모집 마감일 기준이며 3일 이내면 빨간색입니다.</p>{active.length?rows(active):<p>운영 중인 이벤트가 없습니다.</p>}</section>{ended.length>0&&<details className="ops-panel event-ended" id="ended-events" open><summary>종료된 이벤트 · {ended.length}개</summary><p>행사 종료 시각이 지난 이벤트입니다. 신청·출석 이력은 그대로 확인할 수 있습니다.</p>{rows(ended,true)}</details>}{archived.length>0&&<details className="ops-panel event-archived"><summary>삭제된 이벤트 · {archived.length}개</summary><p>관련 기록을 보존합니다. 복원해도 실제 신청 접수는 자동으로 열리지 않습니다.</p>{rows(archived,true)}</details>}</>;
+}
