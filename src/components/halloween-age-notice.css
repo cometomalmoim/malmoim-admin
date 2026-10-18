@@ -37,3 +37,16 @@
 .hw-welcome-arrival .hw-dokkaebi{animation:hw-dokkaebi-jump 2.4s linear both}
 @keyframes hw-dokkaebi-jump{0%,8%{opacity:0;transform:scale(.3);filter:brightness(.1)}9%{opacity:1;transform:scale(1.28);filter:brightness(1.25)}16%{opacity:1;transform:scale(1.08);filter:brightness(1.05)}30%,100%{opacity:1;transform:scale(1);filter:brightness(1)}}
 @media(prefers-reduced-motion:reduce){.hw-welcome-arrival .hw-dokkaebi{animation:none;opacity:1;transform:none}}
+
+/* A single full-bleed reveal, rather than an illustrated card. */
+.hw-page .hw-age-dialog.hw-scare-dialog{width:min(1000px,calc(100vw - 24px));max-width:calc(100vw - 24px);height:min(800px,86dvh);max-height:86dvh;background:#030102;border-color:#380b10}
+.hw-scare-dialog .hw-welcome-arrival{position:relative;height:100%;min-height:0;padding:0;overflow:hidden;background:#030102;isolation:isolate}
+.hw-scare-dialog .hw-dokkaebi{position:absolute;inset:0;width:100%;height:100%;max-width:none;margin:0;object-fit:cover;object-position:50% 45%;mask-image:none;transform-origin:50% 52%;animation:hw-nightmare-reveal 3s linear both;z-index:-1}
+.hw-scare-dialog .hw-welcome-kicker{position:absolute;top:22px;left:0;right:0;z-index:2}
+.hw-page .hw-scare-dialog h2{position:absolute;bottom:116px;left:0;right:0;font-size:clamp(32px,6vw,64px)!important;color:#ffd3bc;text-shadow:0 2px 6px #000,0 0 25px #d91d13;animation:hw-scare-caption 3s linear both}
+.hw-scare-dialog .hw-welcome-stage>p{position:absolute;bottom:94px;left:16px;right:16px;margin:0;color:#f5d8d1;text-shadow:0 2px 4px #000}
+.hw-scare-dialog .hw-welcome-stage>p.hw-welcome-audio{bottom:68px;font-size:10px!important}
+.hw-page .hw-form .hw-scare-dialog button.hw-welcome-skip{position:absolute;bottom:12px;left:calc(50% - 70px);width:140px;background:#10080bcc;border:1px solid #674448;color:#fff}
+@keyframes hw-nightmare-reveal{0%,23%{opacity:0;transform:scale(1.05);filter:brightness(0)}24%{opacity:1;transform:scale(1.85) rotate(-3deg);filter:brightness(1.3) contrast(1.2)}27%{transform:scale(1.45) rotate(2deg)}30%{transform:scale(1.65) rotate(-1deg)}34%{transform:scale(1.4) rotate(1deg)}40%,100%{opacity:1;transform:scale(1.32);filter:brightness(.95) contrast(1.2)}}
+@keyframes hw-scare-caption{0%,30%{opacity:0}38%,100%{opacity:1}}
+@media(prefers-reduced-motion:reduce){.hw-scare-dialog .hw-dokkaebi{animation:none;opacity:1;transform:none;filter:brightness(.8)}.hw-page .hw-scare-dialog h2{animation:none}}

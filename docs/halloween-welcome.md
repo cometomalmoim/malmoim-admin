@@ -26,3 +26,5 @@ Original 12-second synthesized drone uses 44/55.5/82 Hz layers and quiet detuned
 
 ## Sudden reveal follow-up
 The goblin stays visually hidden in the entry choice. The image loads eagerly so the reveal does not wait for a new network request. After entry, a 192 ms dark lead-in changes abruptly to a 1.28-scale face at 216 ms, settling to normal size. Reduced-motion mode shows a static image. Sound remains opt-in; quiet and skip remain available.
+## Full-bleed horror revision
+Entry copy no longer names or announces the creature. Arrival expands the dialog up to 1000px / 86dvh, uses a cropped full-bleed face, holds darkness for 720ms, then makes one abrupt zoom with a short settling motion. A synthesized 720ms-aligned impact joins the optional voice/ambience; all three tracks stop on mute, skip, JOIN, Escape or unmount. There is no repeated strobe. Reduced-motion uses a static image.
