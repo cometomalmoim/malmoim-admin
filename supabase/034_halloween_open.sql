@@ -1,6 +1,9 @@
 -- Review notice below, then run after 033. This enables real Halloween intake.
 -- No deadline. Close manually with 035 when needed. No existing event/response is deleted.
 begin;
+insert into public.recruitment_events(slug,title,starts_at,ends_at,location,fee_notice,visual_theme)
+values('halloween-2026','2026 말모임 할로윈 파티','2026-10-31 19:00:00+09','2026-11-01 00:00:00+09','연신내 하이브 HIVE · 서울 은평구 연서로27길 16-16 지하1층','참가비 추후 안내','halloween')
+on conflict(slug) do nothing;
 do $$ begin
  if not exists(select 1 from public.recruitment_events where slug='halloween-2026' and not is_test and not is_archived) then raise exception 'Actual Halloween event is missing or archived'; end if;
 end $$;

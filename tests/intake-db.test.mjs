@@ -13,6 +13,9 @@ try{
  await db.exec(`create role anon; create role authenticated; create schema auth; create function auth.uid() returns uuid language sql stable as 'select nullif(current_setting(''request.jwt.claim.sub'',true),'''')::uuid'; grant usage on schema auth to anon,authenticated; create table public.admin_users(user_id uuid primary key); grant select on public.admin_users to authenticated;`);
  for(const file of ['003_recruitment_applications.sql','006_event_management.sql','007_event_draft_period_theme.sql','008_event_test_flag.sql','009_event_registration.sql'])await db.exec(await sql(file));
  await db.exec('alter table public.recruitment_events add column is_archived boolean not null default false;');
+ await db.exec(await sql('manual/open_season9_halloween.sql'));
+ assert.equal(await scalar("select public.event_registration_info('halloween-2026',false)->>'open' as value"),'true');
+ await db.exec("update public.recruitment_events set applications_open=false where slug='season9'");
  await db.exec(await sql('031_season9_intake_gate.sql'));
  assert.equal(await scalar(`select public.season9_registration_info()->>'open' as value`),'false');
  await db.exec(await sql('032_season9_open.sql'));
@@ -32,7 +35,7 @@ try{
  await db.exec("update public.recruitment_events set opens_at=clock_timestamp()-interval '1 day',closes_at=clock_timestamp()-interval '1 second' where slug='season9'");
  await denied('select public.submit_season9_application($1::jsonb)',[JSON.stringify({...payload,submission_id:randomUUID(),contact:'+821000000002'})]);
  console.log('PASS season9: saved, idempotent retry, duplicate, consent, missing group, deadline, snapshot, anonymous read blocked');
- await db.exec("insert into public.recruitment_events(slug,title) values('halloween-2026','[가상] 할로윈')");
+
  await db.exec(await sql('033_halloween_optional_deadline.sql'));
  await db.exec(await sql('034_halloween_open.sql'));
  assert.equal(await scalar("select closes_at is null as value from public.recruitment_events where slug='halloween-2026'"),true);
