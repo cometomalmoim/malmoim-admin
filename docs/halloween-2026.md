@@ -44,3 +44,5 @@ lint/next typegen/TypeScript 통과. PC 첫 화면 로고·타이포·일러스�
 공개 영어 경로 `/2026halloweenparty/en` 추가. 행사 소개·예정 일정·주소·자정 이후 자율 뒤풀이·FAQ·신청 필드/미접수 안내를 영어로 제공한다. KO/EN 상호 언어 링크, 각 canonical 및 ko/en/x-default hreflang, 영어 콘텐츠 lang=en 및 en_US OG 적용. CSS/PartyArt SVG는 두 페이지가 공유하며 행사 내용 변경 시 두 언어 문구를 함께 반영해야 한다. 실제 접수/DB 저장은 양쪽 모두 비활성 유지. 390px 가로 넘침 없음, 영어 CTA #apply 이동 확인. lint·TypeScript 통과.
 
 영어 버전 최종 검증: 독립 worktree lint/TypeScript/운영 build 종료 코드0, KO→EN→KO 링크 이동 및 영어 모바일 신청 CTA 이동 확인. 새 정적 영어 route 생성 확인. 실제 접수는 양쪽 모두 미구현/비활성 유지.
+
+영어 운영 배포: PR11 merge commitbdd99d8 Vercel Production success. https://malmoim.com/2026halloweenparty/en 실제 브라우저 제목/영문 콘텐츠와 한국어→English 왕복 전환 확인. 실제 접수 비활성 유지.

@@ -36,4 +36,6 @@ lint/next typegen/TypeScript 통과. /en/events→한국어 전환 시 /events �
 
 독립 운영 검증: lint/TypeScript 및 npm run build 종료 코드0. 별도3102 production 서버에서 공개12경로 HTTP200/canonical/index 확인. 없는 영어 경로는 not-found/noindex(초기 스트리밍 응답은200일 수 있음, 후속404), 운영 preview404 확인. admin Host의 /는 기존 /login으로307. 테스트용3102만 종료하고 기존3000 개발 서버 유지. 실제 계정 로그인·로그아웃·권한 전체 회귀는 미검증(관련 코드 diff0).
 
+운영 반영: PR12 merge commite05bd9e Vercel Production success. 실제 malmoim.com→/en 전환 및 /en/events→한국어/events 현재 메뉴 유지 확인. 관리자 인증·DB·행사 신청 변경 없음.
+
 회원 인증 확장 구현·쿠키 처리·번역 범위·미검증 사항은 docs/member-auth-and-profiles.md를 참고한다. 이전 검증 기록은 당시 상태이며, 최신 인증 확장 검증은 해당 문서에 기록한다.
