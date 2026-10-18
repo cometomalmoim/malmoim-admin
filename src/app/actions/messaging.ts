@@ -52,8 +52,7 @@ export async function prepareSms(input:{eventId:string;mode:'event'|'direct'|'te
 export async function approveSms(batch:string){
  try{const client=await adminClient(),config=smsConfig();if(!config||!smsUuid(batch))throw new Error('invalid');
   const b=await client.from('sms_batches').select('kind').eq('id',batch).single();if(b.error)throw new Error('missing');
-  if(b.data.kind==='test'){let rates:{LMS:number;SMS:number}|null=null;try{if(config)rates=await smsPrice();}catch{/* Account price remains unverified. */}
-  const jobs=await client.from('sms_jobs').select('recipient').eq('batch_id',batch);if(jobs.error||jobs.data.length!==1||jobs.data[0].recipient!==config.notify)throw new Error('invalid_test');}
+  if(b.data.kind==='test'){const jobs=await client.from('sms_jobs').select('recipient').eq('batch_id',batch);if(jobs.error||jobs.data.length!==1||jobs.data[0].recipient!==config.notify)throw new Error('invalid_test');}
   const {error}=await client.rpc('sms_approve',{p_id:batch});if(error)return {ok:false,message:'발송하지 않았습니다. 실제 발송 설정·대상 변경·미리보기 만료를 확인해주세요.'};
   await processSmsQueue(client,batch,3);const remaining=await client.from('sms_jobs').select('id',{count:'exact',head:true}).eq('batch_id',batch).eq('state','queued');return {ok:true,remaining:remaining.count??0,message:'처리 결과를 발송 기록에서 확인해주세요. 업체 접수는 휴대폰 도달 성공과 다릅니다.'};
  }catch{return {ok:false,message:'결과를 확인하지 못했습니다. 다시 발송하지 말고 기록과 SOLAPI 내역을 먼저 확인해주세요.'};}

@@ -2,7 +2,7 @@ export const smsStates:Record<string,string>={draft:'발송 전 확인',queued:'
 export function domesticPhone(value:string):string|null {
  let n=value.trim().replace(/[ ()-]/g,'');
  if(n.startsWith('+82'))n='0'+n.slice(3);else if(n.startsWith('0082'))n='0'+n.slice(4);
- return /^01[016789]\d{7,8}$/.test(n)?n:null;
+ return /^(?:010\d{8}|01[16789]\d{7,8})$/.test(n)?n:null;
 }
 export function validSmsText(text:string){return !!text.trim()&&new TextEncoder().encode(text).length<=2000&&!/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/.test(text)&&!/[{}]/.test(text);}
 export const smsUuid=(v:string)=>/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(v);

@@ -44,7 +44,7 @@ create function public.sms_prepare(p_id uuid,p_event uuid,p_items jsonb,p_price 
  if exists(select 1 from public.sms_batches where id=p_id) then raise exception 'duplicate_batch';end if;
  insert into public.sms_batches(id,created_by,event_id,unit_price,message_type,kind) values(p_id,auth.uid(),p_event,p_price,'LMS',p_kind);
  for item in select value from jsonb_array_elements(p_items) loop
-  if coalesce(item->>'to','') !~ '^01[016789][0-9]{7,8}$' or coalesce(octet_length(item->>'text'),0) not between 1 and 2000 then raise exception 'invalid';end if;
+  if coalesce(item->>'to','') !~ '^(010[0-9]{8}|01[16789][0-9]{7,8})$' or coalesce(octet_length(item->>'text'),0) not between 1 and 2000 then raise exception 'invalid';end if;
   insert into public.sms_jobs(batch_id,event_id,kind,recipient,body,state,application_source,application_id,application_revision) values(p_id,p_event,p_kind,item->>'to',item->>'text','draft',item->>'source',(item->>'id')::uuid,(item->>'revision')::integer);
  end loop;
  return p_id;
