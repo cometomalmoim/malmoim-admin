@@ -1,5 +1,5 @@
 "use server";
-import {season9RequiredFields} from '@/lib/season9-required';
+import {season9RequiredFields,season9ParticipationFields} from '@/lib/season9-required';
 import {after} from 'next/server';
 import {processSmsQueue} from '@/lib/sms-worker';
 import { revalidatePath } from "next/cache";
@@ -18,6 +18,8 @@ export async function submitSeason9(_state: SubmissionState, form: FormData): Pr
   if (!name || !nationality || !contact || !["thursday","saturday"].includes(preferred)) return fail("이름·국적·연락처·희망 반을 확인해주세요. / Check your name, nationality, contact and preferred group.");
   const requiredProfile=season9RequiredFields(form);
   if(!requiredProfile)return fail("성별·직업 또는 소속·참여 이유를 입력해주세요. / Please complete your gender choice, occupation or affiliation, and reason for joining.");
+  const participation=season9ParticipationFields(form);
+  if(!participation)return fail('한국어·영어 수준과 참석 가능 여부를 선택해주세요. / Please select both language levels and your availability.');
   const d=new Date(birth+"T00:00:00Z");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(birth)||!Number.isFinite(d.getTime())||d.toISOString().slice(0,10)!==birth||d.getTime()>Date.now()) return fail("생년월일을 확인해주세요. / Check your date of birth.");
   const contactType=value("contact_type");
@@ -25,7 +27,7 @@ export async function submitSeason9(_state: SubmissionState, form: FormData): Pr
   if (form.get("privacy_consent")!=="on"||form.get("fee_confirmed")!=="on") return fail("개인정보 수집과 참가비 안내 확인이 필요합니다. / Privacy consent and fee policy confirmation are required.");
   const submissionId=value("submission_id");
   if (!/^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(submissionId)) return fail("페이지를 새로 열어 다시 시도해주세요. / Reopen the page and try again.");
-  const payload: Record<string,unknown>={submission_id:submissionId,name,nationality,date_of_birth:birth,contact,contact_type:contactType,preferred_class:preferred,gender:requiredProfile.gender,occupation:requiredProfile.occupation,korean_level:value("s9-korean"),english_level:value("s9-english"),motivation:requiredProfile.motivation,introduction:value("s9-answer-1",2000),full_attendance:form.get("s9-attendance")==="yes",referral_sources:form.getAll("referral_sources").map(x=>String(x).slice(0,100)).slice(0,10),payment_method:value("s9-payment"),notice_version:"season9-2026-10-14-v1",privacy_consent:true,fee_confirmed:true,photo_consent:form.get("photo_consent")==="on",future_updates_consent:form.get("future_updates_consent")==="on"};
+  const payload: Record<string,unknown>={submission_id:submissionId,name,nationality,date_of_birth:birth,contact,contact_type:contactType,preferred_class:preferred,gender:requiredProfile.gender,occupation:requiredProfile.occupation,korean_level:participation.korean,english_level:participation.english,motivation:requiredProfile.motivation,introduction:value("s9-answer-1",2000),full_attendance:participation.fullAttendance,referral_sources:form.getAll("referral_sources").map(x=>String(x).slice(0,100)).slice(0,10),payment_method:value("s9-payment"),notice_version:"season9-2026-10-14-v1",privacy_consent:true,fee_confirmed:true,photo_consent:form.get("photo_consent")==="on",future_updates_consent:form.get("future_updates_consent")==="on"};
   for(const key of ["utm_source","utm_medium","utm_campaign","utm_term","utm_content"]) payload[key]=value(key,150)||null;
   try {
     const client=await createClient(); const {data,error}=await client.rpc("submit_season9_application",{payload});

@@ -10,3 +10,10 @@ export function season9RequiredFields(data: FormData) {
  if(!season9GenderChoices.some(choice=>choice.value===gender)||!occupation||occupation.length>200||!motivation||motivation.length>2000)return null;
  return {gender,occupation,motivation};
 }
+
+export function season9ParticipationFields(data:FormData){
+ const korean=String(data.get('s9-korean')??'');const english=String(data.get('s9-english')??'');const attendance=String(data.get('s9-attendance')??'');
+ const common=['전혀 못함 / None','조금 가능 / Basic','일상 회화 가능 / Intermediate','유창함 / Fluent'];
+ if(![...common,'저는 한국 사람입니다 / I am Korean'].includes(korean)||![...common,'모국어 / Native'].includes(english)||!['yes','no'].includes(attendance))return null;
+ return {korean,english,fullAttendance:attendance==='yes'};
+}
