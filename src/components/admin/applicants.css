@@ -62,3 +62,5 @@
 .ops-event-workspace.ops-compact-applicants .applicant-pagination{flex-wrap:wrap}
 .ops-event-workspace.ops-compact-applicants .applicant-pagination a{display:inline-flex;align-items:center;justify-content:center;min-width:32px;min-height:32px;padding:5px 9px;font-size:12px}
 .ops-event-workspace.ops-compact-applicants .applicant-pagination a[aria-current=page]{background:#fff0bb;border-color:#dca714;color:#171918;font-weight:700}
+
+.applicant-form-response{display:grid;gap:0;margin:20px 0}.applicant-form-response>div{display:grid;grid-template-columns:minmax(120px,1fr) minmax(0,2fr);gap:16px;padding:14px 0;border-bottom:1px solid #e8ecea}.applicant-form-response dt{font-size:13px;color:#65746c;font-weight:600}.applicant-form-response dd{margin:0;white-space:pre-wrap;overflow-wrap:anywhere;font-size:14px;line-height:1.7}@media(max-width:600px){.applicant-form-response>div{grid-template-columns:1fr;gap:6px}}
