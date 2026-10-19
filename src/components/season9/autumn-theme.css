@@ -49,3 +49,28 @@
 @media(min-width:1440px){.s9-autumn-branches svg{width:clamp(120px,calc((100vw - 1120px)/2 - 24px),300px);height:630px;opacity:.66}.s9-autumn-branches .s9-maple-branch{left:0}.s9-autumn-branches .s9-ginkgo-branch{right:0}}
 @media(max-width:1000px) and (min-width:761px){.s9-autumn .s9-hero{padding-inline:48px}}
 @media(max-width:760px){.s9-autumn .s9-header,.s9-autumn .s9-hero{padding-inline:24px}.s9-autumn .s9-draft{padding:12px 20px 23px}.s9-draft>span{padding:3px 8px;font-size:11px}.s9-leaf-piles svg{width:180px;height:52px;bottom:-17px;opacity:.65}}
+/* One continuous autumn canvas, from the banner through the footer. */
+.s9-site.s9-autumn{background:radial-gradient(ellipse at 0% 12%,#f6d8ac55,transparent 40%),radial-gradient(ellipse at 100% 58%,#ffe2a344,transparent 44%),linear-gradient(#fffaf0,#fffcf5 35%,#fff8e9 75%,#fff3d6)}
+.s9-autumn .s9-header,.s9-autumn .s9-hero,.s9-autumn .s9-moments,.s9-autumn .s9-section.soft,.s9-autumn .s9-footer{background:transparent;border-color:transparent}
+.s9-autumn .s9-draft{background:transparent;border:0;padding-bottom:22px}
+.s9-autumn .s9-draft>span{background:#e7f5f5d9;border:1px solid #cee5df}
+.s9-autumn .s9-draft .s9-leaf-piles svg{opacity:.5;bottom:-20px}
+.s9-autumn .s9-first-timers{background:linear-gradient(180deg,transparent,#e7f5f580 30%,#e7f5f580 70%,transparent)}
+.s9-autumn .s9-application{background:linear-gradient(transparent,#ffe9a975,#ffe9a930);border:0}
+.s9-autumn .s9-footer{position:relative;isolation:isolate;overflow:hidden;padding-bottom:70px}
+.s9-autumn .s9-footer>strong,.s9-autumn .s9-footer>p,.s9-autumn .s9-footer>a{position:relative;z-index:1}
+.s9-autumn .s9-faq details{margin:10px 0;padding:18px 22px;border:1px solid #e9ddc7;border-radius:16px;background:#fffdf8d9}
+.s9-autumn .s9-faq details[open]{border-color:#8bbdb6}.s9-autumn .s9-faq summary{cursor:pointer}.s9-autumn .s9-faq p{line-height:1.85}.s9-autumn .s9-faq a{color:#087f8c;font-weight:600}
+.s9-map-button{display:inline-flex;margin:8px 0 0 14px;padding:7px 12px;border:1px solid #b5d8d4;border-radius:999px;background:#e7f5f5;color:#08717b;font:inherit;font-size:13px;cursor:pointer;white-space:nowrap}
+.s9-map-dialog{position:fixed;inset:0;margin:auto;width:min(600px,calc(100vw - 32px));max-height:90dvh;box-sizing:border-box;padding:22px;border:1px solid #e9ddc7;border-radius:22px;background:#fffaf0;color:#272923;overflow:auto;box-shadow:0 24px 80px #21251233}
+.s9-map-dialog::backdrop{background:#172b2ab3;backdrop-filter:blur(4px)}
+.s9-map-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px}.s9-map-dialog h2{font-size:20px;margin:0}.s9-map-dialog header button{flex-shrink:0;border:1px solid #ceded7;background:#fffdf8;padding:8px 12px;border-radius:10px;cursor:pointer;color:#08717b}.s9-map-dialog p{font-size:14px;line-height:1.6}.s9-map-dialog iframe{width:100%;height:min(320px,43dvh);border:0;border-radius:12px;background:#e7eee9}.s9-map-dialog>a{display:inline-block;margin-top:16px;color:#087f8c;font-size:14px}
+.s9-falling-leaves{position:fixed;inset:0;z-index:8;pointer-events:none;overflow:hidden}.s9-falling-leaves>button{position:absolute;right:14px;bottom:18px;pointer-events:auto;background:#fffdf3ed;color:#74634a;border:1px solid #e8dcc4;border-radius:20px;padding:7px 11px;font-size:11px;cursor:pointer}
+.s9-falling-leaf{position:absolute;top:-70px;width:24px;color:#bf713e;opacity:.2;animation:s9-leaf-fall 23s linear infinite;will-change:transform}.s9-falling-leaf svg{width:100%;height:auto}.s9-falling-leaf.leaf-0{left:2%;animation-delay:-8s}.s9-falling-leaf.leaf-1{left:7%;animation-delay:-20s;color:#d5a11f;animation-duration:27s}.s9-falling-leaf.leaf-2{left:94%;animation-delay:-15s}.s9-falling-leaf.leaf-3{left:98%;animation-delay:-2s;color:#d5a11f;animation-duration:29s}.s9-falling-leaf.leaf-4{left:14%;animation-delay:-11s;animation-duration:31s}.s9-falling-leaf.leaf-5{left:86%;animation-delay:-24s;color:#d5a11f;animation-duration:26s}
+@keyframes s9-leaf-fall{0%{transform:translate3d(0,-50px,0) rotate(0deg)}50%{transform:translate3d(22px,50vh,0) rotate(150deg)}100%{transform:translate3d(-14px,calc(100vh + 100px),0) rotate(310deg)}}
+@media(max-width:760px){.s9-falling-leaf:nth-child(n+4){display:none}.s9-falling-leaves>button{bottom:88px}.s9-map-button{margin-left:0;display:flex;width:fit-content}.s9-map-dialog{padding:18px}.s9-map-dialog h2{font-size:17px}}
+@media(prefers-reduced-motion:reduce){.s9-falling-leaves{display:none}}
+/* Dialog headings must not inherit the surrounding participation section layout. */
+.s9-autumn .s9-map-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:transparent;padding:0;margin:0;border:0;min-height:0;box-shadow:none}
+.s9-autumn .s9-map-dialog header h2{font-size:20px;line-height:1.4;margin:0;letter-spacing:-.025em}
+@media(max-width:760px){.s9-autumn .s9-map-dialog header h2{font-size:17px}}
