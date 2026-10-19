@@ -36,3 +36,16 @@
 @media(min-width:1600px){.s9-autumn-branches svg{opacity:.7}}
 @media(max-width:1000px) and (min-width:761px){.s9-autumn .s9-hero{padding-inline:48px;gap:32px}.s9-autumn[lang=en] .s9-hero h1{font-size:40px}.s9-autumn-branches svg{width:220px}.s9-autumn-branches .s9-maple-branch{left:-135px}.s9-autumn-branches .s9-ginkgo-branch{right:-135px}}
 @media(max-width:760px){.s9-autumn .s9-hero{padding-inline:24px}.s9-autumn[lang=en] .s9-hero h1{font-size:clamp(30px,8.6vw,38px)}.s9-autumn-branches svg{width:160px;height:350px;opacity:.32}.s9-autumn-branches .s9-maple-branch{left:-115px}.s9-autumn-branches .s9-ginkgo-branch{right:-115px}}
+
+/* Full-width scenery; only the reading content is constrained to the center. */
+.s9-autumn .s9-header{max-width:none;width:100%;box-sizing:border-box;padding-inline:max(32px,calc((100% - 1216px)/2))}
+.s9-autumn .s9-hero{width:100%;max-width:none;box-sizing:border-box;margin:0;padding-inline:max(80px,calc((100% - 1120px)/2));background:radial-gradient(ellipse at 0% 20%,#f7d8ae70,transparent 38%),radial-gradient(ellipse at 100% 24%,#ffe6a870,transparent 40%),linear-gradient(#fffaf0,#fffcf5)}
+.s9-autumn-branches svg{overflow:visible;mask-image:linear-gradient(to bottom,#000 0%,#000 76%,transparent 100%)}
+.s9-autumn .s9-draft{position:relative;isolation:isolate;overflow:hidden;padding:17px 24px 24px;background:linear-gradient(90deg,#fff0ca,#e7f5f5 38%,#e7f5f5 62%,#fff0ca);border-top-color:#e4d7b6;border-bottom:1px solid #e7cf9a;color:#08717b}
+.s9-draft>span{position:relative;z-index:1;display:inline-block;padding:3px 12px;border-radius:999px;background:#f7fcf7e8;line-height:1.7}
+.s9-leaf-piles{position:absolute;inset:0;z-index:0;pointer-events:none}
+.s9-leaf-piles svg{position:absolute;bottom:-13px;width:min(32vw,420px);height:80px;opacity:.8}
+.s9-leaf-pile-left{left:0}.s9-leaf-pile-right{right:0;transform:scaleX(-1)}
+@media(min-width:1440px){.s9-autumn-branches svg{width:clamp(120px,calc((100vw - 1120px)/2 - 24px),300px);height:630px;opacity:.66}.s9-autumn-branches .s9-maple-branch{left:0}.s9-autumn-branches .s9-ginkgo-branch{right:0}}
+@media(max-width:1000px) and (min-width:761px){.s9-autumn .s9-hero{padding-inline:48px}}
+@media(max-width:760px){.s9-autumn .s9-header,.s9-autumn .s9-hero{padding-inline:24px}.s9-autumn .s9-draft{padding:12px 20px 23px}.s9-draft>span{padding:3px 8px;font-size:11px}.s9-leaf-piles svg{width:180px;height:52px;bottom:-17px;opacity:.65}}
