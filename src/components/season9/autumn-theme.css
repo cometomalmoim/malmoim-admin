@@ -11,9 +11,9 @@
 .s9-autumn .s9-button{background:#fbbc18;border-color:#fbbc18;color:#171918;box-shadow:0 4px 0 #b5810514}
 .s9-autumn .s9-button:hover{background:#ffd25a;border-color:#ffd25a}.s9-autumn .s9-gallery-link{color:#087f8c}
 .s9-autumn .s9-poster-trigger{border-color:#e7d3b0;box-shadow:0 18px 42px #80521c16}.s9-autumn .s9-poster-zoom{background:#fffaf0;color:#08717b}
-.s9-autumn .s9-autumn-leaves{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
-.s9-autumn-leaves svg{position:absolute;width:82px;height:100px;color:#df9b3c;opacity:.22;top:8px;left:46%;transform:rotate(24deg)}
-.s9-autumn-leaves svg+svg{width:58px;height:76px;color:#b76a36;opacity:.17;top:auto;bottom:15px;left:3%;transform:rotate(-32deg)}
+
+
+
 .s9-autumn .s9-moments{background:#fff9ed;border-color:var(--s9-autumn-line)}
 .s9-autumn .s9-moments-grid figure{padding:9px 9px 12px;background:#fffefb;border:1px solid #ebdfca;border-radius:21px;box-shadow:0 8px 24px #6f49110a}
 .s9-autumn .s9-moments-grid img{border-radius:13px}.s9-autumn .s9-moments-grid figcaption{padding-inline:4px;color:#405347}
@@ -24,4 +24,15 @@
 .s9-autumn .s9-steps li{background:#fffdf8;border:1px solid #e6e9db}.s9-autumn .s9-steps span{background:#fff0be;color:#08717b}
 .s9-autumn .s9-application{background:#fff0be;border-top:1px solid #efdfac}.s9-autumn .s9-footer{background:#f8f6ee}
 .s9-autumn .s9-sticky{background:#fffdf8;border-top-color:#e5dfcf}.s9-autumn :focus-visible{outline-color:#087f8c}
-@media(max-width:760px){.s9-autumn-leaves svg{width:64px;height:80px;left:auto;right:6px;top:5px}.s9-autumn-leaves svg+svg{width:42px;height:58px;left:0;right:auto;bottom:10px}.s9-autumn .s9-hero-facts{padding:16px}.s9-autumn .s9-moments-grid figure{padding:6px 6px 10px;border-radius:16px}.s9-autumn .s9-moments-grid img{border-radius:10px}}
+@media(max-width:760px){.s9-autumn .s9-hero-facts{padding:16px}.s9-autumn .s9-moments-grid figure{padding:6px 6px 10px;border-radius:16px}.s9-autumn .s9-moments-grid img{border-radius:10px}}
+
+/* Maple and ginkgo branches frame the content without covering the controls. */
+.s9-autumn .s9-hero{padding-inline:80px;overflow:hidden;background:radial-gradient(ellipse at 0% 30%,#f9dfbc70,transparent 37%),radial-gradient(ellipse at 100% 36%,#ffeab070,transparent 40%)}
+.s9-autumn-branches{position:absolute;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.s9-autumn-branches svg{position:absolute;top:0;width:260px;height:560px;opacity:.6;pointer-events:none}
+.s9-autumn-branches .s9-maple-branch{left:-130px}.s9-autumn-branches .s9-ginkgo-branch{right:-130px;transform:scaleX(-1)}
+.s9-autumn[lang=en] .s9-hero h1{font-size:clamp(36px,3.9vw,52px);line-height:1.14}
+.s9-title-intro,.s9-season-line{display:block}.s9-season-line{white-space:nowrap}
+@media(min-width:1600px){.s9-autumn-branches svg{opacity:.7}}
+@media(max-width:1000px) and (min-width:761px){.s9-autumn .s9-hero{padding-inline:48px;gap:32px}.s9-autumn[lang=en] .s9-hero h1{font-size:40px}.s9-autumn-branches svg{width:220px}.s9-autumn-branches .s9-maple-branch{left:-135px}.s9-autumn-branches .s9-ginkgo-branch{right:-135px}}
+@media(max-width:760px){.s9-autumn .s9-hero{padding-inline:24px}.s9-autumn[lang=en] .s9-hero h1{font-size:clamp(30px,8.6vw,38px)}.s9-autumn-branches svg{width:160px;height:350px;opacity:.32}.s9-autumn-branches .s9-maple-branch{left:-115px}.s9-autumn-branches .s9-ginkgo-branch{right:-115px}}
