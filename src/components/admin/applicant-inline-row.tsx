@@ -1,4 +1,5 @@
 'use client';
+import {languageLevelLabel} from '@/lib/applicant-languages';
 import {useRef,useState,useTransition} from 'react';
 import {useRouter} from 'next/navigation';
 import Link from 'next/link';
@@ -31,7 +32,7 @@ export function ApplicantInlineRow({row,eventMode=false,selection,busy=false,rea
  <td><span className="applicant-badge">{trafficSources[row.utm_source as keyof typeof trafficSources]??(row.utm_source||'미확인')}</span></td>
  {!eventMode&&<td>{row.utm_medium||'—'}<small>{row.utm_campaign||'—'}</small></td>}
  <td>{row.contact}<small>{row.contact_type==='phone'?'전화':'인스타그램'}</small></td>
- <td>{row.birth_year?`${row.birth_year}년생`:'—'}</td><td>{row.nationality||'—'}</td>
+ <td>{row.birth_year?`${row.birth_year}년생`:'—'}</td><td>{row.nationality||'—'}</td><td className="applicant-language-cell">{languageLevelLabel('korean',row.korean_level)}</td><td className="applicant-language-cell">{languageLevelLabel('english',row.english_level)}</td>
  <td>{statusControl('status','선발 상태',applicationStatuses)}</td>
  <td>{statusControl('payment_status','입금 확인',paymentStatuses)}<small>운영진 수동 기록</small></td>
  <td>{new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'short'}).format(new Date(row.created_at))}</td>
