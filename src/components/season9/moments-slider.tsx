@@ -1,5 +1,7 @@
 'use client';
 import { useEffect, useState, useSyncExternalStore } from 'react';
+import { publicEventReviews } from '@/app/actions/event-reviews';
+import type { PublicEventReview } from '@/lib/review-validation';
 
 // Replace with organizer-approved real feedback later; these are program descriptions, not testimonials.
 const moments = [
@@ -11,18 +13,23 @@ const moments = [
 function subscribeMotion(listener: () => void) { const media = window.matchMedia('(prefers-reduced-motion: reduce)'); media.addEventListener('change', listener); return () => media.removeEventListener('change', listener); }
 const reducedMotion = () => window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 export function MomentsSlider({ english = false }: { english?: boolean }) {
+ const [reviews,setReviews]=useState<PublicEventReview[]>([]);
+ useEffect(()=>{let active=true;void publicEventReviews('season9').then(rows=>{if(active)setReviews(rows);});return()=>{active=false;};},[]);
+ const slides=reviews.length?reviews.map(row=>({language:row.locale==='en'?'English':'한국어',text:row.body,name:row.display_name})):moments.map(row=>({...row,name:''}));
  const [index, setIndex] = useState(0);
+ const currentIndex=index%slides.length;
+ const current=slides[currentIndex];
  const [paused, setPaused] = useState(false);
  const [engaged, setEngaged] = useState(false);
  const reduced = useSyncExternalStore(subscribeMotion, reducedMotion, () => true);
  useEffect(() => {
-  if (paused || engaged || reduced) return;
-  const interval = setInterval(() => setIndex(value => (value + 1) % moments.length), 6500);
+  if (paused || engaged || reduced || slides.length<2) return;
+  const interval = setInterval(() => setIndex(value => (value + 1) % slides.length), 6500);
   return () => clearInterval(interval);
- }, [paused, engaged, reduced]);
- const move = (step: number) => { setPaused(true); setIndex(value => (value + step + moments.length) % moments.length); };
- return <div className="s9-moment-slider" role="region" aria-roledescription="carousel" aria-label={english ? 'Moments to look forward to' : '말모임에서 기대할 수 있는 순간들'} onMouseEnter={() => setEngaged(true)} onMouseLeave={() => setEngaged(false)} onFocus={() => setEngaged(true)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setEngaged(false); }}>
-  <div><span className="s9-kicker">{english ? "ABOUT MALMOIM" : "말모임 이야기"}</span><h3>{english ? 'Learning from each other' : '서로 배우는 시간'}</h3><p>{english ? 'A few things about our gatherings.' : '말모임이 어떤 모임인지 짧게 소개할게요.'}</p></div>
-  <div className="s9-moment-window"><article key={index} lang={index % 2 ? 'en' : 'ko'}><span>{moments[index].language}</span><p>{moments[index].text}</p></article><div className="s9-moment-controls"><button type="button" aria-label={english ? 'Previous introduction' : '이전 소개'} onClick={() => move(-1)}>←</button><span aria-label={english ? `Slide ${index + 1} of ${moments.length}` : `${moments.length}개 중 ${index + 1}번째`}>{String(index + 1).padStart(2, '0')} / 04</span><button type="button" aria-label={english ? 'Next introduction' : '다음 소개'} onClick={() => move(1)}>→</button>{!reduced && <button type="button" aria-pressed={paused} onClick={() => setPaused(value => !value)}>{english ? (paused ? 'Play' : 'Pause') : (paused ? '자동 넘김 재생' : '자동 넘김 멈춤')}</button>}</div></div>
+ }, [paused, engaged, reduced, slides.length]);
+ const move = (step: number) => { setPaused(true); setIndex(value => (value + step + slides.length) % slides.length); };
+ return <div className="s9-moment-slider" role="region" aria-roledescription="carousel" aria-label={reviews.length?(english?'Participant reviews':'참여자 후기'):(english ? 'Moments to look forward to' : '말모임에서 기대할 수 있는 순간들')} onMouseEnter={() => setEngaged(true)} onMouseLeave={() => setEngaged(false)} onFocus={() => setEngaged(true)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setEngaged(false); }}>
+  <div><span className="s9-kicker">{reviews.length?(english?"REVIEWS":"참여자 후기"):(english ? "ABOUT MALMOIM" : "말모임 이야기")}</span><h3>{reviews.length?(english?'From our participants':'참여자들이 전하는 이야기'):(english ? 'Learning from each other' : '서로 배우는 시간')}</h3><p>{reviews.length?(english?'Shared with permission.':'게시 동의를 받은 후기입니다.'):(english ? 'A few things about our gatherings.' : '말모임이 어떤 모임인지 짧게 소개할게요.')}</p></div>
+  <div className="s9-moment-window"><article key={`${reviews.length?'review':'intro'}-${currentIndex}`} lang={current.language==='English'?'en':'ko'}><span>{current.language}</span><p>{current.text}</p>{current.name&&<strong className="s9-review-name">{current.name}</strong>}</article><div className="s9-moment-controls"><button type="button" aria-label={english ? 'Previous introduction' : '이전 소개'} disabled={slides.length<2} onClick={() => move(-1)}>←</button><span aria-label={english ? `Slide ${currentIndex + 1} of ${slides.length}` : `${slides.length}개 중 ${currentIndex + 1}번째`}>{String(currentIndex + 1).padStart(2, '0')} / {String(slides.length).padStart(2,'0')}</span><button type="button" aria-label={english ? 'Next introduction' : '다음 소개'} disabled={slides.length<2} onClick={() => move(1)}>→</button>{!reduced && slides.length>1 && <button type="button" aria-pressed={paused} onClick={() => setPaused(value => !value)}>{english ? (paused ? 'Play' : 'Pause') : (paused ? '자동 넘김 재생' : '자동 넘김 멈춤')}</button>}</div></div>
  </div>;
 }

@@ -1,3 +1,4 @@
+import {EventReviewsView} from './event-reviews-view';
 import {InquiriesView} from './inquiries-view';
 import { ScheduleView } from './schedule-view';
 import { PeopleView } from './people-view';
@@ -32,6 +33,7 @@ export async function ProtectedAdmin({ segments = [], page, query }: { segments?
   if(segments.length===1&&segments[0]==='participants')return <ParticipationView email={access.email} query={query}/>;
   if(segments.length===5&&segments[0]==='events'&&segments[2]==='participants')return <ParticipationView email={access.email} slug={segments[1]} source={segments[3]} id={segments[4]} query={query}/>;
   if(segments.length===3&&segments[0]==='events'&&segments[2]==='attendance')return <EventAttendanceView email={access.email} slug={segments[1]} page={page} query={query}/>;
+  if(segments.length===3&&segments[0]==='events'&&segments[2]==='reviews')return <EventReviewsView email={access.email} slug={segments[1]}/>;
   if(segments.length===1&&segments[0]==='inquiries')return <InquiriesView email={access.email} query={query} page={page}/>;
   if(segments.length===3&&segments[0]==='events'&&segments[2]==='inquiries')return <InquiriesView email={access.email} slug={segments[1]} query={query} page={page}/>;
   if(segments.length===1&&segments[0]==='messages')return <MessageView email={access.email}/>;
