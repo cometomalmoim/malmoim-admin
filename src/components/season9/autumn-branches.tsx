@@ -6,11 +6,17 @@ function GinkgoLeaf({x,y,angle=0,scale=1}:{x:number;y:number;angle?:number;scale
 }
 export function AutumnBranches(){
  return <div className="s9-autumn-branches" aria-hidden="true">
-  <svg className="s9-maple-branch" viewBox="0 0 240 500" fill="none"><path d="M45 510Q68 330 100 186T114-15M75 340q50-25 105-88M92 220q55-24 108-100M105 110q42-14 94-73M69 391q31-3 102-42" stroke="#a77d4e" strokeWidth="4" strokeLinecap="round"/>
+  <svg className="s9-maple-branch" viewBox="0 0 240 500" preserveAspectRatio="xMidYMin meet" fill="none"><path d="M45 510Q68 330 100 186T114-15M75 340q50-25 105-88M92 220q55-24 108-100M105 110q42-14 94-73M69 391q31-3 102-42" stroke="#a77d4e" strokeWidth="4" strokeLinecap="round"/>
    <MapleLeaf x={201} y={49} angle={32} scale={.9}/><MapleLeaf x={159} y={91} angle={-26} color="#dc953a" scale={.7}/><MapleLeaf x={202} y={143} angle={45} color="#c85533"/><MapleLeaf x={145} y={193} angle={-18} color="#e7ac43" scale={.7}/><MapleLeaf x={181} y={258} angle={54} scale={.9}/><MapleLeaf x={119} y={310} angle={-30} color="#dca33d" scale={.65}/><MapleLeaf x={173} y={353} angle={30} color="#c85533" scale={.8}/>
   </svg>
-  <svg className="s9-ginkgo-branch" viewBox="0 0 240 500" fill="none"><path d="M45 510Q68 330 100 186T114-15M75 340q50-25 105-88M92 220q55-24 108-100M105 110q42-14 94-73M69 391q31-3 102-42" stroke="#a1884d" strokeWidth="4" strokeLinecap="round"/>
+  <svg className="s9-ginkgo-branch" viewBox="0 0 240 500" preserveAspectRatio="xMidYMin meet" fill="none"><path d="M45 510Q68 330 100 186T114-15M75 340q50-25 105-88M92 220q55-24 108-100M105 110q42-14 94-73M69 391q31-3 102-42" stroke="#a1884d" strokeWidth="4" strokeLinecap="round"/>
    <GinkgoLeaf x={199} y={48} angle={36} scale={.92}/><GinkgoLeaf x={150} y={98} angle={-16} scale={.72}/><GinkgoLeaf x={197} y={152} angle={38}/><GinkgoLeaf x={142} y={209} angle={-24} scale={.7}/><GinkgoLeaf x={184} y={266} angle={36} scale={.9}/><GinkgoLeaf x={122} y={309} angle={-27} scale={.65}/><GinkgoLeaf x={173} y={357} angle={32} scale={.8}/>
   </svg>
  </div>;
+}
+
+export function AutumnLeafPile(){
+ return <div className="s9-leaf-piles" aria-hidden="true">{['left','right'].map(side=><svg className={`s9-leaf-pile-${side}`} key={side} viewBox="0 0 360 74" preserveAspectRatio="xMidYMax meet" fill="none">
+  <MapleLeaf x={24} y={58} angle={-36} scale={.7}/><GinkgoLeaf x={65} y={55} angle={28} scale={.8}/><MapleLeaf x={108} y={64} angle={52} color="#e3a63d" scale={.7}/><MapleLeaf x={157} y={60} angle={-42} color="#c75d38" scale={.8}/><GinkgoLeaf x={205} y={64} angle={37} scale={.8}/><MapleLeaf x={251} y={64} angle={64} color="#d58b3a" scale={.7}/><GinkgoLeaf x={301} y={65} angle={-35} scale={.8}/><MapleLeaf x={345} y={67} angle={55} scale={.65}/>
+ </svg>)}</div>;
 }
