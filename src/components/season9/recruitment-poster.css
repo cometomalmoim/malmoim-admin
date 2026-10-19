@@ -1,0 +1,22 @@
+/* Season 9 poster: readable in-page, optional centered enlargement. */
+.s9-site .s9-hero{grid-template-columns:minmax(0,1fr) minmax(0,.9fr);padding-top:44px;padding-bottom:44px;gap:60px}
+.s9-site .s9-hero h1{font-size:clamp(40px,4.6vw,64px)}
+.s9-site .s9-hero-facts{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin:26px 0;padding:20px 0;border-top:1px solid #e5e7df;border-bottom:1px solid #e5e7df}
+.s9-hero-facts dt{font-size:12px;color:#687067;margin-bottom:7px}.s9-hero-facts dd{margin:0;font-size:15px;font-weight:700;line-height:1.6}
+.s9-recruitment-poster{margin:0;width:100%;max-width:440px;justify-self:center;min-width:0}
+.s9-site .s9-poster-trigger{position:relative;display:block;width:100%;padding:0;border:1px solid #e2d7c6;border-radius:14px;background:#f8f2e8;overflow:hidden;cursor:zoom-in;box-shadow:0 16px 40px #50371b12;transition:box-shadow .2s ease}
+.s9-poster-trigger:hover{box-shadow:0 18px 45px #50371b26}.s9-poster-trigger img{display:block;width:100%;height:auto;object-fit:contain}
+.s9-poster-zoom{position:absolute;bottom:12px;left:50%;transform:translateX(-50%);padding:9px 15px;border:1px solid #ffffff70;border-radius:999px;background:#211d18e6;color:white;font-size:12px;font-weight:700;white-space:nowrap;box-shadow:0 2px 12px #0002}
+.s9-recruitment-poster figcaption{text-align:center;font-size:11px;color:#77766e;margin-top:12px}
+.s9-poster-dialog{position:fixed;inset:0;margin:auto;width:min(800px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:94dvh;padding:0;border:1px solid #e5dfd5;border-radius:18px;background:#fbf8f2;color:#25211b;box-shadow:0 24px 100px #0005;overflow:auto}
+.s9-poster-dialog::backdrop{background:#16120ce0;backdrop-filter:blur(5px)}
+.s9-poster-modal header{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 18px;border-bottom:1px solid #e5dfd5;background:#fff}
+.s9-site .s9-poster-modal h2{font-size:15px;line-height:1.5;margin:0;letter-spacing:-.02em}
+.s9-poster-modal header button{display:inline-flex;align-items:center;gap:12px;flex-shrink:0;min-height:44px;padding:8px 12px;border:1px solid #dedbd2;border-radius:9px;background:#fff;color:#302d27;font:inherit;font-size:13px;cursor:pointer}.s9-poster-modal header button span{font-size:24px;line-height:1}
+.s9-poster-full{display:flex;justify-content:center;padding:16px}.s9-poster-full img{display:block;width:auto;height:auto;max-width:100%;max-height:calc(94dvh - 105px);object-fit:contain}
+@media(max-width:760px){.s9-site .s9-hero{grid-template-columns:1fr;padding:36px 24px;gap:30px}.s9-site .s9-hero h1{font-size:40px}.s9-site .s9-hero-facts{margin:22px 0;padding:16px 0;gap:12px}.s9-hero-facts dd{font-size:13px}.s9-recruitment-poster{max-width:420px}.s9-poster-modal header{padding:10px 12px}.s9-site .s9-poster-modal h2{font-size:13px}.s9-poster-full{padding:10px}.s9-poster-zoom{font-size:11px;padding:8px 12px}}
+@media(prefers-reduced-motion:reduce){.s9-poster-trigger{transition:none}}
+
+.s9-poster-zoom{position:static;display:flex;justify-content:center;transform:none;padding:12px;border:0;border-radius:0;background:#fff;color:#474c43;box-shadow:none}
+.s9-poster-dialog{overflow:hidden}.s9-poster-modal{display:grid;grid-template-rows:auto minmax(0,1fr);height:calc(94dvh - 2px)}
+.s9-poster-full{min-height:0}.s9-poster-full img{width:100%;height:100%;max-width:100%;max-height:100%;object-fit:contain}
