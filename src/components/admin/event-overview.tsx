@@ -10,6 +10,7 @@ export async function EventOverview({row}:{row:EventRow}){
  const tasks=[
   {title:'이벤트 정보',description:'일정·장소·정원·모집 기간을 확인하고 수정합니다.',href:`${base}/information`,action:'정보 확인·수정'},
   {title:'신청자 관리',description:'신청 내역을 확인하고 선발·입금 상태를 관리합니다.',href:`${base}/applicants`,action:'신청자 보기'},
+  {title:'문의 확인하기',description:'이 이벤트에 접수된 문의를 확인하고 답변합니다.',href:`${base}/inquiries`,action:'문의 확인·답변'},
   {title:'날짜별 출석',description:'진행 날짜를 선택하고 참석·미참석·노쇼를 기록합니다.',href:`${base}/attendance`,action:'출석 체크'},
  ];
  return <div className="evt-overview evt-home">
