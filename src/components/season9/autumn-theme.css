@@ -1,0 +1,27 @@
+/* Autumn atmosphere supports MALMOIM yellow and teal rather than replacing them. */
+.s9-site.s9-autumn{--s9-autumn-cream:#fffcf5;--s9-autumn-line:#ecdfc8;background:var(--s9-autumn-cream);color:#272923}
+.s9-autumn .s9-header{background:#fffdf8}.s9-autumn .s9-logo{position:relative;z-index:1}
+.s9-autumn .s9-draft{border-block:1px solid #cee5df;background:#e7f5f5;color:#087f8c}
+.s9-autumn .s9-hero{position:relative;isolation:isolate;background:radial-gradient(ellipse at 78% 35%,#fff0cd85,transparent 62%)}
+.s9-autumn .s9-hero-copy,.s9-autumn .s9-recruitment-poster{position:relative;z-index:1}
+.s9-autumn .s9-hero .s9-kicker{background:#e7f5f5;border-color:#c6e6e5;color:#087f8c;box-shadow:4px 4px 0 #fbbc1824}
+.s9-autumn .s9-hero h1{color:#242b25}.s9-autumn .s9-hero .s9-lead{color:#384039}
+.s9-autumn .s9-hero-facts{background:#fffaf0;border:1px solid var(--s9-autumn-line);padding:20px 22px;border-radius:16px}
+.s9-autumn .s9-hero-facts dt{color:#08717b}.s9-autumn .s9-hero-facts dd{color:#30382f}
+.s9-autumn .s9-button{background:#fbbc18;border-color:#fbbc18;color:#171918;box-shadow:0 4px 0 #b5810514}
+.s9-autumn .s9-button:hover{background:#ffd25a;border-color:#ffd25a}.s9-autumn .s9-gallery-link{color:#087f8c}
+.s9-autumn .s9-poster-trigger{border-color:#e7d3b0;box-shadow:0 18px 42px #80521c16}.s9-autumn .s9-poster-zoom{background:#fffaf0;color:#08717b}
+.s9-autumn .s9-autumn-leaves{position:absolute;inset:0;overflow:hidden;pointer-events:none;z-index:0}
+.s9-autumn-leaves svg{position:absolute;width:82px;height:100px;color:#df9b3c;opacity:.22;top:8px;left:46%;transform:rotate(24deg)}
+.s9-autumn-leaves svg+svg{width:58px;height:76px;color:#b76a36;opacity:.17;top:auto;bottom:15px;left:3%;transform:rotate(-32deg)}
+.s9-autumn .s9-moments{background:#fff9ed;border-color:var(--s9-autumn-line)}
+.s9-autumn .s9-moments-grid figure{padding:9px 9px 12px;background:#fffefb;border:1px solid #ebdfca;border-radius:21px;box-shadow:0 8px 24px #6f49110a}
+.s9-autumn .s9-moments-grid img{border-radius:13px}.s9-autumn .s9-moments-grid figcaption{padding-inline:4px;color:#405347}
+.s9-autumn .s9-section.soft{background:#f3f6ed}.s9-autumn .s9-targets p:nth-child(1),.s9-autumn .s9-targets p:nth-child(3){background:#e7f5f5}
+.s9-autumn .s9-targets p:nth-child(2){background:#fff0be}.s9-autumn .s9-programs article{background:#fffdf8;border:1px solid #e6e9db}
+.s9-autumn .s9-programs strong{background:#fff0be}.s9-autumn .s9-program-number{background:#e7f5f5;color:#087f8c}
+.s9-autumn .s9-details{border-color:#b5cbbd}.s9-autumn .s9-details>div,.s9-autumn .s9-faq details{border-color:#e5e0cf}
+.s9-autumn .s9-steps li{background:#fffdf8;border:1px solid #e6e9db}.s9-autumn .s9-steps span{background:#fff0be;color:#08717b}
+.s9-autumn .s9-application{background:#fff0be;border-top:1px solid #efdfac}.s9-autumn .s9-footer{background:#f8f6ee}
+.s9-autumn .s9-sticky{background:#fffdf8;border-top-color:#e5dfcf}.s9-autumn :focus-visible{outline-color:#087f8c}
+@media(max-width:760px){.s9-autumn-leaves svg{width:64px;height:80px;left:auto;right:6px;top:5px}.s9-autumn-leaves svg+svg{width:42px;height:58px;left:0;right:auto;bottom:10px}.s9-autumn .s9-hero-facts{padding:16px}.s9-autumn .s9-moments-grid figure{padding:6px 6px 10px;border-radius:16px}.s9-autumn .s9-moments-grid img{border-radius:10px}}
