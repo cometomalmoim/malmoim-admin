@@ -17,7 +17,7 @@ export async function EventOverview({row}:{row:EventRow}){
   <EventRecruitmentLinks slug={row.slug} compact/>
   <section className="ops-panel evt-home-tasks" aria-label="이벤트 운영 작업"><h2>운영 작업 선택</h2><p className="ops-muted">필요한 작업을 선택하세요. 카드 전체를 눌러 이동할 수 있습니다.</p>
    <div className="evt-home-workflows">{tasks.map(task=><Link key={task.title} className="evt-home-workflow" href={task.href}><strong>{task.title}</strong><p>{task.description}</p><span>{task.action} <span aria-hidden="true">→</span></span></Link>)}</div>
-   <nav className="evt-home-more" aria-label="추가 이벤트 업무"><Link href={`${base}/resources`}>자료</Link><Link href={`${base}/certificates`}>수료증</Link></nav>
+   <nav className="evt-home-more" aria-label="추가 이벤트 업무"><Link href={`${base}/reviews`}>후기 관리</Link><Link href={`${base}/resources`}>자료</Link><Link href={`${base}/certificates`}>수료증</Link></nav>
   </section>
   <section className="evt-overview-stats evt-home-summary" aria-label="이벤트 현황">
    <article className="ops-panel"><h2>등록 상태</h2><strong>{statuses[row.status]??'확인 필요'}</strong><p>이벤트에 저장된 상태</p></article>
