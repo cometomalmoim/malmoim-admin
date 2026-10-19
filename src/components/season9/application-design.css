@@ -63,3 +63,14 @@
 .s9-apply-site .s9-form-footer{position:sticky;bottom:0;z-index:3;background:#fff;border-top:1px solid #edf0eb;padding:16px 0 max(12px,env(safe-area-inset-bottom))}
 .s9-apply-site .s9-form-footer .s9-step-progress{margin:0 0 12px}
 .s9-apply-site .s9-form-footer .s9-step-controls{position:static;margin:0;padding:0;border:0}
+
+/* Continuous autumn background; decorations never cover form controls. */
+.s9-site.s9-apply-site{position:relative;isolation:isolate;background:radial-gradient(ellipse at 0 0,#f3d6a54d,transparent 55%),radial-gradient(ellipse at 100% 80%,#f5d9984d,transparent 55%),#fcf7ed}
+.s9-apply-autumn{position:fixed;inset:0;z-index:-1;pointer-events:none;overflow:hidden}
+.s9-apply-autumn .s9-autumn-branches{position:absolute;inset:0;opacity:.32}
+.s9-apply-autumn .s9-maple-branch,.s9-apply-autumn .s9-ginkgo-branch{position:absolute;top:90px;width:min(23vw,260px);height:70vh}
+.s9-apply-autumn .s9-maple-branch{left:-45px}.s9-apply-autumn .s9-ginkgo-branch{right:-45px;transform:scaleX(-1)}
+.s9-apply-autumn .s9-leaf-piles{position:absolute;inset:auto 0 0;height:90px;opacity:.35}
+.s9-apply-autumn .s9-leaf-piles svg{position:absolute;bottom:0;width:38%;height:90px}.s9-apply-autumn .s9-leaf-pile-left{left:0}.s9-apply-autumn .s9-leaf-pile-right{right:0;transform:scaleX(-1)}
+.s9-apply-site .s9-form{background:#fff;border-color:#eadfcf}
+@media(max-width:600px){.s9-site.s9-apply-site{background:#fcf7ed}.s9-apply-site .s9-form{padding:22px 16px 0;border:1px solid #eadfcf;border-radius:20px}.s9-apply-site .s9-apply-main{padding-inline:16px}.s9-apply-autumn .s9-autumn-branches{opacity:.18}.s9-apply-autumn .s9-maple-branch{left:-12px}.s9-apply-autumn .s9-ginkgo-branch{right:-12px}}

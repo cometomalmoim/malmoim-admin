@@ -7,6 +7,7 @@ import {applicantEditData} from '@/lib/applicant-inline';
 import {saveApplicant} from '@/app/actions/applicants';
 import {applicationStatuses,paymentStatuses} from '@/lib/applicant-validation';
 import {trafficSources} from '@/lib/attribution';
+import {ApplicantResponse} from './applicant-response';
 import {ApplicantEditor} from './applicant-editor';
 
 export function ApplicantInlineRow({row,eventMode=false,selection,busy=false,readOnly=false}:{row:ApplicationRow;eventMode?:boolean;selection?:React.ReactNode;busy?:boolean;readOnly?:boolean}){
@@ -34,7 +35,7 @@ export function ApplicantInlineRow({row,eventMode=false,selection,busy=false,rea
  <td>{statusControl('status','선발 상태',applicationStatuses)}</td>
  <td>{statusControl('payment_status','입금 확인',paymentStatuses)}<small>운영진 수동 기록</small></td>
  <td>{new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'short'}).format(new Date(row.created_at))}</td>
- <td><button type="button" className="applicant-cell-button" disabled={pending||busy||readOnly||!row.event_slug} onClick={()=>detail.current?.showModal()}>상세·수정</button><small>{row.internal_note}</small><p role="status">{pending?'저장 중…':message}</p>{message.includes('최신 목록')&&<button type="button" onClick={()=>router.refresh()}>최신 목록 불러오기</button>}
+ <td><ApplicantResponse eventId={row.event_id} source={row.source} id={row.id} name={row.name}/><button type="button" className="applicant-cell-button" disabled={pending||busy||readOnly||!row.event_slug} onClick={()=>detail.current?.showModal()}>상세·수정</button><small>{row.internal_note}</small><p role="status">{pending?'저장 중…':message}</p>{message.includes('최신 목록')&&<button type="button" onClick={()=>router.refresh()}>최신 목록 불러오기</button>}
  <dialog ref={detail} className="applicant-detail-dialog" aria-label={`${row.name} 상세·수정`}><button type="button" onClick={()=>detail.current?.close()}>닫기</button>{row.event_slug&&<><p>유입경로: {row.utm_source||'미확인'} · 매체: {row.utm_medium||'—'} · 캠페인: {row.utm_campaign||'—'}</p><ApplicantEditor slug={row.event_slug} row={row}/></>}</dialog></td>
  </tr>;
 }
