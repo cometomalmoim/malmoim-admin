@@ -32,3 +32,15 @@
 .s9-hero-actions{display:flex;align-items:center;gap:22px;flex-wrap:wrap}.s9-gallery-link{font-size:13px;font-weight:600;color:#087f8c;min-height:44px;display:inline-flex;align-items:center;gap:8px;text-decoration:underline;text-underline-offset:5px}
 .s9-site .s9-moments{scroll-margin-top:24px;border-top:1px solid #edf0e9;padding-top:40px}
 @media(max-width:760px){.s9-site .s9-hero{padding:30px 24px;gap:28px}.s9-site .s9-hero h1{font-size:38px;margin:18px 0}.s9-site .s9-hero .s9-lead{font-size:18px}.s9-site .s9-hero-copy>p{font-size:14px}.s9-hero-actions{gap:10px 18px}.s9-site .s9-hero-facts{padding:16px 0;margin:18px 0;gap:14px 12px}.s9-site .s9-moments{padding-top:32px}}
+
+/* One schedule comparison and one shared price/commitment summary. */
+.s9-group-options{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:24px 0 14px}
+.s9-group-options article{min-width:0;padding:18px;border:1px solid #d1e4db;border-top:3px solid #087f8c;border-radius:14px;background:#fffdf8}
+.s9-group-options article+article{border-top-color:#fbbc18}.s9-group-day{display:block;font-size:13px;font-weight:700;color:#08717b;margin-bottom:10px}
+.s9-group-options strong{display:block;font-size:clamp(17px,1.6vw,22px);line-height:1.4;white-space:nowrap;color:#28342d}
+.s9-site .s9-group-options p{font-size:12px;color:#697368;margin:8px 0 0;line-height:1.6}
+.s9-site .s9-hero-copy .s9-shared-terms{font-size:14px;line-height:1.7;margin:0 0 22px;padding:14px 16px;border-radius:12px;background:#fff0be;color:#3c412f}
+.s9-shared-terms strong,.s9-shared-terms span{display:block}.s9-shared-terms span{font-size:11px;color:#72694f;margin-top:3px}
+.s9-site .s9-first-timers{display:grid;grid-template-columns:1.1fr 1fr;gap:36px;align-items:center;background:#e7f5f5;border-block:1px solid #d7e9df;padding-top:42px;padding-bottom:42px}
+.s9-site .s9-first-timers h2{font-size:clamp(26px,2.7vw,36px);line-height:1.45;margin:18px 0 0}.s9-first-timers>p{font-size:15px;line-height:1.9;color:#475e51;margin:0}
+@media(max-width:760px){.s9-group-options{gap:10px;margin-top:20px}.s9-group-options article{padding:14px 12px}.s9-group-options strong{font-size:17px}.s9-group-day{font-size:12px}.s9-site .s9-group-options p{font-size:11px}.s9-site .s9-hero-copy .s9-shared-terms{font-size:13px;padding:12px}.s9-site .s9-first-timers{grid-template-columns:1fr;gap:18px;padding-top:32px;padding-bottom:32px}.s9-site .s9-first-timers h2{font-size:27px}.s9-first-timers>p{font-size:14px}}

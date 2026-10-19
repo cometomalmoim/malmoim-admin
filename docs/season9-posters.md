@@ -14,3 +14,7 @@ A dedicated three-photo gallery now follows the first-screen schedule/venue summ
 
 ## Applicant-first hierarchy
 Start dates, weekly/six-session commitment, fee and venue are grouped in the hero. The separate duplicate schedule strip is removed. A primary application CTA and secondary gallery anchor let visitors apply or explore real photos. Existing full details retain class times and the venue caveat. No conversion improvement is claimed without measurement.
+
+## Consolidated participant information
+Replace the hero facts grid with Thursday/Saturday schedule cards sourced from season9. Show shared weekly/six-session/KRW 50,000 terms once, including activity sheets/costs and KST. Move the precise deadline to the announcement strip. The lower details now only contain venue address, confirmation and the existing refund policy. Keep venue-change and twice-weekly questions in FAQ; remove duplicate answers. Replace the three target cards with a short first-timer notice. The user explicitly confirmed solo applications are allowed.
+No actual testimonials are available yet: do not show dummy reviews, empty cards, or invented quotes. When approved originals are supplied, place them below the photo gallery. Existing photos are not testimonials.
