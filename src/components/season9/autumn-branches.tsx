@@ -17,6 +17,6 @@ export function AutumnBranches(){
 
 export function AutumnLeafPile(){
  return <div className="s9-leaf-piles" aria-hidden="true">{['left','right'].map(side=><svg className={`s9-leaf-pile-${side}`} key={side} viewBox="0 0 360 74" preserveAspectRatio="xMidYMax meet" fill="none">
-  <MapleLeaf x={24} y={58} angle={-36} scale={.7}/><GinkgoLeaf x={65} y={55} angle={28} scale={.8}/><MapleLeaf x={108} y={64} angle={52} color="#e3a63d" scale={.7}/><MapleLeaf x={157} y={60} angle={-42} color="#c75d38" scale={.8}/><GinkgoLeaf x={205} y={64} angle={37} scale={.8}/><MapleLeaf x={251} y={64} angle={64} color="#d58b3a" scale={.7}/><GinkgoLeaf x={301} y={65} angle={-35} scale={.8}/><MapleLeaf x={345} y={67} angle={55} scale={.65}/>
+  {Array.from({length:36},(_,i)=>{const x=8+(i*43%350),y=36+(i*17%36),angle=(i*47%150)-75,scale=.35+(i%5)*.075;return i%3===0?<GinkgoLeaf key={i} x={x} y={y} angle={angle} scale={scale}/>:<MapleLeaf key={i} x={x} y={y} angle={angle} scale={scale} color={['#c8753f','#d69d3c','#b95b38','#e6b64d'][i%4]}/>;})}
  </svg>)}</div>;
 }
