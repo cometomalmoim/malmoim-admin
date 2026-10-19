@@ -22,7 +22,7 @@ Submission to draft, test or archived events is blocked. Published/closed events
 
 - 24 inquiry/template/message unit and mocked-provider regression tests passed. Provider mocks never contact SOLAPI.
 - `supabase/tests/event_inquiries.sql` ran against the approved project: anonymous submission, idempotent retry, token isolation, anonymous table/reply denial, authenticated nonadmin denial, admin replies, stale revision, append-only reply history and direct-write denial passed; fake writes rolled back.
-- A separate browser-created fake inquiry confirms form → real storage → private receipt lookup. It is disposable and will be removed after admin reply validation.
+- A browser-created fake inquiry confirmed form → real storage → global/event-scoped admin inbox → admin reply → private receipt display on production. The designated fake inquiry and reply were then removed. No actual SMS was sent. Status filtering and the new messaging template were also checked in the production UI.
 - Targeted ESLint and Webpack production build run before merge. Genuine simultaneous sessions, real SMS delivery and conversion impact are separate from these checks.
 
 ## Landing visuals
