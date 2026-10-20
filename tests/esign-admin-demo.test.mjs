@@ -33,3 +33,10 @@ test('browser-only UI does not mount request API component or offer development-
 function assetHandler(status){let reads=0;const {GET}=load('src/app/admin/esign-demo/assets/[...asset]/route.ts',{'@/lib/auth':{getAdminAccess:async()=>({status})},'node:fs/promises':{readFile:async()=>{reads++;return new Uint8Array([1]);}}});return{GET,reads:()=>reads};}
 test('renderer assets fail closed before disk read for every non-admin',async()=>{for(const state of ['anonymous','denied','error']){const a=assetHandler(state);assert.equal((await a.GET(new Request('http://localhost'),{params:Promise.resolve({asset:['build','pdf.worker.min.mjs']})})).status,403);assert.equal(a.reads(),0);}});
 test('admin renderer assets allow local PDF resources, reject traversal and scripting engine',async()=>{const a=assetHandler('admin');for(const asset of [['..','secret'],['wasm','quickjs-eval.js'],['build','other.mjs'],['build','x','y']])assert.equal((await a.GET(null,{params:Promise.resolve({asset})})).status,404);assert.equal(a.reads(),0);const result=await a.GET(null,{params:Promise.resolve({asset:['build','pdf.worker.min.mjs']})});assert.equal(result.status,200);assert.equal(result.headers.get('cache-control'),'no-store');assert.equal(a.reads(),1);});
+
+test('esign demo follows certificates without reordering any other menu item',async()=>{
+ const {adminGroups}=await import('../src/lib/admin-navigation.ts');
+ const items=adminGroups.flatMap(g=>g.items).map(i=>i.slug);
+ assert.equal(items[items.indexOf('certificates')+1],'esign-demo');
+ assert.equal(items.filter(i=>i==='esign-demo').length,1);
+});

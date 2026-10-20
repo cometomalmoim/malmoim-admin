@@ -30,6 +30,7 @@ function RequestDetail({ row, onClose }: { row: SigningRequest; onClose: () => v
 }
 
 export function DocumentAdminPreview({ browserOnly = false }: { browserOnly?: boolean } = {}) {
+  const Root = browserOnly ? 'section' : 'main';
   const assetBase = browserOnly ? '/admin/esign-demo/assets' : '/preview/pdf-fields/assets';
   const [fixtures] = useState(documentAdminFixtures);
   const [templates, setTemplates] = useState(fixtures.templates);
@@ -82,7 +83,7 @@ export function DocumentAdminPreview({ browserOnly = false }: { browserOnly?: bo
     const source=sources.current.get(id);sources.current.delete(id);setAvailableSources(new Map(sources.current));if(source)void source.destroy();
     setTemplates(rows=>rows.filter(t=>t.id!==id));setDeleting('');setNotice('템플릿을 이 탭의 목록에서 삭제했습니다. 기존 가상 요청 이력은 보존했습니다.');
   }
-  return <main className={styles.admin}>
+  return <Root className={`${styles.admin} ${browserOnly ? styles.embedded : ''}`}>
     <header className={styles.header}><div><p className={styles.eyebrow}>MALMOIM · DOCUMENTS / STEP 04</p><h1>서류·전자서명 관리</h1><p>템플릿부터 참가자별 서명 현황까지 한곳에서 확인하세요.</p></div><span className={styles.demoBadge}>가상 데이터 · 브라우저 메모리</span></header>
     <aside className={styles.banner}><strong>개발 전용 관리자 UI 미리보기</strong><span>실제 참가자·발송·서명·보관 데이터가 아닙니다. 업로드한 원본과 설정도 이 탭에서만 유지되며 새로고침하면 사라집니다.</span>{!browserOnly && <Link href="/preview/pdf-fields" target="_blank" rel="noopener noreferrer">기존 3단계 테스트 별도 열기 ↗</Link>}{browserOnly && <p>개발용 시연 / 실제 신청자 정보 없음 / 문자 발송 없음 / PDF 영구 저장 없음. 실제 개인정보가 없는 테스트 PDF만 선택하세요. 서버 요청·링크·OTP 기능은 제공하지 않습니다.</p>}</aside>
     <section className={styles.stats} aria-label="전체 가상 요청 현황">{[{label:'전체 서명 요청',value:counts.total,hint:'미발송 준비 건 포함'},{label:'서명 대기',value:counts.pending,hint:'가상 발송 이력 기준'},{label:'서명 완료',value:counts.completed,hint:'가상 상태 · 실제 PDF 없음'},{label:'미발송',value:counts.unsent,hint:'링크·문자 발급 전'}].map(item=><article key={item.label}><span>{item.label}</span><strong>{item.value}<small>건</small></strong><p>{item.hint}</p></article>)}</section>
@@ -108,5 +109,5 @@ export function DocumentAdminPreview({ browserOnly = false }: { browserOnly?: bo
         <div className={styles.actions}><button disabled>선택 대상 문자 발송 · 미연동</button><button disabled>재발송 · 미연동</button><button disabled>개인별 링크 발급 · 미연동</button><button disabled>본인 인증 · 미연동</button><button disabled={!selection.length} onClick={()=>setSelection([])}>선택 해제</button></div>
       </section>
     </>}
-  </main>;
+  </Root>;
 }
