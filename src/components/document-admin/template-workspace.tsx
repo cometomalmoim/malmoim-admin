@@ -10,7 +10,7 @@ import type { LocalPdf } from './local-pdf';
 import styles from './document-admin.module.css';
 
 type Gesture = { pointer: number; id: string; mode: 'draw' | 'move' | 'resize'; start: { x: number; y: number }; rect: Rect; before: PdfField[] };
-export function TemplateWorkspace({ template, source, onSave, onClose }: { template: DocumentTemplate; source?: LocalPdf; onSave: (name: string, settings: PdfFieldSettings | null) => void; onClose: () => void }) {
+export function TemplateWorkspace({ template, source, onSave, onClose, rendererAssetBase = '/preview/pdf-fields/assets' }: { rendererAssetBase?: string; template: DocumentTemplate; source?: LocalPdf; onSave: (name: string, settings: PdfFieldSettings | null) => void; onClose: () => void }) {
   const [name, setName] = useState(template.name);
   const [fields, setFields] = useState<PdfField[]>(template.settings?.fields ?? []);
   const [kind, setKind] = useState<PdfFieldKind>('signature');
@@ -55,7 +55,7 @@ export function TemplateWorkspace({ template, source, onSave, onClose }: { templ
     if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId);
   }
   function remove(id: string) { setFields(rows => rows.filter(f => f.id !== id)); setSelected(''); }
-  if (participant && source && settings) return <div className={styles.participant}><p className={styles.alert}>별도 3단계 서명 연습입니다. 여기서 PDF를 만들어도 참가자 이력·상태·첨부파일은 변경되지 않습니다.</p><PdfSigningPreview source={source} settings={settings} rendererAssetBase="/preview/pdf-fields/assets" onBack={() => setParticipant(false)} /></div>;
+  if (participant && source && settings) return <div className={styles.participant}><p className={styles.alert}>별도 3단계 서명 연습입니다. 여기서 PDF를 만들어도 참가자 이력·상태·첨부파일은 변경되지 않습니다.</p><PdfSigningPreview source={source} settings={settings} rendererAssetBase={rendererAssetBase} onBack={() => setParticipant(false)} /></div>;
   return <section className={styles.workspace} aria-label="서류 템플릿 편집"><div className={styles.sectionHeading}><div><h2>서류 이름·PDF·필드 설정</h2><p>현재 저장 버전 v{template.revision} · 원본 파일과 설정은 브라우저 메모리에만 보관합니다.</p></div><button disabled={dragging} onClick={onClose}>편집 닫기</button></div>
     <div className={styles.editHeader}><label>서류 이름<input maxLength={100} value={name} onChange={e => setName(e.target.value)} /></label><button className={styles.primary} disabled={dragging} onClick={() => { try { onSave(name, settings); setMessage('이름·설정을 이 탭의 메모리에 저장했습니다.'); } catch (error) { setMessage(error instanceof Error ? error.message : '설정을 확인해주세요.'); } }}>이름·설정 저장</button></div>
     <p role="status">{message}</p>
