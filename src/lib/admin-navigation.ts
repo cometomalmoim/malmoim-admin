@@ -68,7 +68,7 @@ export const adminGroups = [
       {
         "slug": "external-accounts",
         "title": "외부 서비스 계정",
-        "description": "외부 서비스의 계정 정보와 담당자를 정리합니다. 비밀번호는 다루지 않습니다."
+        "description": "외부 서비스 계정, 담당자와 구독을 안전하게 관리합니다."
       },
       {
         "slug": "internal-board",
