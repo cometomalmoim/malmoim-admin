@@ -5,9 +5,22 @@ import {createRequire} from 'node:module';
 import {runInNewContext} from 'node:vm';
 import ts from 'typescript';
 import {domesticPhone,validSmsText} from '../src/lib/sms-contract.ts';
+import {composeMessaging} from '../src/lib/messaging-templates.ts';
+import {randomUUID} from 'node:crypto';
 const require=createRequire(import.meta.url);
 function load(file,mocks,globals={}){const {outputText}=ts.transpileModule(readFileSync(new URL('../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}});const m={exports:{}};runInNewContext(outputText,{module:m,exports:m.exports,require:n=>Object.hasOwn(mocks,n)?mocks[n]:require(n),...globals});return m.exports;}
 const fakeEnv={SOLAPI_API_KEY:'TEST_ONLY_KEY',SOLAPI_API_SECRET:'TEST_ONLY_SECRET',SOLAPI_SENDER_NUMBER:'01000000001',SOLAPI_ADMIN_NOTIFY_NUMBER:'01000000002'};
+
+test('문의 답변 문자는 완료된 문의의 유효 링크를 수신자 한 명에게만 준비한다',async()=>{
+ for(const [status,numbers,link,allowed] of [['answered','01000000003','https://malmoim.com/inquiries/receipt#token='+'a'.repeat(64),true],['received','01000000003','https://malmoim.com/inquiries/receipt#token='+'a'.repeat(64),false],['answered','01000000003,01000000004','https://malmoim.com/inquiries/receipt#token='+'a'.repeat(64),false],['answered','01000000003','https://other.example/secret',false]]){
+  let prepared=0;
+  const chain={select(){return this;},eq(){return this;},async single(){return {data:{event_id:'synthetic-event',status},error:null};}};
+  const client={from:()=>chain,rpc:async()=>{prepared++;return {error:null};}};
+  const {prepareSms}=load('src/app/actions/messaging.ts',{'@/lib/supabase/server':{createClient:async()=>client},'@/lib/auth':{getAdminAccess:async()=>({status:'admin'})},'@/lib/solapi':{smsConfig:()=>({sender:'01000000001'}),smsPrice:async()=>({LMS:30}),maskPhone:v=>v},'@/lib/sms-contract':{domesticPhone,validSmsText,smsUuid:()=>true},'@/lib/messaging-templates':{composeMessaging},'@/lib/sms-worker':{}},{crypto:{randomUUID}});
+  const result=await prepareSms({eventId:'',mode:'direct',recipients:[],numbers,body:'{답변링크}',name:'',due:'',contact:'',replyUrl:link});
+  assert.equal(!!result.preview,allowed);assert.equal(prepared,allowed?1:0);
+ }
+});
 test('국내 휴대폰만 정규화하고 해외·잘못된 번호 제외',()=>{assert.equal(domesticPhone('+82 10-0000-0001'),'01000000001');assert.equal(domesticPhone('00821000000001'),'01000000001');for(const v of ['123','+12025550123','02-1234-5678','0101234567','abc'])assert.equal(domesticPhone(v),null);});
 test('빈 내용·제어문자·치환하지 않은 변수·긴 UTF-8 본문 거부',()=>{for(const v of ['','  ','{이름}님','a\u0000b','가'.repeat(667)])assert.equal(validSmsText(v),false);assert.equal(validSmsText('가'.repeat(666)),true);});
 function provider(fetch){return load('src/lib/solapi.ts',{'server-only':{},'./sms-contract':{domesticPhone,validSmsText,smsUuid:()=>true}},{process:{env:fakeEnv},fetch,AbortSignal,Date,TextEncoder});}

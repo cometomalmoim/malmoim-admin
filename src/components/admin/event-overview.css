@@ -7,7 +7,7 @@
 .ops-event-workspace .evt-home .evt-recruitment-compact h2{margin:0;font-size:16px}
 .evt-home .evt-recruitment-compact p{margin:4px 0 0}
 .ops-event-workspace .evt-home .evt-home-tasks{padding:22px;margin-bottom:20px}
-.evt-home-workflows{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:18px}
+.evt-home-workflows{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;margin-top:18px}
 .evt-home .evt-home-workflow{display:flex;flex-direction:column;min-width:0;min-height:156px;padding:18px;box-sizing:border-box;border:1px solid #cdded6;border-radius:10px;background:#fbfdfc;color:#173b2d;text-decoration:none}
 .evt-home .evt-home-workflow>strong{font-size:17px;line-height:1.5}
 .evt-home .evt-home-workflow>p{font-size:13px;line-height:1.8;color:#586b61;font-weight:400;margin:10px 0 16px}

@@ -18,14 +18,22 @@ export async function messagingStatus(){
 }
 export async function initializeMessaging(){try{const client=await adminClient(),config=smsConfig();if(!config)return {ok:false,message:'서버의 문자 발송 설정을 확인해주세요.'};const {error}=await client.rpc('sms_initialize',{p_hash:config.workerHash});return {ok:!error,message:error?'연결하지 못했습니다. SQL 적용 상태를 확인해주세요.':'서버 설정을 저장했습니다. API 인증은 본인 번호 테스트 준비에서 확인합니다.'};}catch{return {ok:false,message:'관리자 권한을 확인해주세요.'};}}
 export async function toggleMessaging(sending:boolean,notifications:boolean){try{const client=await adminClient();if(sending){if(!smsConfig())return {ok:false,message:'서버 설정을 확인해주세요.'};await smsPrice();}const {error}=await client.rpc('sms_toggle',{p_sending:sending,p_notifications:notifications});return {ok:!error,message:error?'설정을 바꾸지 못했습니다. 본인 번호 테스트의 도달 성공을 먼저 확인해주세요.':'설정을 저장했습니다.'};}catch{return {ok:false,message:'관리자 권한을 확인해주세요.'};}}
-export async function prepareSms(input:{eventId:string;mode:'event'|'direct'|'test';recipients:{id:string;source:string}[];numbers:string;body:string;name:string;due:string;contact:string}):Promise<{preview?:SmsPrepared;message?:string}>{
+export async function prepareSms(input:{eventId:string;mode:'event'|'direct'|'test';recipients:{id:string;source:string}[];numbers:string;body:string;name:string;due:string;contact:string;replyUrl?:string}):Promise<{preview?:SmsPrepared;message?:string}>{
  try{
   const client=await adminClient(),config=smsConfig();if(!config)throw new Error('설정');
   if(!['event','direct','test'].includes(input.mode)||input.body.length>2000||input.numbers.length>4000||input.name.length>100||input.due.length>100||input.contact.length>200)throw new Error('입력');
   let event:{title:string;starts_at:string|null;location:string;fee_notice:string}|null=null;
   const eventId=input.eventId||null;
   if(eventId){if(!smsUuid(eventId))throw new Error('이벤트');const result=await client.from('recruitment_events').select('title,starts_at,location,fee_notice').eq('id',eventId).eq('is_archived',false).eq('is_test',false).single();if(result.error)throw new Error('이벤트');event=result.data;}
-  const values={'이벤트명':event?.title??'','일정':event?.starts_at?new Intl.DateTimeFormat('ko-KR',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Seoul'}).format(new Date(event.starts_at))+' (한국 시간)':'','장소':event?.location??'','참가비안내':event?.fee_notice??'','납부기한':input.due,'문의처':input.contact};
+  const replyUrl=input.replyUrl??'';
+  if(replyUrl.length>200)throw new Error('답변 링크');
+  if(input.body.includes('{답변링크}')){
+   const match=/^https:\/\/malmoim\.com\/inquiries\/receipt#token=([a-f0-9]{64})$/.exec(replyUrl);
+   if(!match)throw new Error('답변 링크');
+   const inquiry=await client.from('event_inquiries').select('event_id,status').eq('receipt_token',match[1]).single();
+   if(inquiry.error||inquiry.data.status!=='answered'||(eventId&&inquiry.data.event_id!==eventId))throw new Error('문의 답변 상태');
+  }
+  const values={'답변링크':replyUrl,'이벤트명':event?.title??'','일정':event?.starts_at?new Intl.DateTimeFormat('ko-KR',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Seoul'}).format(new Date(event.starts_at))+' (한국 시간)':'','장소':event?.location??'','참가비안내':event?.fee_notice??'','납부기한':input.due,'문의처':input.contact};
   const items:{to:string;text:string;source?:string;id?:string;revision?:number}[]=[];
   if(input.mode==='test'){items.push({to:config.notify,text:'[말모임] 문자 발송 연결 테스트입니다. 이 문자는 설정된 운영자 알림번호로만 발송됩니다.'});}
   else if(input.mode==='event'){
@@ -43,6 +51,7 @@ export async function prepareSms(input:{eventId:string;mode:'event'|'direct'|'te
    const rendered=composeMessaging(input.body,{...values,'이름':input.name});if(rendered.missing.length||!validSmsText(rendered.text))throw new Error('문자 내용');
    const seen=new Set<string>();for(const entry of entries){const to=domesticPhone(entry);if(!to)throw new Error('국내 휴대폰 번호');if(!seen.has(to)){seen.add(to);items.push({to,text:rendered.text});}}
   }
+  if(input.body.includes('{답변링크}')&&items.length!==1)throw new Error('문의 답변 문자는 한 명에게만 발송할 수 있습니다.');
   const prices=await smsPrice(),id=crypto.randomUUID();
   const {error}=await client.rpc('sms_prepare',{p_id:id,p_event:eventId,p_items:items,p_price:prices.LMS,p_kind:input.mode==='test'?'test':'manual'});
   if(error)throw new Error('저장');

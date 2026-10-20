@@ -1,9 +1,10 @@
+import {applicantLanguageLevels,languageStoredValue} from './applicant-languages';
 import {applicationStatuses,paymentStatuses,type ApplicantQuery} from './applicant-validation';
 import "server-only";
 import { getAdminAccess } from "./auth";
 import { createClient } from "./supabase/server";
 export type RecruitmentEvent = { id: string; slug: string; title: string; status: string; applications_open: boolean; closes_at: string | null; starts_at:string|null;ends_at:string|null;is_archived:boolean;archive_revision:number; visual_theme: 'default' | 'halloween' };
-export type ApplicationRow = { archive_revision:number;is_archived:boolean; id: string; name: string; contact: string; contact_type: string; preferred_class: string | null; participation_history: string | null; history_detail: string | null; status: string; created_at: string; source:string; birth_year:number|null; nationality:string|null; payment_status:string; internal_note:string; revision:number; source_note:string|null; event_id:string; event_slug?:string; event_title?:string; utm_source:string|null; utm_medium:string|null; utm_campaign:string|null };
+export type ApplicationRow = { korean_level?:string|null;english_level?:string|null; archive_revision:number;is_archived:boolean; id: string; name: string; contact: string; contact_type: string; preferred_class: string | null; participation_history: string | null; history_detail: string | null; status: string; created_at: string; source:string; birth_year:number|null; nationality:string|null; payment_status:string; internal_note:string; revision:number; source_note:string|null; event_id:string; event_slug?:string; event_title?:string; utm_source:string|null; utm_medium:string|null; utm_campaign:string|null };
 export type RecruitmentResult =
   | { kind: "error" }
   | { kind: "missing" }
@@ -20,15 +21,19 @@ export async function getRecruitment(slug?: string, page = 1, query:ApplicantQue
     const event = events.find(e => e.slug === slug);
     if (slug&&!event) return { kind: "missing" };
     const safePage = Number.isSafeInteger(page) && page > 0 ? Math.min(page, 100000) : 1;
-    let request=client.from("event_application_admin_list").select("id,name,contact,contact_type,preferred_class,status,created_at,participation_history,history_detail,source,birth_year,nationality,payment_status,internal_note,revision,source_note,event_id,utm_source,utm_medium,utm_campaign,is_archived,archive_revision",{count:'exact'});
+    let request=client.from("event_application_language_list").select("id,name,contact,contact_type,preferred_class,status,created_at,participation_history,history_detail,source,birth_year,nationality,payment_status,internal_note,revision,source_note,event_id,korean_level,english_level,utm_source,utm_medium,utm_campaign,is_archived,archive_revision",{count:'exact'});
     request=request.eq('is_archived',!slug&&query.archived==='1');
     const pageSize=slug?25:20;
     if(event)request=request.eq('event_id',event.id);else if(query.event)request=request.eq('event_id',query.event);
+    const classEvent=event??events.find(row=>row.id===query.event);
+    if((!classEvent||classEvent.slug==='season9')&&['thursday','saturday'].includes(query.preferred_class??''))request=request.eq('preferred_class',query.preferred_class!);
     for(const key of ['utm_source','utm_medium'] as const){const value=(query[key]??'').slice(0,150);if(value==='__unknown')request=request.or(`${key}.is.null,${key}.eq.`);else if(value)request=request.eq(key,value);}
+    for(const language of ['korean','english'] as const){const level=query[language]??'';if(!Object.hasOwn(applicantLanguageLevels,level))continue;const column=`${language}_level`;if(level==='unknown')request=request.or(`${column}.is.null,${column}.eq.`);else request=request.eq(column,languageStoredValue(language,level));}
     const search=(query.q??'').slice(0,100).replace(/[^\p{L}\p{N}\s+@_-]/gu,'').trim();
     if(search)request=request.or(`name.ilike.%${search}%,contact.ilike.%${search}%`);
     if(Object.hasOwn(applicationStatuses,query.status??''))request=request.eq('status',query.status!);
     if(Object.hasOwn(paymentStatuses,query.payment??''))request=request.eq('payment_status',query.payment!);
+    if(['korean','foreign','unknown'].includes(query.nationality_group??''))request=request.eq('nationality_group',query.nationality_group!);
     const nationality=(query.nationality??'').slice(0,100).replace(/[%_,()]/g,'').trim();
     if(nationality)request=request.ilike('nationality',`%${nationality}%`);
     if(/^\d{4}$/.test(query.year??''))request=request.eq('birth_year',Number(query.year));

@@ -74,3 +74,32 @@
 .s9-autumn .s9-map-dialog header{display:flex;align-items:center;justify-content:space-between;gap:12px;background:transparent;padding:0;margin:0;border:0;min-height:0;box-shadow:none}
 .s9-autumn .s9-map-dialog header h2{font-size:20px;line-height:1.4;margin:0;letter-spacing:-.025em}
 @media(max-width:760px){.s9-autumn .s9-map-dialog header h2{font-size:17px}}
+/* Blend the supplied brand artwork into this landing page without altering the shared asset. */
+.s9-autumn .s9-logo{mix-blend-mode:multiply}.s9-autumn .s9-logo .brand-logo{background:transparent}
+.s9-autumn .s9-contact{scroll-margin-top:24px;padding-top:28px;padding-bottom:28px}
+.s9-contact-card{display:grid;grid-template-columns:1.2fr 1fr;gap:32px;align-items:center;padding:30px;border:1px solid #ceded0;border-radius:22px;background:linear-gradient(120deg,#f0f8efbd,#fff9e9bd)}
+.s9-autumn .s9-contact h2{font-size:28px;margin:12px 0}.s9-contact p{font-size:14px;color:#536459;margin:0}.s9-contact-actions{display:grid;gap:12px}.s9-contact-actions a{display:block;padding:16px 20px;border:1px solid #b9d7d0;border-radius:14px;background:#fffdf5;color:#08717b;font-size:15px;font-weight:700}.s9-contact-actions small{display:block;margin-top:7px;font-size:12px;font-weight:400;overflow-wrap:anywhere}.s9-contact-nav{color:#08717b}
+@media(max-width:760px){.s9-contact-card{grid-template-columns:1fr;gap:20px;padding:22px}.s9-autumn .s9-contact h2{font-size:25px}.s9-header-actions{gap:12px}.s9-contact-nav{font-size:11px}}
+.s9-autumn .s9-first-timers{align-items:end}.s9-autumn .s9-first-timers>p{padding-bottom:5px}
+.s9-autumn .s9-draft{overflow:visible;z-index:1}.s9-autumn .s9-draft .s9-leaf-piles{overflow:visible;mask-image:none}
+.s9-autumn .s9-draft .s9-leaf-piles svg{bottom:-12px;height:85px;width:min(38vw,510px);opacity:.65;overflow:visible;mask-image:linear-gradient(to right,#000 65%,transparent)}
+.s9-autumn .s9-draft .s9-leaf-pile-right{transform:scaleX(-1) translateY(7px)}
+@media(max-width:760px){.s9-autumn .s9-first-timers>p{padding-bottom:0}.s9-autumn .s9-draft .s9-leaf-piles svg{width:155px;height:48px;bottom:-10px;opacity:.5}}
+.s9-autumn .s9-draft .s9-leaf-piles svg{mask-image:linear-gradient(to right,#000 65%,transparent),linear-gradient(to bottom,#000 65%,transparent);mask-composite:intersect}
+.s9-moment-slider{display:grid;grid-template-columns:1fr 1.2fr;align-items:center;gap:36px;margin-top:34px;padding:26px 28px;border:1px solid #e9dcc3;border-radius:20px;background:linear-gradient(115deg,#fffdf8d9,#f3f7edc9)}
+.s9-moment-slider h3{font-size:22px;line-height:1.5;margin:14px 0 8px}.s9-moment-slider>div>p{font-size:13px;color:#627261;margin:0}.s9-moment-window{overflow:hidden}.s9-moment-window article{min-height:130px;animation:s9-moment-enter .55s ease-out}.s9-moment-window article>span{font-size:11px;color:#08717b;letter-spacing:.06em}.s9-moment-window article p{font-size:16px;line-height:1.85;color:#405448;margin:10px 0}.s9-moment-controls{display:flex;align-items:center;gap:12px;font-size:12px;color:#627261}.s9-moment-controls button{border:1px solid #cfddce;border-radius:999px;background:#fffdf8;color:#08717b;padding:7px 11px;font:inherit;cursor:pointer}.s9-moment-controls button:last-child{margin-left:auto;font-size:11px}@keyframes s9-moment-enter{from{opacity:0;transform:translateY(-14px)}to{opacity:1;transform:translateY(0)}}
+@media(max-width:760px){.s9-moment-slider{grid-template-columns:1fr;gap:20px;padding:22px}.s9-moment-slider h3{font-size:20px}.s9-moment-window article{min-height:150px}}
+@media(prefers-reduced-motion:reduce){.s9-moment-window article{animation:none}}
+
+/* Long bilingual reviews and narrow mobile screens must grow with their content. */
+.s9-moment-slider>div,.s9-moment-window{min-width:0}.s9-moment-window{overflow:visible}.s9-moment-window article{height:auto;max-height:none}.s9-moment-window article p{white-space:normal;overflow-wrap:anywhere;word-break:normal;max-height:none}.s9-review-name{display:block;font-size:13px;margin:16px 0 20px}.s9-moment-controls{flex-wrap:wrap}.s9-moment-controls button{min-height:40px;min-width:40px}.s9-moment-controls button:disabled{opacity:.5}
+@media(max-width:760px){
+ .s9-autumn :is(.s9-header,.s9-hero,.s9-section,.s9-summary,.s9-footer){box-sizing:border-box;max-width:100%}
+ .s9-autumn :is(.s9-hero>*,.s9-programs>*,.s9-targets>*,.s9-moments-grid>*,.s9-details dd){min-width:0}
+ .s9-autumn :is(h1,h2,h3,p,dd,a){overflow-wrap:anywhere}
+ .s9-autumn .s9-header-actions{flex-wrap:wrap;justify-content:flex-end;gap:10px}
+ .s9-autumn .s9-hero-actions{flex-wrap:wrap}.s9-autumn .s9-hero-actions .s9-button{max-width:100%;box-sizing:border-box;text-align:center;white-space:normal}
+ .s9-autumn img{max-width:100%}.s9-moment-slider{padding:20px 18px;gap:16px}.s9-moment-window article{min-height:0}.s9-moment-window article p{font-size:15px;line-height:1.85}.s9-moment-controls{gap:8px}.s9-moment-controls button{min-height:44px}
+ .s9-autumn .s9-sticky{padding-inline:16px;box-sizing:border-box}.s9-autumn .s9-sticky>span{min-width:0}.s9-autumn .s9-sticky .s9-button{flex-shrink:0}
+}
+@media(max-width:380px){.s9-autumn .s9-header{padding-inline:16px}.s9-autumn .s9-logo{width:116px}.s9-autumn .s9-hero{padding-inline:18px}.s9-autumn .s9-hero h1{font-size:32px}.s9-autumn .s9-section{padding-inline:18px}.s9-autumn .s9-hero-facts{grid-template-columns:1fr}.s9-moment-controls button:last-child{margin-left:0}.s9-autumn .s9-sticky>span{font-size:11px}}

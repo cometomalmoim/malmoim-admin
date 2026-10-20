@@ -25,6 +25,11 @@ export const adminGroups = [
         "description": "전체 이벤트의 신청자와 유입경로를 조회합니다."
       },
       {
+        "slug": "inquiries",
+        "title": "전체 문의 보기",
+        "description": "모든 이벤트의 문의를 확인하고 답변합니다."
+      },
+      {
         "slug": "participants",
         "title": "전체 참여 이력 관리",
         "description": "개인별 실제 참석 횟수와 이벤트 참여 이력을 관리합니다."
