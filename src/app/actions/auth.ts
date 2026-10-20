@@ -1,6 +1,6 @@
 "use server";
 import { memberText } from "@/lib/member-messages";
-import { parsePublicLocale, localizedPublicPath } from "@/lib/public-locale";
+import { parsePublicLocale, localizedPublicPath, boardReturnPath } from "@/lib/public-locale";
 import { SupabaseConfigError } from "@/lib/supabase/config";
 import { isAuthRetryableFetchError } from "@supabase/supabase-js";
 import { redirect } from "next/navigation";
@@ -38,7 +38,7 @@ export async function memberLogin(_state: AuthState, formData: FormData): Promis
   const locale = parsePublicLocale(formData.get("locale"));
   const failure = await authenticate(formData, true);
   if (failure) return { ...failure, message: memberText(locale, failure.message) };
-  redirect(localizedPublicPath("/", locale));
+  redirect(boardReturnPath(formData.get("returnTo"), locale) ?? localizedPublicPath("/", locale));
 }
 export async function logout(): Promise<AuthState> {
   try {

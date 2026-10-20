@@ -12,6 +12,7 @@ import { EventRegistrationForm } from '../event-registration-form';
 import "server-only";
 import { ResourceView } from "../resources/resource-view";
 import type { ResourceQuery } from "@/lib/resources";
+import { CommunityRoute } from "@/components/community/board-route";
 import { connection } from "next/server";
 import { notFound, redirect } from "next/navigation";
 import { getAdminAccess } from "@/lib/auth";
@@ -40,6 +41,12 @@ export async function ProtectedAdmin({ segments = [], page, query }: { segments?
   if(segments.length===1&&segments[0]==='schedule')return <ScheduleView email={access.email}/>;
   if(segments.length===1&&segments[0]==='people')return <PeopleView email={access.email}/>;
   if(segments.length===1&&segments[0]==='internal-board')return <BoardView email={access.email}/>;
+  if (segments[0] === "member-board" && segments.length <= 3) {
+    const part = segments[1];
+    if (part === "new" && segments.length > 2) notFound();
+    if (segments.length === 3 && segments[2] !== "edit") notFound();
+    return <CommunityRoute admin email={access.email} view={!part ? "list" : part === "new" ? "new" : segments[2] === "edit" ? "edit" : "detail"} params={Promise.resolve({id:part ?? ""})} searchParams={Promise.resolve(query as Record<string,string|undefined> ?? {})}/>;
+  }
   if (segments.length === 0) return <EventDashboard email={access.email}/>;
   if (segments.length === 2 && segments[0] === "events" && segments[1] === "new") return <EventView email={access.email}/>;
   if (segments.length === 3 && segments[0] === "events" && ["overview", "information", "edit"].includes(segments[2])) return <EventView email={access.email} slug={segments[1]} edit={segments[2] === "edit"} information={segments[2] === "information"}/>;
