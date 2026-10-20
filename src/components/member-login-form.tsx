@@ -1,10 +1,12 @@
 "use client";
 import { useActionState, useEffect, useRef, useState, type FormEvent } from "react";
+import { useSearchParams } from "next/navigation";
 import { memberText } from "@/lib/member-messages";
 import type { PublicLocale } from "@/lib/public-content";
 import { memberLogin } from "@/app/actions/auth";
 
 export function MemberLoginForm({ locale = "ko" }: { locale?: PublicLocale }) {
+  const searchParams = useSearchParams();
   const t = (text: string) => memberText(locale, text);
   const [state, action, pending] = useActionState(memberLogin, { message: "" });
   const [email, setEmail] = useState("");
@@ -39,6 +41,7 @@ export function MemberLoginForm({ locale = "ko" }: { locale?: PublicLocale }) {
 
   return <form action={action} onSubmit={validate} noValidate aria-busy={pending} className="member-login-form">
     <input type="hidden" name="locale" value={locale} />
+    <input type="hidden" name="returnTo" value={searchParams.get("returnTo") ?? ""} />
     <div className="member-login-field">
       <label htmlFor="member-email">{t("이메일")}</label>
       <div className="member-login-input-control">
