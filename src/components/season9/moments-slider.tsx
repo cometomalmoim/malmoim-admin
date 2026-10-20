@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState, useSyncExternalStore } from 'react';
+import {reviewSlideIndex} from '@/lib/review-carousel';
 import { publicEventReviews } from '@/app/actions/event-reviews';
 import type { PublicEventReview } from '@/lib/review-validation';
 
@@ -20,16 +21,16 @@ export function MomentsSlider({ english = false }: { english?: boolean }) {
  const currentIndex=index%slides.length;
  const current=slides[currentIndex];
  const [paused, setPaused] = useState(false);
- const [engaged, setEngaged] = useState(false);
+ const [timerRevision,setTimerRevision]=useState(0);
  const reduced = useSyncExternalStore(subscribeMotion, reducedMotion, () => true);
  useEffect(() => {
-  if (paused || engaged || reduced || slides.length<2) return;
-  const interval = setInterval(() => setIndex(value => (value + 1) % slides.length), 6500);
+  if (paused || reduced || slides.length<2) return;
+  const interval = setInterval(() => setIndex(value => reviewSlideIndex(value,1,slides.length)), 6500);
   return () => clearInterval(interval);
- }, [paused, engaged, reduced, slides.length]);
- const move = (step: number) => { setPaused(true); setIndex(value => (value + step + slides.length) % slides.length); };
- return <div className="s9-moment-slider" role="region" aria-roledescription="carousel" aria-label={reviews.length?(english?'Participant reviews':'참여자 후기'):(english ? 'Moments to look forward to' : '말모임에서 기대할 수 있는 순간들')} onMouseEnter={() => setEngaged(true)} onMouseLeave={() => setEngaged(false)} onFocus={() => setEngaged(true)} onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget)) setEngaged(false); }}>
+ }, [paused, reduced, slides.length,timerRevision]);
+ const move = (step: number) => { setIndex(value => reviewSlideIndex(value,step,slides.length));setTimerRevision(value=>value+1); };
+ return <div className="s9-moment-slider" role="region" aria-roledescription="carousel" aria-label={reviews.length?(english?'Participant reviews':'참여자 후기'):(english ? 'Moments to look forward to' : '말모임에서 기대할 수 있는 순간들')}>
   <div><span className="s9-kicker">{reviews.length?(english?"REVIEWS":"참여자 후기"):(english ? "ABOUT MALMOIM" : "말모임 이야기")}</span><h3>{reviews.length?(english?'From our participants':'참여자들이 전하는 이야기'):(english ? 'Learning from each other' : '서로 배우는 시간')}</h3><p>{reviews.length?(english?'Shared with permission.':'게시 동의를 받은 후기입니다.'):(english ? 'A few things about our gatherings.' : '말모임이 어떤 모임인지 짧게 소개할게요.')}</p></div>
-  <div className="s9-moment-window"><article key={`${reviews.length?'review':'intro'}-${currentIndex}`} lang={current.language==='English'?'en':'ko'}><span>{current.language}</span><p>{current.text}</p>{current.name&&<strong className="s9-review-name">{current.name}</strong>}</article><div className="s9-moment-controls"><button type="button" aria-label={english ? 'Previous introduction' : '이전 소개'} disabled={slides.length<2} onClick={() => move(-1)}>←</button><span aria-label={english ? `Slide ${currentIndex + 1} of ${slides.length}` : `${slides.length}개 중 ${currentIndex + 1}번째`}>{String(currentIndex + 1).padStart(2, '0')} / {String(slides.length).padStart(2,'0')}</span><button type="button" aria-label={english ? 'Next introduction' : '다음 소개'} disabled={slides.length<2} onClick={() => move(1)}>→</button>{!reduced && slides.length>1 && <button type="button" aria-pressed={paused} onClick={() => setPaused(value => !value)}>{english ? (paused ? 'Play' : 'Pause') : (paused ? '자동 넘김 재생' : '자동 넘김 멈춤')}</button>}</div></div>
+  <div className="s9-moment-window" aria-live={paused?'polite':'off'}><article key={`${reviews.length?'review':'intro'}-${currentIndex}`} lang={current.language==='English'?'en':'ko'}><span>{current.language}</span><p>{current.text}</p>{current.name&&<strong className="s9-review-name">{current.name}</strong>}</article><div className="s9-moment-controls"><button type="button" aria-label={english ? 'Previous review' : '이전 후기'} disabled={slides.length<2} onClick={() => move(-1)}>←</button><span aria-label={english ? `Slide ${currentIndex + 1} of ${slides.length}` : `${slides.length}개 중 ${currentIndex + 1}번째`}>{String(currentIndex + 1).padStart(2, '0')} / {String(slides.length).padStart(2,'0')}</span><button type="button" aria-label={english ? 'Next review' : '다음 후기'} disabled={slides.length<2} onClick={() => move(1)}>→</button>{!reduced && slides.length>1 && <button type="button" aria-pressed={paused} onClick={() => setPaused(value => !value)}>{english ? (paused ? 'Play' : 'Pause') : (paused ? '자동 넘김 재생' : '자동 넘김 멈춤')}</button>}</div></div>
  </div>;
 }
