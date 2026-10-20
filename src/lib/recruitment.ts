@@ -25,6 +25,8 @@ export async function getRecruitment(slug?: string, page = 1, query:ApplicantQue
     request=request.eq('is_archived',!slug&&query.archived==='1');
     const pageSize=slug?25:20;
     if(event)request=request.eq('event_id',event.id);else if(query.event)request=request.eq('event_id',query.event);
+    const classEvent=event??events.find(row=>row.id===query.event);
+    if((!classEvent||classEvent.slug==='season9')&&['thursday','saturday'].includes(query.preferred_class??''))request=request.eq('preferred_class',query.preferred_class!);
     for(const key of ['utm_source','utm_medium'] as const){const value=(query[key]??'').slice(0,150);if(value==='__unknown')request=request.or(`${key}.is.null,${key}.eq.`);else if(value)request=request.eq(key,value);}
     for(const language of ['korean','english'] as const){const level=query[language]??'';if(!Object.hasOwn(applicantLanguageLevels,level))continue;const column=`${language}_level`;if(level==='unknown')request=request.or(`${column}.is.null,${column}.eq.`);else request=request.eq(column,languageStoredValue(language,level));}
     const search=(query.q??'').slice(0,100).replace(/[^\p{L}\p{N}\s+@_-]/gu,'').trim();
