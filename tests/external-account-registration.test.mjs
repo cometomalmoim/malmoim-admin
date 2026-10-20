@@ -28,8 +28,9 @@ for(const master of [true,false])test(`empty account list keeps registration vis
   const html=renderToStaticMarkup(React.createElement(ExternalAccountsWorkspace,{accounts:[],members:[],logs:[],master,today:'2026-10-20'}));
   const button=html.match(/<button[^>]*>\+ 새 계정 등록<\/button>/)?.[0];
   assert.ok(button,'Registration action must remain visible even with no accounts');
-  assert.equal(button.includes('disabled=""'),!master);
-  if(!master){assert.match(button,/aria-describedby="ea-registration-reason"/);assert.match(html,/Master Admin만 가능합니다/);}
+  assert.equal(button.includes('disabled=""'),false);
+  assert.match(html,/모든 관리자가 새 계정을 등록할 수 있습니다/);
+  assert.doesNotMatch(html,/계정 등록은 Master Admin만 가능합니다/);
 });
 test('database configuration failure retains registration action and shows setup instructions',async()=>{
   const {ExternalAccountsView}=load('src/components/admin/external-accounts-view.tsx',{

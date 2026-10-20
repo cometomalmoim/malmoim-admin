@@ -1,6 +1,6 @@
 export const accountCategories = { marketing: '마케팅', design: '디자인', infrastructure: '호스팅/인프라', finance: '금융/결제', other: '기타' } as const;
 export type ExternalAccount = {
-  id: string; service_name: string; service_url: string; login_id: string;
+  id: string; created_by: string | null; service_name: string; service_url: string; login_id: string;
   category: keyof typeof accountCategories; department: string; primary_manager: string | null; sub_manager: string | null;
   billing_cycle: string; payment_method: string; amount: number; currency: string; next_billing_date: string | null;
   renewal_notice_days: number; notes: string; updated_at: string;

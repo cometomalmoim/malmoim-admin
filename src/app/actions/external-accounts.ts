@@ -14,16 +14,20 @@ export async function getExternalAccountLogs(id: string): Promise<{logs?:Account
   return result.error ? {message:'기록을 불러오지 못했습니다.'} : {logs:result.data as AccountLog[]};
 }
 
-async function masterClient() {
+async function adminClient() {
   if ((await getAdminAccess()).status !== 'admin') throw new Error('관리자 권한이 필요합니다.');
-  const client = await createClient();
+  return createClient();
+}
+async function masterClient() {
+  const client = await adminClient();
   const allowed = await client.rpc('external_account_master');
   if (allowed.error || allowed.data !== true) throw new Error('Master Admin 권한이 필요합니다.');
   return client;
 }
 export async function saveExternalAccount(form: FormData, remove = false) {
   try {
-    const client = await masterClient();
+    // Creation is available to every registered admin; existing records remain master-only.
+    const client = form.get('id') || remove ? await masterClient() : await adminClient();
     const input = Object.fromEntries(['service_name','service_url','login_id','category','department','primary_manager','sub_manager','billing_cycle','payment_method','amount','currency','next_billing_date','renewal_notice_days','notes'].map(k => [k, String(form.get(k) ?? '').trim()]));
     if (!remove) {
       const url = new URL(input.service_url);
