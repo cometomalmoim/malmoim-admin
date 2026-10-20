@@ -124,3 +124,126 @@
 .admin label.testAuthToggle { display:flex; align-items:center; gap:8px; width:fit-content; max-width:100%; cursor:pointer; line-height:1.5; }
 .admin label.testAuthToggle input[type=checkbox] { flex:0 0 17px; margin:0; }
 .testAuthToggle span { min-width:0; overflow-wrap:anywhere; }
+
+/* Embedded admin demo: the admin shell already supplies page padding and typography. */
+.admin.embedded {
+ --ink:#171918; --green:#087f8c; --line:#dce3e0; --soft:#f3f7f6;
+ container-type:inline-size; width:100%; max-width:100%; min-width:0; min-height:0;
+ padding:0; background:transparent; font-family:inherit; font-size:14px; line-height:1.6;
+}
+.embedded .header { flex-direction:row; align-items:flex-start; min-height:0; padding:0; border:0; background:transparent; flex-wrap:wrap; gap:16px; margin:0 0 24px; }
+.embedded .header>div { min-width:0; flex:1 1 360px; }
+.embedded .header h1 { font-size:28px; line-height:1.4; letter-spacing:-.04em; }
+.embedded .header p { font-size:14px; overflow-wrap:anywhere; }
+.embedded .eyebrow { font-size:12px!important; color:#087f8c; }
+.embedded .demoBadge { max-width:100%; white-space:normal; font-size:13px; background:#e7f5f5; border-color:#b8dadb; }
+.embedded .banner { background:#fff3c9; border:1px solid #e8d799; border-radius:8px; padding:16px; font-size:14px; gap:8px 16px; }
+.embedded .banner span { min-width:0; flex:1 1 300px; }
+.embedded .banner p { flex-basis:100%; margin:0; overflow-wrap:anywhere; }
+.embedded .stats { grid-template-columns:repeat(4,minmax(0,1fr)); gap:16px; }
+.embedded .stats article { padding:20px; border-top-color:#fbbc18; min-width:0; }
+.embedded .stats article:nth-child(3) { background:#eef8f8; border-top-color:#087f8c; }
+.embedded .stats article>span { font-size:14px; }
+.embedded .stats article>strong { font-size:32px; line-height:1.2; }
+.embedded .stats p,.embedded .muted,.embedded .sectionHeading p { font-size:13px; }
+.embedded .tabs { flex-wrap:wrap; margin-top:24px; }
+.admin.embedded button:not(:where(.participant *)) { min-height:44px; font-size:14px; line-height:1.5; padding:10px 14px; max-width:100%; white-space:normal; }
+.admin.embedded button:not(:where(.participant *))[aria-pressed=true],.admin.embedded .primary { background:#087f8c; border-color:#087f8c; color:white; }
+.admin.embedded label:not(:where(.participant *)) { margin:0; font-size:13px; line-height:1.5; gap:8px; }
+.admin.embedded input:not(:where(.participant *)):not([type=checkbox]):not([type=file]),.admin.embedded select:not(:where(.participant *)),.admin.embedded textarea:not(:where(.participant *)) { width:100%; max-width:100%; min-height:44px; font-size:14px; line-height:1.5; }
+.admin.embedded input[type=checkbox] { margin:0; flex-shrink:0; }
+.embedded .notice { font-size:14px; }
+.embedded .panel,.embedded .workspace,.embedded .detail { padding:24px; margin:20px 0; }
+.embedded .sectionHeading { flex-wrap:wrap; gap:12px; }
+.embedded .sectionHeading h2 { font-size:20px; line-height:1.5; }
+.embedded .filters { grid-template-columns:repeat(3,minmax(0,1fr)); gap:16px; padding:16px; }
+.embedded .filters>label:last-of-type { grid-column:span 2; }
+.embedded .filters>button { align-self:end; }
+.embedded .tableScroll { width:100%; max-width:100%; min-width:0; overflow:auto; border:1px solid var(--line); border-radius:8px; }
+.embedded table { min-width:1280px; table-layout:fixed; font-size:14px; }
+.embedded caption { padding:12px 16px; margin:0; font-size:13px; }
+.embedded th { font-size:13px; line-height:1.5; padding:14px 12px; }
+.embedded th:nth-child(1) { width:4%; }
+.embedded th:nth-child(2) { width:14%; }
+.embedded th:nth-child(3) { width:13%; }
+.embedded th:nth-child(4) { width:16%; }
+.embedded th:nth-child(5),.embedded th:nth-child(6) { width:14%; }
+.embedded th:nth-child(7) { width:12%; }
+.embedded th:nth-child(8) { width:13%; }
+.embedded td { padding:16px 12px; font-size:14px; white-space:normal; overflow-wrap:anywhere; }
+.embedded td:nth-child(2) { word-break:keep-all; overflow-wrap:normal; }
+.embedded td:first-child,.embedded th:first-child { text-align:center; }
+.embedded td:last-child { white-space:normal; }
+.embedded td button { margin:4px 0; }
+.embedded .rowMeta { font-size:12px; color:#68716d; }
+.embedded .status { font-size:13px; gap:6px; white-space:normal; }
+.embedded .status small { font-size:12px; }
+.embedded .upload>label:first-child { min-width:0; flex:1 1 240px; }
+.embedded .upload p,.embedded .templateCard p,.embedded .fileLabel input,.embedded .replaceLabel input { font-size:13px; }
+.embedded .fileLabel,.embedded .replaceLabel,.embedded .editHeader,.embedded .editorToolbar { max-width:100%; min-width:0; }
+.embedded .templateGrid { grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr)); }
+.embedded .actions { align-items:center; }
+.embedded .messageGrid { grid-template-columns:minmax(0,1fr) minmax(0,1.5fr); }
+.embedded .messageGrid>div { min-width:0; }
+@container(max-width:800px) {
+ .embedded .stats { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .embedded .filters { grid-template-columns:repeat(2,minmax(0,1fr)); }
+ .embedded .filters>label:last-of-type { grid-column:auto; }
+ .embedded .editorGrid,.embedded .messageGrid { grid-template-columns:minmax(0,1fr); }
+}
+@container(max-width:520px) {
+ .embedded .header h1 { font-size:24px; }
+ .embedded .stats { gap:10px; }
+ .embedded .stats article { padding:14px; }
+ .embedded .stats article>strong { font-size:28px; }
+ .embedded .panel,.embedded .workspace,.embedded .detail { padding:16px; }
+ .embedded .filters { grid-template-columns:minmax(0,1fr); }
+ .admin.embedded .filters input,.admin.embedded .filters select { font-size:16px; }
+ .embedded .editHeader { flex-direction:column; align-items:stretch; }
+}
+
+/* Editor controls need bounded columns, rather than the full-width filter inputs. */
+.admin.embedded .editorToolbar { align-items:center; gap:12px; padding:16px; overflow-x:auto; }
+.admin.embedded .editorToolbar label { display:grid; grid-template-columns:max-content 100px; align-items:center; gap:8px; flex:0 0 auto; white-space:nowrap; }
+.admin.embedded .editorToolbar select { width:100px; min-width:80px; max-width:100px; }
+.admin.embedded .editorToolbar button { flex:0 0 auto; white-space:nowrap; }
+.admin.embedded .editorToolbar output { flex:0 0 48px; text-align:center; font-size:14px; padding:0; white-space:nowrap; }
+.embedded .editorGrid { grid-template-columns:minmax(0,1fr) 260px; }
+.embedded .inspector { padding:16px; }
+.embedded .inspector fieldset { width:100%; max-width:260px; margin:16px 0 0; padding:12px; }
+.admin.embedded .inspector fieldset label { display:grid; grid-template-columns:72px minmax(0,112px); align-items:center; justify-content:start; gap:12px; margin:10px 0; white-space:nowrap; }
+.admin.embedded .inspector input,.admin.embedded .inspector select { width:100%; min-width:0; max-width:112px; }
+.embedded .fieldRow { align-items:center; gap:8px; }
+.embedded .upload { align-items:end; gap:12px 16px; padding:16px; background:#f3f7f6; border-color:#b8c8c1; }
+.embedded .upload>label { flex:1 1 240px; }
+.embedded .upload p { flex-basis:100%; margin:0; }
+.embedded .fileLabel { background:white; border-color:#b8c8c1; padding:10px 12px; }
+.embedded .templateGrid { align-items:start; gap:16px; }
+.embedded .templateCard { display:flex; flex-direction:column; gap:10px; padding:16px; }
+.embedded .templateCard h3,.embedded .templateCard p { margin:0; }
+.embedded .templateCard .actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; margin:2px 0 0; }
+.embedded .templateCard .actions>button:last-child { grid-column:1 / -1; }
+.embedded .templateCard .replaceLabel { margin:0; padding-top:12px; gap:8px; }
+.embedded .templateCard .danger { align-self:start; }
+.embedded .workspace { margin-top:24px; }
+.embedded .editHeader { flex-wrap:wrap; gap:12px; }
+.embedded .editHeader label { flex:1 1 240px; width:auto; max-width:520px; }
+.embedded .editHeader button { flex:0 0 auto; white-space:nowrap; }
+@container(max-width:800px) {
+ .embedded .editorGrid { grid-template-columns:minmax(0,1fr); }
+ .embedded .pdfScroll { height:520px; padding:16px; }
+}
+@container(max-width:520px) {
+ .embedded .workspace { padding:12px; }
+ .admin.embedded .editorToolbar { gap:8px; padding:12px; }
+ .admin.embedded .editorToolbar label { grid-template-columns:64px 100px; }
+ .embedded .editHeader label { flex-basis:auto; }
+ .embedded .templateCard { padding:14px; }
+}
+
+.embedded .zoomControls,.embedded .fieldActions { display:flex; flex:0 0 auto; align-items:center; gap:8px; }
+.admin.embedded .zoomControls output { flex:0 0 48px; }
+@container(max-width:520px) {
+ .admin.embedded .editorToolbar { display:grid; grid-template-columns:minmax(0,1fr); justify-items:start; gap:10px; }
+ .embedded .fieldActions { max-width:100%; flex-wrap:wrap; }
+}

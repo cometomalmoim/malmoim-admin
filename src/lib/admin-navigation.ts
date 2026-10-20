@@ -40,14 +40,14 @@ export const adminGroups = [
         "description": "이벤트별 안내 템플릿과 문자 내용을 준비합니다."
       },
       {
-        "slug": "esign-demo",
-        "title": "전자서명 · 개발 시연",
-        "description": "가상 데이터로 PDF 편집과 서명 현황을 확인합니다. 실제 발송·영구 저장은 없습니다."
-      },
-      {
         "slug": "certificates",
         "title": "수료증 관리",
         "description": "공통 템플릿과 전체 발급 내역을 관리합니다."
+      },
+      {
+        "slug": "esign-demo",
+        "title": "전자서명 · 개발 시연",
+        "description": "가상 데이터로 PDF 편집과 서명 현황을 확인합니다. 실제 발송·영구 저장은 없습니다."
       }
     ]
   },
