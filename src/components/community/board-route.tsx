@@ -1,4 +1,5 @@
 import Link from "next/link";
+import {Suspense} from "react";
 import {connection} from "next/server";
 import {notFound} from "next/navigation";
 import {communityList,communityDetail,communityIdentity} from "@/lib/community-board";
@@ -9,6 +10,8 @@ import {AdminShell} from "@/components/admin/admin-shell";
 import {CommunityListView} from "./board-list";
 import {CommunityDetailView} from "./board-detail";
 import {BoardForm} from "./board-form";
+import {AdminBoardWorkspace,AdminPostRoute,AdminBoardLoading} from "./admin-board";
+import {adminBoardQuery} from "@/lib/member-board-admin-model";
 import type {PublicLocale} from "@/lib/public-content";
 import "./community.css";
 type RawQuery=Record<string,string|string[]|undefined>;
@@ -20,6 +23,11 @@ export async function CommunityRoute({locale="ko",view="list",params,searchParam
  const base=admin?"/admin/member-board":localizedPublicPath("/board",locale);
  const wrap=(content:React.ReactNode)=>admin?<AdminShell current="member-board" title="회원 게시판 관리" email={email}>{content}</AdminShell>:<main id="public-main" lang={locale} tabIndex={-1}>{content}</main>;
  if(admin&&(await getAdminAccess()).status!=="admin")return wrap(<p role="alert">관리자 권한이 필요합니다.</p>);
+ if(admin&&view==="list")return <AdminBoardWorkspace email={email} query={adminBoardQuery(raw)}/>;
+ if(admin&&view==="detail"){
+  const id=params?(await params).id:"";if(!uuid(id))notFound();
+  return wrap(<Suspense key={id+JSON.stringify(raw)} fallback={<AdminBoardLoading panel/>}><AdminPostRoute id={id} query={adminBoardQuery(raw)} page={Math.floor(Math.max(1,Math.min(Number(raw.cp)||1,10000)))} commentQuery={typeof raw.cq==="string"?raw.cq:""}/></Suspense>);
+ }
  if(view==="list")return wrap(<CommunityListView data={await communityList(query,admin)} query={query} locale={locale} admin={admin}/>);
  let data=null;
  if(view==="detail"||view==="edit"){
@@ -30,7 +38,7 @@ export async function CommunityRoute({locale="ko",view="list",params,searchParam
   if(result.unavailable)return wrap(<section className="community-board"><p role="alert">{t("게시판을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.","The post could not be loaded. Please try again later.")}</p><Link href={base}>{t("목록으로","Back to posts")}</Link></section>);
   if(!result.data)notFound();
   data=result.data;
-  if(view==="detail")return wrap(<CommunityDetailView data={data} locale={locale} admin={admin} commentQuery={typeof raw.cq==="string"?raw.cq:""}/>);
+  if(view==="detail")return wrap(<CommunityDetailView data={data} locale={locale} commentQuery={typeof raw.cq==="string"?raw.cq:""}/>);
  }
  const user=await communityIdentity();
  if(!user)return wrap(<section className="community-board"><h1>{t("로그인이 필요합니다","Log in to continue")}</h1><p>{t("글 작성은 로그인 후 이용할 수 있습니다.","Please log in before writing a post.")}</p><Link className="community-write" href={localizedPublicPath("/auth/login",locale)+"?returnTo="+encodeURIComponent(view==="edit"&&data?base+"/"+data.post.id+"/edit":base+"/new")}>{t("로그인","Log in")}</Link></section>);

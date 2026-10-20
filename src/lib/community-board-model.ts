@@ -34,6 +34,7 @@ export function communityInput(action: string, form: FormData, admin: boolean) {
  if(["hide_post","show_post","hide_comment","show_comment","pin","report_review"].includes(action)) {
   if(!admin)throw new Error("forbidden");
   const reason=bounded("reason",500);
+  if(reason.startsWith("[조치 없음]")&&!reason.slice("[조치 없음]".length).trim())throw new Error("validation");
   if(action==="report_review"&&!["reviewing","resolved"].includes(text("status")))throw new Error("validation");
   return {reason,is_pinned:text("is_pinned")==="true",status:text("status")};
  }

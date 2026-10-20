@@ -12,6 +12,7 @@ export async function mutateCommunity(_previous: CommunityActionState,form:FormD
  const action=String(form.get("action")??""),id=String(form.get("id")??""),version=String(form.get("version")??"");
  const admin=form.get("admin")==="true"||["hide_post","show_post","hide_comment","show_comment","pin","report_review"].includes(action);
  let destination:string|null=null;
+ let affectedPostId:string|null=null;
  try{
   const client=await createClient();
   const {data:{user},error}=await client.auth.getUser();
@@ -29,13 +30,19 @@ export async function mutateCommunity(_previous: CommunityActionState,form:FormD
   const result=await client.rpc("member_board_mutate",{p_action:action,p_id:id||null,p_version:version||null,p_input:input,p_nonce:uuid(nonce)?nonce:null});
   if(result.error)return {message:communitySaveError(result.error.code,locale)};
   if(!uuid(String(result.data)))return {message:t("저장 결과를 확인하지 못했습니다. 새로고침 후 확인해주세요.","Could not verify the saved result. Refresh before retrying.")};
+  affectedPostId=String(result.data);
   const base=admin?"/admin/member-board":localizedPublicPath("/board",locale);
   if(action==="post_save")destination=base+"/"+result.data;
   if(action==="post_delete")destination=base;
  }catch(error){
   return {message:error instanceof Error&&error.message==="validation"?t("입력 내용과 글자 수를 확인해주세요.","Check the input and character limits."):t("요청을 처리하지 못했습니다. 입력 내용은 유지됩니다.","Could not process the request. Your input has been kept.")};
  }
- revalidatePath("/board","layout");revalidatePath("/en/board","layout");revalidatePath("/admin/member-board","layout");
+ revalidatePath("/board","layout");revalidatePath("/en/board","layout");
+ // These URLs are pages in /admin/[...segments], not member-board layouts.
+ // Revalidate in the action response so counts, selection and logs update together;
+ // a second client router.refresh would only start another full route request.
+ revalidatePath("/admin/member-board");
+ if(affectedPostId)revalidatePath("/admin/member-board/"+affectedPostId);
  if(destination)redirect(destination);
  return {message:t("처리했습니다.","Saved."),success:true};
 }

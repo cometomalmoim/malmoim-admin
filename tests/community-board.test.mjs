@@ -119,3 +119,35 @@ test("unavailable database never redirects, revalidates or reports successful in
   assert.doesNotMatch(result.message,/private SQL secret/);
  }
 });
+
+test("detail rendering preserves content, ownership, login prompts and real comment pagination",async()=>{
+ const React=require("react"),{renderToStaticMarkup}=require("react-dom/server");
+ const {CommunityDetailView}=load("src/components/community/board-detail.tsx",{
+  "./board-form":{BoardForm:({action})=>React.createElement("form",{"data-action":action}),CommunityViewCounter:()=>null},
+  "./board-list":{date:()=>"Oct 20, 2026"},
+ });
+ const data={post:{id,category:"free",title:"Original title",content:"Original line\nhttps://example.com/long",author_name:"Member-public-alias",created_at:"2026-10-20T00:00:00Z",updated_at:"2026-10-20T00:00:00Z",view_count:2,is_pinned:false,status:"public",can_edit:false},comments:[],comment_total:0,comment_page:1,authenticated:false,admin:false};
+ const render=(overrides={})=>renderToStaticMarkup(React.createElement(CommunityDetailView,{data:{...data,...overrides},locale:"en"}));
+ const anon=render();
+ assert.match(anon,/Original line\nhttps:\/\/example.com\/long/);
+ assert.match(anon,/Member-public-alias/);assert.match(anon,/Log in to write a comment/);
+ assert.doesNotMatch(anon,/data-action="(?:post_delete|report|comment_save)"/);
+ assert.doesNotMatch(anon,/aria-label="Comment pages"/);
+ const owner=render({authenticated:true,post:{...data.post,can_edit:true}});
+ assert.match(owner,/data-action="post_delete"/);assert.match(owner,/data-action="report"/);assert.match(owner,/data-action="comment_save"/);
+ assert.match(owner,new RegExp("/en/board/"+id+"/edit"));
+ assert.match(render({comment_total:31}),/aria-label="Comment pages"/);
+ assert.match(render({comment_total:0,comment_page:2}),/cp=1/);
+});
+
+test("localized loading variants announce busy state and never duplicate the public header",()=>{
+ const React=require("react"),{renderToStaticMarkup}=require("react-dom/server");
+ const {CommunityLoading}=load("src/components/community/board-loading.tsx",{"./community.css":{}});
+ for(const locale of ["ko","en"])for(const view of ["list","detail","new","edit"]){
+  const html=renderToStaticMarkup(React.createElement(CommunityLoading,{locale,view}));
+  assert.match(html,/aria-busy="true"/);assert.match(html,/role="status"/);
+  assert.doesNotMatch(html,/<header|public-header|<form/);
+  assert.equal(html.includes("community-skeleton-rows"),view==="list");
+  assert.equal(html.includes("community-skeleton-textarea"),view==="new"||view==="edit");
+ }
+});
