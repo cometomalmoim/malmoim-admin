@@ -12,8 +12,14 @@
 ## 적용 순서
 
 1. 관리자 및 `018_schedule_management.sql` 적용 환경에 `022_external_accounts.sql` → `043_external_account_creation.sql` → `044_external_account_initial_access.sql` 순서로 실행합니다. 기존 022/043 설치 환경에는 044만 추가 적용합니다. `022_board_idea_category.sql`은 별개입니다.
-2. 서버에 `EXTERNAL_ACCOUNTS_ENCRYPTION_KEY`를 설정합니다. 암호학적 난수 32바이트의 64자리 hex 비밀 값이며 `NEXT_PUBLIC_` 접두사를 사용하지 않습니다. 예: `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. 키를 별도 비밀 저장소에 백업해야 합니다. 단순 교체하면 기존 비밀번호를 열 수 없으며 이전 키로 복호화·재암호화하는 별도 절차가 필요합니다.
+2. 개발 환경에서는 `npm run setup:external-accounts`를 실행합니다. `.env.local`의 기존 설정과 유효한 키를 보존하며 누락/빈 값에만 32바이트 무작위 키를 64자리 hex로 설정합니다. 값은 출력하지 않습니다. 실제 이름은 복수형 **`EXTERNAL_ACCOUNTS_ENCRYPTION_KEY`**이며 `NEXT_PUBLIC_` 접두사를 붙이면 안 됩니다. 변경 후 개발 서버를 재시작하세요.
 3. 관리자 기준은 기존 `admin_users`입니다. 사용자를 Master로 자동 승격하거나 기존 인증기를 삭제하지 않습니다. `external_account_members`는 담당자 후보 및 삭제 권한에 계속 사용하며 모든 관리자가 담당자 후보를 조회할 수 있습니다.
+
+개발/테스트에서 키가 누락되면 암호화 모듈은 프로젝트 루트의 `.env.external-accounts.key`에 로컬 전용 무작위 키를 한 번 생성해 재사용합니다. 이 파일과 `.env.local`은 Git에서 제외되며 로컬 키 파일은 배포 파일 추적에서도 제외합니다. 공용 기본 키나 요청마다 바뀌는 임시 키를 사용하지 않습니다. 잘못된 기존 환경 변수나 손상된 로컬 키 파일은 자동 교체하지 않고 오류로 처리합니다.
+
+운영 환경에서는 자동 fallback을 사용하지 않습니다. 호스팅 서버의 비밀 환경 변수에 위 이름으로 유효한 키를 설정해야 합니다. 누락·형식 오류·파일 권한 오류는 키 값 없이 서버 `console.error`에 원인을 기록합니다. 같은 DB를 사용하는 모든 서버와 개발 환경은 같은 키를 사용해야 하며, 기존 암호문이 있다면 새 키를 생성하기 전에 기존 키를 복원해야 합니다. 키는 별도 비밀 저장소에 백업하세요. 키 교체에는 기존 키로 복호화 후 재암호화하는 절차가 필요합니다.
+
+암호화는 Next.js 서버의 AES-256-GCM으로 수행하며 `manage_external_account`에는 암호문만 전달합니다. 현재 구조는 Supabase Vault/Edge Functions Secret을 조회하지 않으므로 관련 SQL Secret 설정이나 새 DB 마이그레이션은 필요하지 않습니다. `ALTER DATABASE ... app.settings.encryption_key`를 설정해도 이 코드의 키로 사용되지 않습니다.
 
 ## UI와 감사 기록
 
@@ -36,5 +42,7 @@
 `node --test tests/external-accounts.test.mjs tests/external-account-favicon.test.mjs tests/external-account-registration.test.mjs tests/external-account-creation-actions.test.mjs`
 
 `node tests/external-account-initial-access-db.mjs`는 022→043→044 설치, Staff/Admin 전체 조회·수정·MFA 없는 보기/복사, 감사 기록, 비관리자 차단, Master 전용 삭제, 동시 수정 차단, 등록자 유지, 이전 정책 복원과 044 재적용을 검사합니다. 기존 `work/sql` PGlite 캐시를 사용합니다. 022/043 당시의 권한은 기존 `external-accounts-db.mjs`, `external-account-creation-db.mjs`에서도 별도로 검증합니다.
+
+`node --test tests/external-account-key.test.mjs`는 키 생성·재사용, 초기화 스크립트 재실행과 기존 설정 보존, 잘못된 키/운영 환경 누락 시 안전한 오류를 검사합니다. `node tests/external-account-encryption-registration-db.mjs`는 실제 AES 암호화→Staff 계정 등록→키 재로드→복호화와 감사 기록을 검증합니다.
 
 테스트는 합성 세션과 일회용 로컬 DB를 사용합니다. 실제 운영 로그인이나 운영 DB 변경은 수행하지 않습니다. 운영 적용 전 SQL 순서와 암호화 키 설정을 확인해야 합니다.
