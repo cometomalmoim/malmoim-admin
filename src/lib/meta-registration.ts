@@ -1,12 +1,12 @@
 import {META_PIXEL_ID,type MetaWindow} from './meta-pixel';
 import type {MetaRegistrationReceipt} from './meta-registration-receipt';
-type Context={host:string;path:string;consent:()=>boolean;storage:Pick<Storage,'getItem'|'setItem'>;lock:(name:string,callback:()=>Promise<boolean>)=>Promise<boolean>};
+type Context={host:string;path:string;storage:Pick<Storage,'getItem'|'setItem'>;lock:(name:string,callback:()=>Promise<boolean>)=>Promise<boolean>};
 function matches(receipt:MetaRegistrationReceipt,path:string){return receipt.event==='season9'?['/season9/apply','/season9/en/apply'].includes(path):path==='/2026halloweenparty'||path==='/2026halloweenparty/en';}
 /** At-most-once browser dispatch; a blocked/failed pixel never fails the registration. */
 export async function completeRegistration(w:MetaWindow,receipt:MetaRegistrationReceipt|undefined,ctx:Context):Promise<boolean>{
  try{
   if(!receipt||!['season9','halloween-2026'].includes(receipt.event)||!['ko','en'].includes(receipt.language)||!new RegExp(`^registration:${receipt.event}:[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$`).test(receipt.eventId))return false;
-  const eligible=()=>['malmoim.com','www.malmoim.com'].includes(ctx.host)&&matches(receipt,ctx.path)&&ctx.consent()&&w.malmoimMetaReady===true&&!!w.fbq;
+  const eligible=()=>['malmoim.com','www.malmoim.com'].includes(ctx.host)&&matches(receipt,ctx.path)&&w.malmoimMetaReady===true&&!!w.fbq;
   if(!eligible())return false;
   const key=`malmoim-meta-complete-v1:${receipt.eventId}`;
   return await ctx.lock(key,async()=>{

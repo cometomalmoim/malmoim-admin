@@ -1,5 +1,4 @@
 export const META_PIXEL_ID='1120189660978956';
-export const META_CONSENT_KEY='malmoim-meta-consent-v1';
 const landingPaths=new Set(['/season9','/season9/en','/2026halloweenparty','/2026halloweenparty/en']);
 export function isMetaLanding(path:string,hostname:string){return ['malmoim.com','www.malmoim.com'].includes(hostname)&&landingPaths.has(path);}
 export function isMetaSurface(path:string,hostname:string){return isMetaLanding(path,hostname)||(['malmoim.com','www.malmoim.com'].includes(hostname)&&['/season9/apply','/season9/en/apply'].includes(path));}
