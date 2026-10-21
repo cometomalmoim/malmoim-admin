@@ -1,4 +1,5 @@
 "use client";
+import {useRegistrationConversion} from '@/components/use-registration-conversion';
 import {useActionState,useEffect,useRef,useState} from 'react';
 import Link from 'next/link';
 import {season9GenderChoices} from '@/lib/season9-required';
@@ -7,6 +8,7 @@ const stored=(ko:string,en:string)=>`${ko} / ${en}`;
 export function InstantApplication({locale='ko'}:{locale?:'ko'|'en'}){
  const en=locale==='en';const t=(ko:string,english:string)=>en?english:ko;
  const [state,action,pending]=useActionState(submitSeason9,{success:false,message:''});
+ useRegistrationConversion(state.success?state.conversion:undefined);
  const [intake,setIntake]=useState<{open:boolean;unavailable?:boolean}|null>(null);
  useEffect(()=>{let active=true;void season9RegistrationInfo().then(info=>{if(active)setIntake(info);}).catch(()=>{if(active)setIntake({open:false,unavailable:true});});return()=>{active=false;};},[]);
  const [submissionId,setSubmissionId]=useState('');const [utm,setUtm]=useState<Record<string,string>>({});
@@ -26,7 +28,7 @@ export function InstantApplication({locale='ko'}:{locale?:'ko'|'en'}){
  if(!intake||!intake.open)return <section className="s9-form" role="status"><h2>{t(!intake?'접수 상태 확인 중':intake.unavailable?'접수 상태를 확인하지 못했어요':'현재 접수하지 않아요',!intake?'Checking registration':intake.unavailable?'Unable to check registration':'Registration is closed')}</h2><p>{t('잠시 후 다시 확인하거나 운영진에게 문의해주세요.','Please retry later or contact the organizers.')}</p><a href="https://www.instagram.com/cometomalmoim/?hl=ko" target="_blank" rel="noopener noreferrer">Instagram · @cometomalmoim ↗</a></section>;
  return <div className="s9-form s9-instant"><h2 ref={heading} tabIndex={-1} className="s9-step-title">{steps[step]}</h2><p id="s9-intake-status" className="s9-step-help">{[t('이름과 국적, 생년월일을 알려주세요.','Let us know your name, nationality and date of birth.'),t('안내받을 연락처와 참여할 요일을 선택해주세요.','Choose how to receive updates and which group to join.'),t('언어 수준에 맞춰 함께 대화할 수 있도록 알려주세요.','Tell us what languages you feel comfortable using.'),t('참여 동기를 짧게 적어주세요. 기대하는 활동도 자유롭게 알려주세요.','Tell us briefly why you want to join. You can also share activities you would enjoy.'),t('연락처와 희망 반이 맞는지 확인해주세요.','Please double-check your contact details and preferred group.')][step]}</p>
  <form ref={form} action={action} noValidate onFocus={initialize} onReset={event=>event.preventDefault()} onSubmit={event=>{initialize();validateContact();for(const input of form.current?.querySelectorAll<HTMLInputElement|HTMLSelectElement|HTMLTextAreaElement>('input,select,textarea')??[])if(!input.validity.valid){event.preventDefault();const target=input.closest<HTMLElement>('[data-step]');if(target){setStep(Number(target.dataset.step));requestAnimationFrame(()=>input.reportValidity());}else input.reportValidity();return;}}}>
- <input type="hidden" name="submission_id" value={submissionId}/>{Object.entries(utm).map(([key,value])=><input type="hidden" key={key} name={key} value={value}/>)}<div hidden><label>Website<input name="website" tabIndex={-1} autoComplete="off"/></label></div>
+ <input type="hidden" name="application_language" value={locale}/><input type="hidden" name="submission_id" value={submissionId}/>{Object.entries(utm).map(([key,value])=><input type="hidden" key={key} name={key} value={value}/>)}<div hidden><label>Website<input name="website" tabIndex={-1} autoComplete="off"/></label></div>
  <fieldset disabled={pending||!intake.open} aria-describedby="s9-intake-status"><legend className="s9-visually-hidden">{t('신청 정보','Application details')}</legend>
  <section hidden={step!==0} data-step="0" className="s9-form-step">
  <div className="s9-field"><label htmlFor="s9-field-0">{t('이름','Name')} {required}</label><input id="s9-field-0" name="s9-field-0" required autoComplete="name" placeholder={t('이름을 입력해주세요','Your name')}/></div>

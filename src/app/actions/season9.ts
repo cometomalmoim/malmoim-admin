@@ -1,4 +1,5 @@
 "use server";
+import {registrationReceipt,type MetaRegistrationReceipt} from '@/lib/meta-registration-receipt';
 import {season9RequiredFields,season9ParticipationFields} from '@/lib/season9-required';
 import {after} from 'next/server';
 import {processSmsQueue} from '@/lib/sms-worker';
@@ -9,7 +10,7 @@ export async function season9RegistrationInfo(): Promise<{open:boolean;unavailab
     return error ? {open:false,unavailable:true} : {open:data?.open===true};
   } catch { return {open:false,unavailable:true}; }
 }
-export type SubmissionState = { success: boolean; message: string };
+export type SubmissionState = { success: boolean; message: string; conversion?:MetaRegistrationReceipt };
 export async function submitSeason9(_state: SubmissionState, form: FormData): Promise<SubmissionState> {
   const fail = (message:string): SubmissionState => ({success:false,message});
   if (String(form.get("website") ?? "")) return fail("신청을 처리하지 못했습니다. / Unable to process the application.");
@@ -35,6 +36,6 @@ export async function submitSeason9(_state: SubmissionState, form: FormData): Pr
     if(data?.accepted!==true) return fail("접수를 확인하지 못했습니다. 다시 시도해주세요. / Please retry.");
     try { after(async()=>{try{await processSmsQueue(client);}catch{/* Keep application success independent of provider failures. */}}); } catch {/* Receipt is already committed. */}
     revalidatePath("/admin", "layout");
-    return {success:true,message:"신청이 접수되었습니다. 참가 확정과 납부 안내는 확인 후 보내드립니다. / Application received. Confirmation and payment instructions will follow after review."};
+    return {success:true,conversion:registrationReceipt('season9',submissionId,form.get('application_language')),message:"신청이 접수되었습니다. 참가 확정과 납부 안내는 확인 후 보내드립니다. / Application received. Confirmation and payment instructions will follow after review."};
   }catch{return fail("서버에 연결하지 못했습니다. 다시 시도해주세요. / Connection failed. Please retry.");}
 }

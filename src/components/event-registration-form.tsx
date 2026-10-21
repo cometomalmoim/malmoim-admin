@@ -1,4 +1,5 @@
  'use client';
+import {useRegistrationConversion} from '@/components/use-registration-conversion';
 import {startTransition,useActionState,useEffect,useState} from 'react';
 import {readAttribution,type Attribution} from '@/lib/attribution';
 import {registerEvent,registrationInfo} from '@/app/actions/registration';
@@ -15,6 +16,7 @@ export function EventRegistrationForm({slug='halloween-2026',test=false,english=
  const [privacy,setPrivacy]=useState(false);
  const [marketing,setMarketing]=useState(false);
  const [state,action,pending]=useActionState(registerEvent.bind(null,slug,test),{code:''});
+ useRegistrationConversion(state.code==='saved'?state.conversion:undefined);
  useEffect(()=>{let active=true;const tags=readAttribution(new URLSearchParams(window.location.search));registrationInfo(slug,test).then(value=>{if(active){setAttribution(tags);setInfo(value);setSubmission(crypto.randomUUID());}}).catch(()=>{if(active)setInfo({open:false,unavailable:true});});return ()=>{active=false;};},[slug,test]);
  useEffect(()=>{if(state.code!=='consent')return;let active=true;registrationInfo(slug,test).then(value=>{if(active){setInfo(value);setPrivacy(false);}}).catch(()=>{if(active)setInfo({open:false,unavailable:true});});return()=>{active=false;};},[state.code,slug,test]);
  const t=(ko:string,en:string)=>english?en:ko;
@@ -25,7 +27,7 @@ export function EventRegistrationForm({slug='halloween-2026',test=false,english=
  {!test&&slug==='halloween-2026'&&<HalloweenAgeNotice english={english}/>}
  <fieldset disabled={!info.open||pending||!submission}>
  {Object.entries(attribution).map(([key,value])=><input key={key} type="hidden" name={key} value={value}/>)}
- <input type="hidden" name="submission_id" value={submission}/><input type="hidden" name="version" value={info.version??''}/>
+ <input type="hidden" name="application_language" value={english?'en':'ko'}/><input type="hidden" name="submission_id" value={submission}/><input type="hidden" name="version" value={info.version??''}/>
  <div hidden aria-hidden="true"><label>Website<input name="website" tabIndex={-1} autoComplete="off"/></label></div>
  <label>{t('이름','Name')}<input name="name" value={name} onChange={event=>setName(event.target.value)} required maxLength={100} autoComplete="name"/></label>
  <label>{t('전화번호','Phone number')}<input name="contact" value={contact} onChange={event=>setContact(event.target.value)} required maxLength={40} type="tel" autoComplete="tel"/></label>
