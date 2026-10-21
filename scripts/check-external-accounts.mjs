@@ -6,7 +6,7 @@ if(!url||!key)throw new Error('Supabase public connection settings are missing.'
 const db=createClient(url,key,{auth:{persistSession:false,autoRefreshToken:false},global:{fetch:(input,init)=>fetch(input,{...init,signal:AbortSignal.timeout(15000)})}});
 // Anonymous probes, no records requested and no valid write operation submitted.
 const checks=[
-  ['account metadata schema',()=>db.from('external_accounts').select('id,created_by').limit(0)],
+  ['account metadata schema',()=>db.from('external_accounts').select('id,created_by,manager_person_id').limit(0)],
   ['audit schema',()=>db.from('account_access_logs').select('id,account_id,actor_id,changes').limit(0)],
   ['manage RPC signature',()=>db.rpc('manage_external_account',{p_id:null,p_version:null,p_input:{},p_ciphertext:null,p_delete:null})],
   ['reveal RPC signature',()=>db.rpc('reveal_external_account',{p_id:'00000000-0000-0000-0000-000000000000',p_action:'diagnostic-invalid'})],

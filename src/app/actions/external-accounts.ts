@@ -34,7 +34,7 @@ export async function saveExternalAccount(form: FormData, remove = false) {
     if((id&&!validUuid(id))||(remove&&!id)||(id&&!Number.isFinite(Date.parse(version))))throw new Error('계정 정보를 새로고침한 뒤 다시 시도해주세요.');
     let legacy:LegacyAccountFields|undefined;
     if(id&&!remove){
-      const previous=await client.from('external_accounts').select('category,department,sub_manager,payment_method').eq('id',id).maybeSingle();
+      const previous=await client.from('external_accounts').select('primary_manager,category,department,sub_manager,payment_method').eq('id',id).maybeSingle();
       if(previous.error){const reference=logExternalAccountError('load-before-update',previous.error);return {success:false,message:externalAccountErrorMessage(previous.error,reference)};}
       if(!previous.data)throw new Error('계정을 찾을 수 없습니다. 목록을 새로고침해주세요.');
       legacy=previous.data as LegacyAccountFields;

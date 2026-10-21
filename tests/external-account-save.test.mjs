@@ -7,7 +7,7 @@ test('optional billing fields receive valid SQL defaults instead of empty string
   const input=externalAccountInput(form());assert.equal(input.billing_cycle,'monthly');assert.equal(input.amount,'0');assert.equal(input.currency,'KRW');assert.equal(input.renewal_notice_days,'7');assert.equal(input.category,'other');
 });
 test('reject invalid dates, UUIDs, numeric precision and enum values before RPC',()=>{
-  for(const [key,value] of [['next_billing_date','2026-02-30'],['primary_manager','invalid'],['amount','-1'],['amount','1.234'],['amount','1000000000000'],['renewal_notice_days','91'],['currency','INVALID'],['billing_cycle','INVALID']]){const f=form();f.set(key,value);assert.throws(()=>externalAccountInput(f),key);}
+  for(const [key,value] of [['next_billing_date','2026-02-30'],['manager_person_id','invalid'],['amount','-1'],['amount','1.234'],['amount','1000000000000'],['renewal_notice_days','91'],['currency','INVALID'],['billing_cycle','INVALID']]){const f=form();f.set(key,value);assert.throws(()=>externalAccountInput(f),key);}
 });
 test('server DB logs preserve diagnostics but remove failing row values and explicit secrets',t=>{
   const logs=[];t.mock.method(console,'error',(...args)=>logs.push(args));
@@ -22,4 +22,16 @@ test('removed fields are preserved from server metadata and cannot be changed th
   const input=externalAccountInput(f,legacy);
   for(const key of Object.keys(legacy))assert.equal(input[key],legacy[key]);
   const fresh=externalAccountInput(f);assert.equal(fresh.category,'other');assert.equal(fresh.department,'');assert.equal(fresh.sub_manager,'');assert.equal(fresh.payment_method,'');
+});
+
+test('legacy assignment survives untouched edits; People selection and explicit unassignment replace it',()=>{
+ const legacy={category:'design',department:'',primary_manager:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',sub_manager:null,payment_method:''};
+ const f=form();f.set('manager_person_id',`legacy:${legacy.primary_manager}`);
+ assert.equal(externalAccountInput(f,legacy).primary_manager,legacy.primary_manager);
+ assert.equal(externalAccountInput(f,legacy).manager_person_id,'');
+ f.set('manager_person_id','bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
+ assert.equal(externalAccountInput(f,legacy).primary_manager,'');
+ assert.equal(externalAccountInput(f,legacy).manager_person_id,'bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb');
+ f.set('manager_person_id','');assert.equal(externalAccountInput(f,legacy).primary_manager,'');
+ f.set('manager_person_id','legacy:forged');assert.throws(()=>externalAccountInput(f,legacy));
 });
