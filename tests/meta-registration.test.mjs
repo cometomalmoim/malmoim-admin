@@ -5,7 +5,7 @@ import {createRequire} from 'node:module';
 import {runInNewContext} from 'node:vm';
 import ts from 'typescript';
 const require=createRequire(import.meta.url);
-function load(file,mocks={},globals={}){const {outputText}=ts.transpileModule(readFileSync(new URL('../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}});const m={exports:{}};runInNewContext(outputText,{module:m,exports:m.exports,FormData,Date,URLSearchParams,...globals,require:n=>Object.hasOwn(mocks,n)?mocks[n]:n.startsWith('@/')?load('src/'+n.slice(2)+'.ts',mocks):n==='./meta-pixel'?load('src/lib/meta-pixel.ts'):require(n)});return m.exports;}
+function load(file,mocks={},globals={}){const {outputText}=ts.transpileModule(readFileSync(new URL('../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}});const m={exports:{}};runInNewContext(outputText,{module:m,exports:m.exports,FormData,Date,URLSearchParams,Error,...globals,require:n=>Object.hasOwn(mocks,n)?mocks[n]:n.startsWith('@/')?load('src/'+n.slice(2)+'.ts',mocks):n==='./meta-pixel'?load('src/lib/meta-pixel.ts'):require(n)});return m.exports;}
 const {registrationReceipt}=load('src/lib/meta-registration-receipt.ts');
 const {completeRegistration}=load('src/lib/meta-registration.ts');
 const id='11111111-1111-4111-8111-111111111111';
@@ -39,4 +39,16 @@ test('QR 영어 신청 경로의 DB 성공 receipt도 전환 전송',async()=>{
  const h=harness();h.ctx.path='/season9/apply/en';
  assert.equal(await completeRegistration(h.w,registrationReceipt('season9',id,'en'),h.ctx),true);
  assert.equal(h.calls.find(v=>v[0]==='trackSingle')[3].language,'en');
+});
+
+test('할로윈 국적은 새 저장 RPC로 전달하되 Meta 매개변수에는 포함하지 않음',async()=>{
+ let args;
+ const mocks=actionMocks({data:'saved'});
+ mocks['@/lib/supabase/server']={createClient:async()=>({rpc:async(name,values)=>{args={name,values};return {data:'saved'};}})};
+ const api=load('src/app/actions/registration.ts',mocks),form=partyForm();form.set('nationality',' Canada ');
+ const result=await api.registerEvent('halloween-2026',false,{},form);
+ assert.equal(args.name,'submit_event_registration_with_nationality');assert.equal(args.values.p_nationality,'Canada');
+ assert.equal(result.code,'saved');assert.equal(Object.hasOwn(result.conversion,'nationality'),false);
+ form.set('nationality','x'.repeat(101));args=undefined;
+ assert.equal((await api.registerEvent('halloween-2026',false,{},form)).code,'nationality');assert.equal(args,undefined);
 });
