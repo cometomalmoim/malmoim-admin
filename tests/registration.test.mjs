@@ -9,3 +9,11 @@ test('출생연도 선택 입력: 미입력·유효한 연도·경계',()=>{cons
 test('나이·미래·소수·짧은 출생연도는 거부',()=>{for(const value of ['28','98','1899',String(new Date().getUTCFullYear()+1),'1998.5','1e03','abcd','19980'])assert.throws(()=>registrationInput(form({birth_year:value})),/birth_year/);});
 
 test('할로윈 공개 접수는 출생연도 필수 및 1990~2007 경계 적용',()=>{for(const birth_year of ['', '1989','2008'])assert.throws(()=>registrationInput(form({birth_year}),true),/birth_year/);for(const birth_year of ['1990','1998','2007'])assert.equal(registrationInput(form({birth_year}),true).birth_year,Number(birth_year));});
+
+test('국적 선택 입력: 미입력은 null, 공백 제거, 복수 국적 허용, 100자 제한',()=>{
+ assert.equal(registrationInput(form()).nationality,null);
+ assert.equal(registrationInput(form({nationality:'   '})).nationality,null);
+ assert.equal(registrationInput(form({nationality:' 대한민국 / Canada '})).nationality,'대한민국 / Canada');
+ assert.equal(registrationInput(form({nationality:'x'.repeat(100)})).nationality.length,100);
+ assert.throws(()=>registrationInput(form({nationality:'x'.repeat(101)})),/nationality/);
+});
