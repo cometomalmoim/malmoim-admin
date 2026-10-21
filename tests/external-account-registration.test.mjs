@@ -7,6 +7,7 @@ import ts from 'typescript';
 import React from 'react';
 import {renderToStaticMarkup} from 'react-dom/server';
 import * as model from '../src/lib/external-account-types.ts';
+import * as list from '../src/lib/external-account-list.ts';
 
 const require=createRequire(import.meta.url);
 function load(file,mocks={}) {
@@ -16,10 +17,11 @@ function load(file,mocks={}) {
   return loaded.exports;
 }
 const {AccountRegistrationButton}=load('src/components/admin/account-registration-button.tsx');
-const {ExternalAccountsWorkspace}=load('src/components/admin/external-accounts-workspace.tsx',{
+const {ExternalAccountsWorkspace,AccountDetail}=load('src/components/admin/external-accounts-workspace.tsx',{
   'next/navigation':{useRouter:()=>({refresh(){}})},
   '@/app/actions/external-accounts':{},
   '@/lib/external-account-types':model,
+  '@/lib/external-account-list':list,
   './account-registration-button':{AccountRegistrationButton},
   './account-service-icon':{AccountServiceIcon:()=>null},
   './external-accounts.css':{},
@@ -45,11 +47,18 @@ test('database configuration failure retains registration action and shows setup
   assert.match(html,/022_external_accounts.sql/);
   assert.match(html,/044_external_account_initial_access.sql/);
 });
-test('Staff detail exposes editing and password buttons, keeps masking, and has no MFA form',()=>{
+test('Staff detail opens read-only with edit and password actions, no removed fields or MFA',()=>{
   const account={id:'11111111-1111-4111-8111-111111111111',created_by:null,service_name:'Canva',service_url:'https://canva.com',login_id:'synthetic@example.com',category:'design',department:'다른 부서',primary_manager:null,sub_manager:null,billing_cycle:'none',payment_method:'',amount:0,currency:'KRW',next_billing_date:null,renewal_notice_days:7,notes:'',updated_at:'2026-10-21T00:00:00Z'};
-  const html=renderToStaticMarkup(React.createElement(ExternalAccountsWorkspace,{accounts:[account],members:[],logs:[],master:false,today:'2026-10-21'}));
+  const html=renderToStaticMarkup(React.createElement(AccountDetail,{account,members:[],logs:[],master:false,pending:false,onSave:async()=>true,onClose:()=>{}}));
   assert.match(html,/<button[^>]*>보기<\/button>/);assert.match(html,/<button[^>]*>복사하기<\/button>/);
-  assert.match(html,/>계정 저장<\/button>/);assert.match(html,/••••••••/);
-  assert.doesNotMatch(html,/<fieldset[^>]*disabled/);
-  assert.doesNotMatch(html,/인증기|일회용 코드|Master Admin만|계정 삭제/);
+  assert.match(html,/>수정<\/button>/);assert.match(html,/••••••••/);assert.match(html,/계정 상세 닫기/);
+  assert.match(html,/<fieldset[^>]*disabled/);
+  assert.doesNotMatch(html,/인증기|일회용 코드|Master Admin만|계정 삭제|카테고리|공유 부서|백업 담당자|카드 별칭/);
+});
+test('initial list shows only service, single manager and valid payment badge, with no selected detail',()=>{
+  const account={id:'one',service_name:'Canva',service_url:'https://canva.com',login_id:'hidden-login@example.com',category:'design',department:'hidden department',primary_manager:'manager',sub_manager:'backup',billing_cycle:'monthly',next_billing_date:'2026-11-21',renewal_notice_days:7};
+  const html=renderToStaticMarkup(React.createElement(ExternalAccountsWorkspace,{accounts:[account],members:[{user_id:'manager',display_name:'김담당'}],logs:[],master:false,today:'2026-10-21'}));
+  assert.match(html,/Canva/);assert.match(html,/김담당/);assert.match(html,/결제 D-31/);
+  assert.match(html,/목록에서 계정을 선택하면 상세 정보가 표시됩니다/);
+  assert.doesNotMatch(html,/hidden-login@example.com|hidden department|카테고리|공유 부서|백업 담당자|카드 별칭|aria-label="계정 상세 닫기"/);
 });

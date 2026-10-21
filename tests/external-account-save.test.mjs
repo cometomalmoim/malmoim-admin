@@ -16,3 +16,10 @@ test('server DB logs preserve diagnostics but remove failing row values and expl
   assert.ok(!JSON.stringify(logs).includes('private-login'));assert.ok(!JSON.stringify(logs).includes('private-password'));assert.ok(!JSON.stringify(logs).includes('private-ciphertext'));
   assert.ok(!externalAccountErrorMessage({code:'23502'},reference).includes('private-'));
 });
+test('removed fields are preserved from server metadata and cannot be changed through the form',()=>{
+  const f=form();for(const name of ['category','department','sub_manager','payment_method'])f.set(name,'forged');
+  const legacy={category:'design',department:'archived',sub_manager:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',payment_method:'archived card'};
+  const input=externalAccountInput(f,legacy);
+  for(const key of Object.keys(legacy))assert.equal(input[key],legacy[key]);
+  const fresh=externalAccountInput(f);assert.equal(fresh.category,'other');assert.equal(fresh.department,'');assert.equal(fresh.sub_manager,'');assert.equal(fresh.payment_method,'');
+});

@@ -3,7 +3,7 @@ import { revalidatePath } from 'next/cache';
 import { getAdminAccess } from '@/lib/auth';
 import { createClient } from '@/lib/supabase/server';
 import { encryptAccountPassword, decryptAccountPassword } from '@/lib/external-account-crypto';
-import { externalAccountInput } from '@/lib/external-account-input';
+import { externalAccountInput, type LegacyAccountFields } from '@/lib/external-account-input';
 import { logExternalAccountError, externalAccountErrorMessage } from '@/lib/external-account-errors';
 import type { AccountLog } from '@/lib/external-account-types';
 import { validUuid } from '@/lib/resource-validation';
@@ -32,7 +32,14 @@ export async function saveExternalAccount(form: FormData, remove = false) {
     const id=String(form.get('id')??'');
     const version=String(form.get('updated_at')??'');
     if((id&&!validUuid(id))||(remove&&!id)||(id&&!Number.isFinite(Date.parse(version))))throw new Error('계정 정보를 새로고침한 뒤 다시 시도해주세요.');
-    const input = remove?{}:externalAccountInput(form);
+    let legacy:LegacyAccountFields|undefined;
+    if(id&&!remove){
+      const previous=await client.from('external_accounts').select('category,department,sub_manager,payment_method').eq('id',id).maybeSingle();
+      if(previous.error){const reference=logExternalAccountError('load-before-update',previous.error);return {success:false,message:externalAccountErrorMessage(previous.error,reference)};}
+      if(!previous.data)throw new Error('계정을 찾을 수 없습니다. 목록을 새로고침해주세요.');
+      legacy=previous.data as LegacyAccountFields;
+    }
+    const input = remove?{}:externalAccountInput(form,legacy);
     const password = String(form.get('password') ?? '');
     if (password.length>4096) throw new Error('비밀번호는 4096자 이하로 입력해주세요.');
     if(!remove&&!id&&!password)throw new Error('신규 계정의 비밀번호를 입력해주세요.');

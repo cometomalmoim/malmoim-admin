@@ -12,7 +12,7 @@ function actions({access='admin',master=false,rpcError=null}={}){
   const mocks={
     'next/cache':{revalidatePath:path=>calls.push(['refresh',path])},
     '@/lib/auth':{getAdminAccess:async()=>({status:access})},
-    '@/lib/supabase/server':{createClient:async()=>({rpc:async(name,input)=>{calls.push([name,input]);return name==='external_account_master'?{data:master}:rpcError?{error:rpcError}:{data:'11111111-1111-4111-8111-111111111111'};}})},
+    '@/lib/supabase/server':{createClient:async()=>({from:()=>({select:()=>({eq:()=>({maybeSingle:async()=>({data:{category:'design',department:'Legacy department',sub_manager:null,payment_method:'Legacy card'}})})})}),rpc:async(name,input)=>{calls.push([name,input]);return name==='external_account_master'?{data:master}:rpcError?{error:rpcError}:{data:'11111111-1111-4111-8111-111111111111'};}})},
     '@/lib/external-account-crypto':{encryptAccountPassword:()=> 'encrypted-test-ciphertext',decryptAccountPassword:()=> 'synthetic-revealed-password'},
     '@/lib/external-account-types':{accountCategories:{design:'디자인'}},
     '@/lib/external-account-input':accountInput,
@@ -42,6 +42,8 @@ test('Staff action allows new account creation and refresh without a Master chec
 test('Staff action edits an existing account without a Master check',async()=>{
   const a=actions();assert.equal((await a.saveExternalAccount(form('11111111-1111-4111-8111-111111111111'))).success,true);
   assert.ok(a.calls.some(([name])=>name==='manage_external_account'));assert.ok(!a.calls.some(([name])=>name==='external_account_master'));
+  const input=a.calls.find(([name])=>name==='manage_external_account')[1].p_input;
+  assert.equal(input.category,'design');assert.equal(input.department,'Legacy department');assert.equal(input.payment_method,'Legacy card');
 });
 test('Staff action still blocks deletion',async()=>{
   const a=actions();const result=await a.saveExternalAccount(form('11111111-1111-4111-8111-111111111111'),true);
