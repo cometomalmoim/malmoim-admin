@@ -63,6 +63,12 @@ export class SigningParticipantAuth{
   await this.link(token);const session=randomBytes(32).toString('hex');link.verified=true;link.challenge=undefined;
   this.store.sessions.set(hash(session),{linkHash:tokenHash,expires:Math.min(link.expires,this.clock()+developmentAuthPolicy.sessionMs),used:false});return{session};
  });}
+ async authorize(requestId:string,session:string){return this.run(async()=>{
+  if(!uuid(requestId)||typeof session!=='string'||!/^[0-9a-f]{64}$/.test(session))throw deny();
+  const s=this.store.sessions.get(hash(session)),l=s&&this.store.links.get(s.linkHash);
+  if(!s||s.used||s.expires<=this.clock()||!l||l.requestId!==requestId.toLowerCase()||this.store.active.get(l.requestId)!==s.linkHash)throw deny();
+  const r=await this.current(l.requestId);if(signingAuthBinding(r)!==l.binding)throw deny();return{requestId:r.id};
+ });}
  async submit(requestId:string,session:string,operationId:string,payloadHash:string){return this.run(async()=>{
   if(!uuid(requestId)||typeof session!=='string'||!/^[0-9a-f]{64}$/.test(session)||typeof operationId!=='string'||!/^[a-zA-Z0-9-]{8,80}$/.test(operationId)||typeof payloadHash!=='string'||!/^[0-9a-f]{64}$/.test(payloadHash))throw deny();
   const s=this.store.sessions.get(hash(session)),l=s&&this.store.links.get(s.linkHash);

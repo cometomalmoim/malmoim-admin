@@ -2,6 +2,8 @@ This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-
 
 ## Getting Started
 
+외부 서비스 계정의 로컬 암호화 키는 `npm run setup:external-accounts`로 설정합니다. 기존 `.env.local`의 Supabase 설정과 유효한 키는 보존하고, 키 값을 출력하지 않습니다. 설정 후 개발 서버를 재시작하세요. 자세한 적용 순서와 운영 환경 키 설정은 [외부 계정 설정 가이드](docs/external-accounts.md)를 확인하세요. 이 기능은 Next.js 서버에서 암호화하므로 Supabase Vault, Edge Functions Secret 또는 `ALTER DATABASE ... encryption_key` SQL은 필요하지 않습니다.
+
 First, run the development server:
 
 ```bash

@@ -43,6 +43,11 @@ export const adminGroups = [
         "slug": "certificates",
         "title": "수료증 관리",
         "description": "공통 템플릿과 전체 발급 내역을 관리합니다."
+      },
+      {
+        "slug": "esign-demo",
+        "title": "전자서명 · 개발 시연",
+        "description": "가상 데이터로 PDF 편집과 서명 현황을 확인합니다. 실제 발송·영구 저장은 없습니다."
       }
     ]
   },
@@ -73,7 +78,7 @@ export const adminGroups = [
       {
         "slug": "external-accounts",
         "title": "외부 서비스 계정",
-        "description": "외부 서비스의 계정 정보와 담당자를 정리합니다. 비밀번호는 다루지 않습니다."
+        "description": "외부 서비스 계정, 담당자와 구독을 안전하게 관리합니다."
       },
       {
         "slug": "internal-board",

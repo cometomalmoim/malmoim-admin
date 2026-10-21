@@ -101,3 +101,14 @@ test("ordinary accounts still require admin_users registration", async () => {
   });
   assert.equal((await getAdminAccess()).status, "denied");
 });
+
+test("member login returns only to a whitelisted board route in the selected language", async () => {
+  const api = actions({ signInWithPassword: async () => ({ error: null }) });
+  const data = form(); data.set("locale", "en"); data.set("returnTo", "/board/new");
+  await assert.rejects(api.memberLogin({}, data), error => error instanceof Redirect && error.path === "/en/board/new");
+  for (const value of ["https://evil.test", "//evil.test", "/admin", "/login"]) {
+    data.set("returnTo", value);
+    await assert.rejects(api.memberLogin({}, data), error => error instanceof Redirect && error.path === "/en");
+  }
+  await assert.rejects(api.login({}, data), error => error instanceof Redirect && error.path === "/admin");
+});
