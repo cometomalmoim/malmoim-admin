@@ -82,3 +82,35 @@ UI 개편 회귀 검증: `node --test tests/external-account-panel.test.mjs test
 상세 폼은 서비스명/URL → ID/새 비밀번호 → 담당자/갱신 알림 → 결제 주기/금액 → 통화/결제일 순서의 2열이며 메모는 전체 폭입니다. 단일 입력 높이는 34px, 매우 좁은 화면에서는 한 열로 전환합니다. 조회 모드는 비활성 입력을 유지하고 수정 모드 하단에 계정 삭제·저장·취소를 표시합니다.
 
 검증: `node tests/external-account-admin-delete-db.mjs`는 045→046 반복 적용, Staff/Admin/Master 삭제 및 감사 보존, 비관리자 차단, 비활동 담당자 신규 연결 차단을 검증합니다. 과거 정책 DB 테스트는 해당 마이그레이션 시점의 Master 삭제 제한을 계속 검증합니다.
+
+## 프로덕션 배포 설정과 오류 진단
+
+키는 `src/lib/external-account-key.mjs`의 `resolveExternalAccountKey()`가 **Next.js 서버 실행 시** `process.env.EXTERNAL_ACCOUNTS_ENCRYPTION_KEY`에서 읽습니다. `src/lib/external-account-crypto.ts`의 암호화/복호화가 같은 함수를 사용합니다. 단수형 `EXTERNAL_ACCOUNT_ENCRYPTION_KEY`, `ACCOUNT_SECRET_KEY`, Supabase Vault와 Edge Functions Secret은 조회하지 않습니다. 키를 `next.config`의 공개 env 설정이나 클라이언트 변수로 옮기지 마세요.
+
+### 배포 서버의 필수 설정
+
+- `EXTERNAL_ACCOUNTS_ENCRYPTION_KEY`: 32바이트를 표현하는 정확히 64자리 hex(0–9, a–f). 앞뒤 공백은 제거하지만 base64, 접두사 `0x`, 따옴표를 값에 포함하면 안 됩니다.
+- `NEXT_PUBLIC_SUPABASE_URL`: 실제 배포 대상 프로젝트 URL.
+- `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`: 같은 프로젝트의 publishable key. 암호화 키와 별개입니다. 이 기능에 service-role key는 필요하지 않습니다.
+
+기존 암호문이 있으면 **그 데이터를 암호화한 기존 키를 사용**해야 합니다. `.env.local`에서 유효하게 설정한 키가 우선이며, 개발 환경에서 변수를 사용하지 않았다면 `.env.external-accounts.key`가 원본입니다. 두 파일은 gitignored 상태이므로 Git merge나 Next.js 빌드 성공만으로 운영 서버에 전달되지 않습니다. 같은 DB를 사용하는 개발·Preview·Production 인스턴스는 동일한 키를 사용해야 합니다.
+
+### Vercel 설정 순서
+
+1. 실제 어드민 도메인이 연결된 Vercel 프로젝트에서 Settings → Environment Variables를 엽니다.
+2. `EXTERNAL_ACCOUNTS_ENCRYPTION_KEY` 이름으로 기존 키를 비밀 값으로 등록하고 Production 범위를 선택합니다. 가능한 경우 Sensitive를 활성화합니다. Preview가 같은 DB를 사용하면 Preview 범위에도 동일한 키를 등록합니다.
+3. Supabase URL과 publishable key가 올바른 프로젝트를 가리키는지 확인합니다.
+4. Production을 다시 배포하고 Ready 상태가 된 새 배포가 실제 도메인에 연결됐는지 확인합니다. 기존 배포에는 환경 변수 수정이 반영되지 않습니다.
+5. 해당 배포의 서버 Runtime/Function Logs에서 아래 메시지가 더 이상 발생하지 않는지 확인하고, 기존 계정의 비밀번호 보기와 새 계정 저장을 확인합니다. 키나 비밀번호를 로그로 출력하지 마세요.
+
+다른 호스팅 플랫폼도 Next.js Node.js 서버 프로세스의 비밀 환경 변수에 같은 이름을 설정한 뒤 서버를 재시작하거나 재배포합니다. 이 프로젝트의 암호화는 DB 내부가 아니라 Next.js에서 실행되므로 Vault Secret이나 SQL `ALTER DATABASE`만 설정해서는 해결되지 않습니다.
+
+공식 문서: [Vercel 환경 변수 관리](https://vercel.com/docs/environment-variables/managing-environment-variables), [Sensitive 환경 변수](https://vercel.com/docs/environment-variables/sensitive-environment-variables).
+
+### 오류별 구분
+
+- 누락/빈 값: 서버 로그에 `[external-accounts] EXTERNAL_ACCOUNTS_ENCRYPTION_KEY: missing (undefined 또는 empty); 프로덕션 환경 변수 [EXTERNAL_ACCOUNTS_ENCRYPTION_KEY]이 설정되지 않았습니다.`와 배포 설정 안내가 남습니다. 화면에도 변수명과 재배포 안내를 표시합니다. 운영에서는 로컬 키 파일을 읽거나 임의 키를 생성하지 않습니다.
+- 형식 오류: 서버 로그에 `invalid format`과 64자리 hex 요구 조건을 기록하고 화면에도 형식 오류를 표시합니다. 잘못된 값 자체는 기록하지 않습니다.
+- 유효한 형식인데 기존 비밀번호만 복호화 실패: 기존 암호화 키와 배포 키가 다를 수 있습니다. 기존 키 백업과 DB 연결 대상을 확인하세요. 키를 새로 생성하거나 기존 암호문을 덮어쓰면 복구가 어려워집니다.
+
+이 변경은 키 누락을 안전한 기본 키로 우회하지 않습니다. 정상 운영 복구에는 배포 환경에 기존 키를 등록하는 절차가 필요합니다. 새 SQL 마이그레이션은 필요하지 않습니다.

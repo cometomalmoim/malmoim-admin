@@ -49,3 +49,21 @@ test('initializer preserves other local settings and is idempotent without print
   const second=run();assert.equal(second.status,0,second.stderr);assert.equal(readFileSync(join(path,'.env.local'),'utf8'),configured);
   assert.ok(existsSync(join(path,EXTERNAL_ACCOUNT_LOCAL_KEY_FILE)));assert.ok(!second.stdout.includes(value));
 });
+
+for(const value of [undefined,'','  \n  '])test(`production missing/blank key reports exact name without a local fallback (${JSON.stringify(value)})`,t=>{
+ const path=directory(t);const messages=[];
+ const env={NODE_ENV:'production',EXTERNAL_ACCOUNTS_ENCRYPTION_KEY:value,EXTERNAL_ACCOUNT_ENCRYPTION_KEY:'private-wrong-alias'};
+ assert.throws(()=>resolveExternalAccountKey({env,directory:path,report:message=>messages.push(message)}),/EXTERNAL_ACCOUNTS_ENCRYPTION_KEY.*설정되지 않았습니다/);
+ assert.match(messages[0],/프로덕션 환경 변수 \[EXTERNAL_ACCOUNTS_ENCRYPTION_KEY\]이 설정되지 않았습니다/);
+ assert.match(messages[0],value===undefined?/undefined/:/empty/);
+ assert.ok(!messages[0].includes('private-wrong-alias'));
+ assert.equal(existsSync(join(path,EXTERNAL_ACCOUNT_LOCAL_KEY_FILE)),false);
+});
+
+test('malformed production key returns actionable format error without exposing its value',t=>{
+ const messages=[];const invalid='private-malformed-key';
+ assert.throws(()=>resolveExternalAccountKey({env:{NODE_ENV:'production',EXTERNAL_ACCOUNTS_ENCRYPTION_KEY:invalid},directory:directory(t),report:message=>messages.push(message)}),error=>{
+  assert.match(error.message,/EXTERNAL_ACCOUNTS_ENCRYPTION_KEY.*64자리 hex/);assert.ok(!error.message.includes(invalid));return true;
+ });
+ assert.ok(!messages.join('').includes(invalid));
+});
