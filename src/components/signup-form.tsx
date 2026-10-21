@@ -3,7 +3,9 @@ import Link from "next/link";
 import { useRef, useState, type FormEvent, type ReactNode } from "react";
 import { getCallingCodeOptions, getForeignLanguageOptions, GENDERS, KOREAN_LEVELS, ENGLISH_LEVELS, FOREIGN_LEVELS, SIGNUP_RULES } from "@/lib/signup-options";
 import { signup } from "@/app/actions/member-registration";
-import { readSignupForm, validateSignup, type SignupErrors } from "@/lib/signup-validation";
+import { readSignupForm, validateSignup, adultBirthDateLimit,type SignupErrors } from "@/lib/signup-validation";
+import {SignupLegalNotice} from "./signup-legal-notice";
+import type {MemberLegalPublication} from "@/lib/member-legal";
 import { memberText } from "@/lib/member-messages";
 import { localizedPublicPath } from "@/lib/public-locale";
 import type { PublicLocale } from "@/lib/public-content";
@@ -19,9 +21,9 @@ function Field({ id, label, error, hint, required, children }: {
   </div>;
 }
 
-export function SignupForm({ countries, today, accountEmail = null, registrationEnabled = false, locale = "ko" }: {
+export function SignupForm({ countries, today, accountEmail = null, registrationEnabled = false, locale = "ko",legal=null }: {
   countries: { code: string; label: string }[]; today: string; accountEmail?: string | null;
-  registrationEnabled?: boolean; locale?: PublicLocale;
+  registrationEnabled?: boolean; locale?: PublicLocale;legal?:MemberLegalPublication|null;
 }) {
   const t = (text: string) => memberText(locale, text);
   const [errors, setErrors] = useState<SignupErrors>({});
@@ -45,7 +47,7 @@ export function SignupForm({ countries, today, accountEmail = null, registration
     setMessage("");
     try {
       const formData = new FormData(event.currentTarget);
-      const result = validateSignup(readSignupForm(formData), { today, authenticated: accountEmail !== null, locale });
+      const result = validateSignup(readSignupForm(formData), { today, authenticated: accountEmail !== null, locale,requireTerms:registrationEnabled,requireConsent:registrationEnabled&&legal?.collection.basis==="consent" });
       setErrors(result.errors);
       await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
       if (Object.keys(result.errors).length) {
@@ -69,10 +71,14 @@ export function SignupForm({ countries, today, accountEmail = null, registration
 
   return <form className="signup-form" noValidate onSubmit={checkInput} aria-busy={checking}>
     <input type="hidden" name="locale" value={locale} />
-    <p className="signup-required-note">{t("계정·한국어·영어 정보는 입력이 필요하며 추가 외국어는 선택입니다. 기본 정보의 필수·선택 기준은 운영 정책 확정 전입니다.")}</p>
+    <p className="signup-required-note">{t("별표(*)가 있는 항목을 입력해 주세요. 추가 외국어는 선택입니다.")}</p>
     <fieldset disabled={checking} className="signup-section">
       <legend><span>SECTION 01</span>{t("계정 정보")}</legend>
       <p className="signup-section-intro">{t("이메일을 로그인 ID로 사용합니다.")}</p>
+      <Field id="nickname" label={t("닉네임")} error={errors.nickname} required hint={t("게시판과 커뮤니티 활동에서 표시되는 이름입니다.")}>
+       <input id="nickname" name="nickname" autoComplete="nickname" required maxLength={40} placeholder={t("사용할 닉네임을 입력해 주세요.")} aria-required="true" aria-invalid={!!errors.nickname} aria-describedby={described("nickname",true)}/>
+       <p className="signup-hint">{t("한글·영문·숫자·밑줄 2~20자. 닉네임 중복은 회원가입 저장 시 최종 확인합니다.")}</p>
+      </Field>
       <Field id="email" label={t("이메일")} error={errors.email} required>
         <input id="email" name="email" type="email" autoComplete="email" defaultValue={accountEmail ?? ""}
           readOnly={accountEmail !== null} maxLength={254} aria-required="true" aria-invalid={!!errors.email} aria-describedby={described("email")} />
@@ -134,9 +140,9 @@ export function SignupForm({ countries, today, accountEmail = null, registration
             <option value="">{t("응답 선택")}</option>{GENDERS.map(option => <option key={option.value} value={option.value}>{t(option.label)}</option>)}
           </select>
         </Field>
-        <Field id="birthDate" label={t("생년월일")} error={errors.birthDate}>
-          <input id="birthDate" name="birthDate" type="date" autoComplete="bday" min="0001-01-01" max={today}
-            aria-invalid={!!errors.birthDate} aria-describedby={described("birthDate")} />
+        <Field id="birthDate" label={t("생년월일")} error={errors.birthDate} required hint={t("만 19세 이상만 가입할 수 있습니다. 입력한 날짜 확인은 본인·연령 인증을 의미하지 않습니다.")}>
+          <input id="birthDate" name="birthDate" type="date" autoComplete="bday" required aria-required="true" min="0001-01-01" max={adultBirthDateLimit(today)}
+            aria-invalid={!!errors.birthDate} aria-describedby={described("birthDate",true)} />
         </Field>
       </div>
     </fieldset>
@@ -186,15 +192,8 @@ export function SignupForm({ countries, today, accountEmail = null, registration
         onClick={() => { const id = nextId.current++; setRows(current => current.length < SIGNUP_RULES.maxForeignLanguages ?
           [...current, { id, language: "", level: "" }] : current); setErrors({}); }}>{t("+ 외국어 추가")}</button>
     </fieldset>
-    <section className="signup-consent" aria-labelledby="signup-consent-title">
-      <h2 id="signup-consent-title">{t("개인정보 수집·이용 안내")}</h2>
-      <dl><div><dt>{t("수집 목적")}</dt><dd>{t("확정 대기")}</dd></div><div><dt>{t("보관 기간")}</dt><dd>{t("확정 대기")}</dd></div></dl>
-      <p className="signup-hint">{t("안내 문구와 필수·선택 동의 범위를 확인 중입니다. 확정 전에는 동의를 받거나 정보를 저장하지 않습니다.")}</p>
-      <label className="signup-consent-label"><input type="checkbox" name="privacyConsent" disabled />{t("개인정보 수집·이용 동의 — 문구 확정 대기")}</label>
-      <span className="signup-policy-pending">{t("개인정보 처리방침 링크 · 준비 중")}</span>
-    </section>
+    <SignupLegalNotice legal={legal} enabled={registrationEnabled} pending={checking} locale={locale} errors={errors}/>
     <div className="signup-submit">
-      <p>{t("현재는 입력 형식만 확인할 수 있습니다. 계정이 생성되거나 정보가 저장되지 않습니다.")}</p>
       <button type="submit" className="primary" disabled={checking}>{t(checking ? "확인 중…" : "입력 내용 확인")}</button>
       {message && <p className="notice" role="status">{message}</p>}
       <Link className="preview-link" href={localizedPublicPath("/auth/login", locale)}>{t("이미 계정이 있나요? 로그인")}</Link>
