@@ -26,8 +26,8 @@ async function masterClient() {
 }
 export async function saveExternalAccount(form: FormData, remove = false) {
   try {
-    // Creation is available to every registered admin; existing records remain master-only.
-    const client = form.get('id') || remove ? await masterClient() : await adminClient();
+    // Initial operation: all admins may create/edit; deletion remains master-only.
+    const client = remove ? await masterClient() : await adminClient();
     const input = Object.fromEntries(['service_name','service_url','login_id','category','department','primary_manager','sub_manager','billing_cycle','payment_method','amount','currency','next_billing_date','renewal_notice_days','notes'].map(k => [k, String(form.get(k) ?? '').trim()]));
     if (!remove) {
       const url = new URL(input.service_url);
@@ -42,40 +42,14 @@ export async function saveExternalAccount(form: FormData, remove = false) {
     return { success: true, id: data as string, message: remove ? '삭제했습니다.' : '저장했습니다.' };
   } catch (e) { return {success: false, message: e instanceof Error ? e.message : '처리하지 못했습니다.'}; }
 }
-export async function revealExternalAccount(id: string, action: 'view' | 'copy', code: string) {
+export async function revealExternalAccount(id: string, action: 'view' | 'copy') {
   try {
-    if (!['view','copy'].includes(action) || !/^\d{6}$/.test(code)) throw new Error('인증기의 6자리 코드를 입력해주세요.');
-    const client = await masterClient();
-    const factors = await client.auth.mfa.listFactors();
-    const factor = factors.data?.totp.find(f => f.status === 'verified');
-    if (!factor) throw new Error('Supabase MFA 인증기를 먼저 등록해주세요. 설정 안내를 확인해주세요.');
-    const verified = await client.auth.mfa.challengeAndVerify({factorId: factor.id, code});
-    if (verified.error) throw new Error('인증 코드가 만료되었거나 올바르지 않습니다.');
+    if (!validUuid(id) || !['view','copy'].includes(action)) throw new Error('계정과 열람 작업을 확인해주세요.');
+    const client = await adminClient();
     const result = await client.rpc('reveal_external_account', {p_id: id, p_action: action});
-    if (result.error || typeof result.data !== 'string') throw new Error('열람 권한 또는 인증을 확인해주세요. 코드는 한 번만 사용할 수 있습니다.');
+    if (result.error || typeof result.data !== 'string') throw new Error('비밀번호를 열람하지 못했습니다. 관리자 로그인과 DB 설정을 확인해주세요.');
     const password = decryptAccountPassword(result.data);
     revalidatePath('/admin/external-accounts');
-    return {password, message: '인증과 열람 기록 저장을 완료했습니다.'};
+    return {password, message: '열람 기록을 저장했습니다.'};
   } catch(e) { return { message: e instanceof Error ? e.message : '열람하지 못했습니다.' }; }
-}
-export async function enrollAccountAuthenticator() {
-  try {
-    const client = await masterClient();
-    const factors = await client.auth.mfa.listFactors();
-    if (factors.error) throw new Error('인증기 목록을 확인하지 못했습니다.');
-    if (factors.data.totp.some(f=>f.status==='verified')) throw new Error('이미 등록된 인증기를 사용해주세요.');
-    for (const factor of factors.data.all.filter(f=>f.factor_type==='totp'&&f.status==='unverified')) await client.auth.mfa.unenroll({factorId:factor.id});
-    const result = await client.auth.mfa.enroll({factorType:'totp',friendlyName:'외부 서비스 계정'});
-    if(result.error) throw new Error('인증기를 등록하지 못했습니다.');
-    return {factorId:result.data.id,qr:result.data.totp.qr_code,message:'인증기로 QR을 스캔하고 6자리 코드를 입력하세요.'};
-  } catch(e) {return {message:e instanceof Error?e.message:'등록하지 못했습니다.'};}
-}
-export async function verifyAccountAuthenticator(factorId:string,code:string) {
-  try {
-    const client=await masterClient();
-    if(!/^\d{6}$/.test(code)) throw new Error('6자리 인증 코드를 입력하세요.');
-    const result=await client.auth.mfa.challengeAndVerify({factorId,code});
-    if(result.error) throw new Error('인증 코드를 확인해주세요.');
-    return {success:true,message:'인증기를 등록했습니다. 다음 코드로 열람해주세요.'};
-  } catch(e) {return {success:false,message:e instanceof Error?e.message:'인증하지 못했습니다.'};}
 }

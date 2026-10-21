@@ -11,9 +11,9 @@ function actions({access='admin',master=false}={}){
     'next/cache':{revalidatePath:path=>calls.push(['refresh',path])},
     '@/lib/auth':{getAdminAccess:async()=>({status:access})},
     '@/lib/supabase/server':{createClient:async()=>({rpc:async(name,input)=>{calls.push([name,input]);return name==='external_account_master'?{data:master}:{data:'11111111-1111-4111-8111-111111111111'};}})},
-    '@/lib/external-account-crypto':{encryptAccountPassword:()=> 'encrypted-test-ciphertext'},
+    '@/lib/external-account-crypto':{encryptAccountPassword:()=> 'encrypted-test-ciphertext',decryptAccountPassword:()=> 'synthetic-revealed-password'},
     '@/lib/external-account-types':{accountCategories:{design:'디자인'}},
-    '@/lib/resource-validation':{},
+    '@/lib/resource-validation':{validUuid:value=>/^[a-f\d-]{36}$/.test(value)},
   };
   const {outputText}=ts.transpileModule(readFileSync('src/app/actions/external-accounts.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}});
   const loaded={exports:{}};
@@ -35,9 +35,22 @@ test('Staff action allows new account creation and refresh without a Master chec
   assert.ok(!Object.hasOwn(input.p_input,'created_by'));
   assert.ok(a.calls.some(([name])=>name==='refresh'));
 });
-for(const remove of [false,true])test(`Staff action blocks ${remove?'delete':'edit'} before mutation`,async()=>{
-  const a=actions();const result=await a.saveExternalAccount(form('11111111-1111-4111-8111-111111111111'),remove);
+test('Staff action edits an existing account without a Master check',async()=>{
+  const a=actions();assert.equal((await a.saveExternalAccount(form('11111111-1111-4111-8111-111111111111'))).success,true);
+  assert.ok(a.calls.some(([name])=>name==='manage_external_account'));assert.ok(!a.calls.some(([name])=>name==='external_account_master'));
+});
+test('Staff action still blocks deletion',async()=>{
+  const a=actions();const result=await a.saveExternalAccount(form('11111111-1111-4111-8111-111111111111'),true);
   assert.equal(result.success,false);assert.ok(!a.calls.some(([name])=>name==='manage_external_account'));
+});
+for(const kind of ['view','copy'])test(`Staff action reveals for ${kind} without MFA APIs or a code`,async()=>{
+  const a=actions();const result=await a.revealExternalAccount('11111111-1111-4111-8111-111111111111',kind);
+  assert.equal(result.password,'synthetic-revealed-password');
+  assert.ok(a.calls.some(([name,input])=>name==='reveal_external_account'&&input.p_action===kind));
+  assert.ok(!a.calls.some(([name])=>name==='external_account_master'));
+});
+test('non-admin cannot request password decryption',async()=>{
+  const a=actions({access:'denied'});assert.equal((await a.revealExternalAccount('11111111-1111-4111-8111-111111111111','view')).password,undefined);assert.equal(a.calls.length,0);
 });
 test('ordinary signed-in users cannot create through the action',async()=>{
   const a=actions({access:'denied'});assert.equal((await a.saveExternalAccount(form())).success,false);assert.equal(a.calls.length,0);

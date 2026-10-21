@@ -1,27 +1,40 @@
-# 외부 서비스 계정 관리 설정
+# 외부 서비스 계정 관리: 초기 운영 정책
 
-1. Supabase SQL Editor에서 `018_schedule_management.sql`과 관리자 테이블이 적용된 환경에 `supabase/022_external_accounts.sql`, `supabase/043_external_account_creation.sql` 순서로 실행합니다. 이미 022가 적용된 환경에는 043만 추가 실행합니다. 기존 역할을 자동으로 Master로 승격하지 않습니다.
-2. 기존 `admin_users`에 등록된 모든 관리자는 외부 계정 역할 등록 없이도 새 계정을 생성할 수 있습니다. SQL Editor에서 Master 역할 및 부서별 조회 권한을 명시적으로 등록합니다. 앱 사용자는 역할 테이블을 수정할 수 없습니다.
+현재 정책은 어드민에 등록된 모든 Admin/Staff에게 전체 계정 조회·등록·수정 및 MFA 없는 비밀번호 보기·복사를 허용합니다. 일반 회원 로그인이나 익명 사용자는 접근할 수 없습니다. 삭제는 기존 Master 전용 정책을 유지합니다.
 
-```sql
-insert into public.external_account_members(user_id, role, department)
-values ('실제 관리자 UUID', 'master', '회장단');
--- 일반 운영진은 role='staff'와 실제 부서명을 지정합니다.
-```
+| 작업 | Admin/Staff | Master |
+|---|---|---|
+| 모든 계정 조회, 신규 등록, 기존 계정 수정 | 허용 | 허용 |
+| 비밀번호 보기·복사 | MFA 없이 허용, 매번 감사 기록 | 동일 |
+| 계정 삭제 | 불가 | 허용, 감사 기록 보존 |
+| 암호문 직접 조회, 테이블 직접 쓰기·감사 로그 조작 | 불가 | 불가 |
 
-3. 서버 환경에 `EXTERNAL_ACCOUNTS_ENCRYPTION_KEY`를 설정합니다. 암호학적 난수 32바이트의 64자리 hex 문자열이며 `NEXT_PUBLIC_` 접두사를 사용하면 안 됩니다. 예: `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. 키는 비밀 관리 저장소에 별도 백업합니다. 키 교체 시 기존 비밀번호를 이전 키로 복호화 후 새 키로 재암호화하는 별도 운영 절차가 필요합니다. 키를 단순 교체하면 기존 비밀번호를 열 수 없습니다.
-4. Master 사용자는 상세 패널의 ‘MFA 인증기 최초 등록’에서 인증기를 연결합니다. 열람/복사마다 새로운 TOTP 코드를 입력합니다. 서버의 MFA 확인과 DB의 AAL2·60초 이내 TOTP 확인을 모두 통과해야 합니다. DB는 동일 인증 시각을 한 번만 소비하여 세션 재사용을 차단합니다. Supabase가 인증 코드 시도 제한을 적용합니다. [Supabase MFA](https://supabase.com/docs/guides/auth/auth-mfa/totp), [JWT claims](https://supabase.com/docs/guides/auth/jwt-fields).
+## 적용 순서
 
-모든 관리자/Staff는 새 계정을 등록할 수 있습니다. 등록자는 `created_by`에 DB의 `auth.uid()`로 자동 기록되며 클라이언트가 지정하거나 변경할 수 없습니다. 기존 계정의 등록자는 생성 감사 기록에서 복원하며 증거가 없는 행은 NULL로 유지합니다. 일반 관리자는 본인이 등록한 계정, Staff는 추가로 같은 부서 또는 담당자로 지정된 계정의 메타데이터와 감사 기록을 조회할 수 있습니다. 기존 계정 수정·삭제와 비밀번호 열람·복사는 Master만 가능합니다. 인증 키와 암호문은 브라우저의 목록/폼에 전달하지 않습니다. 열람된 비밀번호는 15초 후 또는 탭 이탈 시 화면에서 숨깁니다. 클립보드는 OS 관리 영역이며 자동 삭제하지 않습니다. 복사 기록은 비밀번호 전달 시점에 남으므로 브라우저의 클립보드 쓰기 실패도 기록에 포함될 수 있습니다.
+1. 관리자 및 `018_schedule_management.sql` 적용 환경에 `022_external_accounts.sql` → `043_external_account_creation.sql` → `044_external_account_initial_access.sql` 순서로 실행합니다. 기존 022/043 설치 환경에는 044만 추가 적용합니다. `022_board_idea_category.sql`은 별개입니다.
+2. 서버에 `EXTERNAL_ACCOUNTS_ENCRYPTION_KEY`를 설정합니다. 암호학적 난수 32바이트의 64자리 hex 비밀 값이며 `NEXT_PUBLIC_` 접두사를 사용하지 않습니다. 예: `node -e "console.log(require('node:crypto').randomBytes(32).toString('hex'))"`. 키를 별도 비밀 저장소에 백업해야 합니다. 단순 교체하면 기존 비밀번호를 열 수 없으며 이전 키로 복호화·재암호화하는 별도 절차가 필요합니다.
+3. 관리자 기준은 기존 `admin_users`입니다. 사용자를 Master로 자동 승격하거나 기존 인증기를 삭제하지 않습니다. `external_account_members`는 담당자 후보 및 삭제 권한에 계속 사용하며 모든 관리자가 담당자 후보를 조회할 수 있습니다.
 
-`external_account_renewals` 뷰는 `external_account_id`, `title`, `starts_on`, `assignee_id`, `renewal_notice_days`, `amount`, `currency`를 제공하며 원본 테이블 RLS가 그대로 적용됩니다. 추후 스케줄 연동에서 이 뷰를 사용하면 됩니다. 현재 스케줄에 일정을 자동 생성하지 않습니다. 갱신일은 운영진이 실제 구독 상태에 맞게 갱신합니다. 결제 수단에는 카드 별칭/끝 4자리만 저장하세요.
+## UI와 감사 기록
 
-감사 기록은 계정 삭제 후에도 유지하며 비밀번호 원문·암호문을 포함하지 않습니다. 상세 패널에는 선택 계정의 최근 100건을 표시합니다. 더 오래된 기록은 DB에서 Master가 조회할 수 있습니다. 운영 DB에 이 스크립트를 자동 실행하지 않습니다.
+4:6 Split-View의 검색·카테고리 필터·갱신일 경고·담당자 선택을 제공합니다. `+ 새 계정 등록`은 슬라이드오버를 엽니다. 성공 시 검색/필터를 초기화하고 새 계정을 선택해 재조회하며 실패 시 입력을 유지합니다. 저장 중에는 닫기를 차단합니다.
 
-검증: `node --test tests/external-accounts.test.mjs tests/external-account-registration.test.mjs tests/external-account-creation-actions.test.mjs`, `node tests/external-accounts-db.mjs`, `node tests/external-account-creation-db.mjs` (기존 `work/sql` PGlite 캐시 필요), `npm run lint`, `npx tsc --noEmit`, `npm run build`. 테스트는 합성 Staff/Admin 세션을 사용하며 실제 운영 로그인이나 DB를 변경하지 않습니다.
+비밀번호는 기본 마스킹하며 ‘보기’ 또는 ‘복사하기’를 누르면 추가 인증 없이 요청합니다. 서버와 DB에서 관리자 여부를 확인하고, DB가 열람 기록을 저장한 뒤 서버에서 복호화합니다. 원문·암호문은 일반 목록과 감사 로그에 포함하지 않습니다. 보기는 15초 후 또는 창 포커스 이탈 시 숨깁니다. 클립보드는 OS 관리 영역이므로 자동 삭제하지 않습니다. 브라우저의 복사 실패도 비밀번호 전달 시점에 기록된 copy 로그에 포함될 수 있습니다.
 
-상단 우측의 `+ 새 계정 등록`은 모든 관리자/Staff가 사용할 수 있는 등록 슬라이드오버를 엽니다. 등록에 성공하면 패널을 닫고 검색/필터를 초기화한 뒤 새 계정을 선택하여 목록을 갱신합니다. 실패하면 입력 내용을 유지합니다. Esc 또는 닫기로 취소할 수 있으며 저장 중에는 닫기를 차단합니다.
+`created_by`는 DB의 `auth.uid()`로 자동 기록하며 클라이언트 위조나 수정으로 바뀌지 않습니다. 감사 이력에는 작업자·시각·수정 전후 값·비밀번호 변경 여부가 남고 계정 삭제 후에도 보존됩니다. 직접 테이블 UPDATE는 계속 차단하며 감사 기록과 동시 수정 검사를 수행하는 RPC로만 수정합니다. UI는 계정별 최근 100건을 표시합니다.
 
-서비스 목록(24px)과 상세 제목(32px)의 아이콘은 서비스 URL의 공개 도메인만 Google Favicon Service에 전달하여 표시합니다. 경로·쿼리·로그인 정보는 전달하지 않습니다. URL 누락, 내부 주소 또는 이미지 로딩 실패 시 카테고리별 기본 아이콘을 표시합니다. 별도 DB 마이그레이션은 필요 없습니다.
+목록(24px)과 상세 제목(32px)의 파비콘은 공개 도메인만 Google Favicon Service에 전달합니다. 경로·쿼리·로그인 정보는 전달하지 않으며 URL 누락, 내부 주소 또는 이미지 오류 시 기본 아이콘을 표시합니다.
 
-등록 버튼은 계정이 없는 경우에도 상단 우측에 활성화됩니다. DB 조회 실패 시에는 비활성 버튼과 마이그레이션 설정 안내를 유지합니다. 일반 관리자 등록과 외부 계정 Master 등록은 별개이며, 새 정책은 기존 계정 수정·삭제 권한을 확대하지 않습니다.
+`external_account_renewals`는 갱신일·담당자·금액을 제공하는 스케줄 연동용 뷰입니다. 일정 자동 생성이나 알림 발송은 하지 않습니다. 결제 수단에는 카드 별칭/끝 4자리만 저장합니다.
+
+## 이전 정책 복원
+
+`supabase/rollback/044_external_account_initial_access.sql`은 데이터를 삭제하지 않고 043의 부서/담당자 조회 범위, Master 수정·열람, TOTP 인증 및 일회성 소비 정책을 복원합니다. SQL과 함께 044 도입 전 앱의 UI/서버 액션도 복원해야 합니다. 현재 앱은 MFA 코드를 입력받지 않으므로 DB만 복원하면 비밀번호 요청이 실패합니다. 기존 인증기와 `external_account_mfa_uses` 데이터는 유지합니다.
+
+## 검증
+
+`node --test tests/external-accounts.test.mjs tests/external-account-favicon.test.mjs tests/external-account-registration.test.mjs tests/external-account-creation-actions.test.mjs`
+
+`node tests/external-account-initial-access-db.mjs`는 022→043→044 설치, Staff/Admin 전체 조회·수정·MFA 없는 보기/복사, 감사 기록, 비관리자 차단, Master 전용 삭제, 동시 수정 차단, 등록자 유지, 이전 정책 복원과 044 재적용을 검사합니다. 기존 `work/sql` PGlite 캐시를 사용합니다. 022/043 당시의 권한은 기존 `external-accounts-db.mjs`, `external-account-creation-db.mjs`에서도 별도로 검증합니다.
+
+테스트는 합성 세션과 일회용 로컬 DB를 사용합니다. 실제 운영 로그인이나 운영 DB 변경은 수행하지 않습니다. 운영 적용 전 SQL 순서와 암호화 키 설정을 확인해야 합니다.

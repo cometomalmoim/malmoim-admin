@@ -43,5 +43,13 @@ test('database configuration failure retains registration action and shows setup
   const html=renderToStaticMarkup(await ExternalAccountsView({email:'synthetic@example.com'}));
   assert.match(html,/<button[^>]*disabled=""[^>]*>\+ 새 계정 등록<\/button>/);
   assert.match(html,/022_external_accounts.sql/);
-  assert.match(html,/external_account_members/);
+  assert.match(html,/044_external_account_initial_access.sql/);
+});
+test('Staff detail exposes editing and password buttons, keeps masking, and has no MFA form',()=>{
+  const account={id:'11111111-1111-4111-8111-111111111111',created_by:null,service_name:'Canva',service_url:'https://canva.com',login_id:'synthetic@example.com',category:'design',department:'다른 부서',primary_manager:null,sub_manager:null,billing_cycle:'none',payment_method:'',amount:0,currency:'KRW',next_billing_date:null,renewal_notice_days:7,notes:'',updated_at:'2026-10-21T00:00:00Z'};
+  const html=renderToStaticMarkup(React.createElement(ExternalAccountsWorkspace,{accounts:[account],members:[],logs:[],master:false,today:'2026-10-21'}));
+  assert.match(html,/<button[^>]*>보기<\/button>/);assert.match(html,/<button[^>]*>복사하기<\/button>/);
+  assert.match(html,/>계정 저장<\/button>/);assert.match(html,/••••••••/);
+  assert.doesNotMatch(html,/<fieldset[^>]*disabled/);
+  assert.doesNotMatch(html,/인증기|일회용 코드|Master Admin만|계정 삭제/);
 });
