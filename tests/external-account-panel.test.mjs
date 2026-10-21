@@ -56,10 +56,10 @@ for(const success of [false,true])test(`save ${success?'success returns to view'
 
 for(const confirmed of [false,true])test(`delete in edit mode requires confirmation (${confirmed})`,async()=>{
   const calls=[];let prompt='';
-  const h=harness('AccountDetail',{account,members:[],logs:[],master:true,pending:false,onSave:async(form,remove)=>{calls.push({form,remove});return true;}},{confirm:message=>{prompt=message;return confirmed;}});
-  assert.equal(button(h.render(),'삭제'),undefined);
+  const h=harness('AccountDetail',{account,members:[],logs:[],master:false,pending:false,onSave:async(form,remove)=>{calls.push({form,remove});return true;}},{confirm:message=>{prompt=message;return confirmed;}});
+  assert.equal(button(h.render(),'계정 삭제'),undefined);
   button(h.render(),'수정').props.onClick();const tree=h.render();
-  await button(tree,'삭제').props.onClick({currentTarget:{form:{}}});
+  await button(tree,'계정 삭제').props.onClick({currentTarget:{form:{}}});
   assert.equal(prompt,'정말로 이 계정 정보를 삭제하시겠습니까?');assert.equal(calls.length,confirmed?1:0);
   if(confirmed)assert.equal(calls[0].remove,true);
 });
@@ -81,7 +81,16 @@ test('successful deletion closes detail, refreshes list and announces success to
 });
 test('People profiles populate assignee options while legacy admins remain archival',()=>{
  const person='cccccccc-cccc-4ccc-8ccc-cccccccccccc';
- const h=harness('AccountDetail',{members:[{user_id:person,display_name:'피플 프로필'},{user_id:'old',display_name:'Legacy admin',legacy:true}],logs:[],master:false,pending:false,onSave:async()=>true});
+ const h=harness('AccountDetail',{members:[{user_id:person,display_name:'피플 프로필',active:true},{user_id:'archived',display_name:'비활동 운영진',active:false},{user_id:'old',display_name:'Legacy admin',legacy:true}],logs:[],master:false,pending:false,onSave:async()=>true});
  const select=nodes(h.render(),n=>n.type==='select'&&n.props.name==='manager_person_id')[0];
  assert.ok(select);const options=nodes(select,n=>n.type==='option');assert.equal(options.length,2);assert.equal(options[1].props.value,person);assert.equal(options[1].props.children,'피플 프로필');
+});
+
+test('edit form follows the six-row compact two-column field order',()=>{
+ const h=harness('AccountDetail',{account,members:[],logs:[],master:false,pending:false,onSave:async()=>true});
+ button(h.render(),'수정').props.onClick();const tree=h.render();
+ const fields=nodes(tree,n=>n.type==='fieldset')[0];assert.match(fields.props.className,/grid-cols-2/);
+ assert.deepEqual(nodes(fields,n=>['input','select','textarea'].includes(n.type)).map(n=>n.props.name),['service_name','service_url','login_id','password','manager_person_id','renewal_notice_days','billing_cycle','amount','currency','next_billing_date','notes']);
+ assert.ok(button(tree,'계정 삭제'));assert.ok(button(tree,'저장'));assert.ok(button(tree,'취소'));
+ const labels=nodes(fields,n=>n.type==='label');assert.equal(labels.filter(n=>n.props.className==='ea-full').length,1);
 });

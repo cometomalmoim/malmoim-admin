@@ -9,7 +9,7 @@ import {AccountRegistrationButton} from './account-registration-button';
 import './external-accounts.css';
 
 type SaveAccount=(form:FormData,remove:boolean)=>Promise<boolean>;
-export function ExternalAccountsWorkspace({accounts,members,logs,master,today}:{accounts:ExternalAccount[];members:AccountMember[];logs:AccountLog[];master:boolean;today:string}) {
+export function ExternalAccountsWorkspace({accounts,members,logs,today}:{accounts:ExternalAccount[];members:AccountMember[];logs:AccountLog[];today:string}) {
   const [registering,setRegistering]=useState(false);
   const [selected,setSelected]=useState('');
   const [search,setSearch]=useState('');
@@ -39,7 +39,7 @@ export function ExternalAccountsWorkspace({accounts,members,logs,master,today}:{
     finally {setPending(false);}
   }
   return <>
-    <div className="ea-toolbar"><span className="ops-tag">초기 운영 · 모든 관리자 조회·수정</span><span>{accounts.length}개 계정</span><AccountRegistrationButton allowed busy={pending} onClick={()=>{setMessage('');setRegistering(true);}}/></div>
+    <div className="ea-toolbar"><span className="ops-tag">초기 운영 · 모든 관리자 조회·수정·삭제</span><span>{accounts.length}개 계정</span><AccountRegistrationButton allowed busy={pending} onClick={()=>{setMessage('');setRegistering(true);}}/></div>
     <p role="status">{message}</p>
     {toast&&<div className="ea-toast" role="status">{toast}</div>}
     <div className="ea-split grid items-start gap-5">
@@ -56,7 +56,7 @@ export function ExternalAccountsWorkspace({accounts,members,logs,master,today}:{
         {!filtered.length&&<p className="ops-empty">조건에 맞는 계정이 없습니다.</p>}
       </aside>
       <section className="ops-panel ea-detail" aria-label="계정 상세">
-        {account?<AccountDetail key={account.id} account={account} members={members} logs={selectedLogs} master={master} pending={pending} onSave={save} onClose={closeDetail}/>:<p className="ops-empty">목록에서 계정을 선택하면 상세 정보가 표시됩니다.</p>}
+        {account?<AccountDetail key={account.id} account={account} members={members} logs={selectedLogs} pending={pending} onSave={save} onClose={closeDetail}/>:<p className="ops-empty">목록에서 계정을 선택하면 상세 정보가 표시됩니다.</p>}
       </section>
     </div>
     {registering&&<NewAccountDialog members={members} pending={pending} message={message} onClose={()=>setRegistering(false)} onSave={save}/>}
@@ -67,10 +67,10 @@ function NewAccountDialog({members,pending,message,onClose,onSave}:{members:Acco
   useEffect(()=>{const previous=document.activeElement instanceof HTMLElement?document.activeElement:null;dialog.current?.showModal();return()=>{if(previous?.isConnected)previous.focus();};},[]);
   return <dialog ref={dialog} className="ea-registration-dialog" aria-label="외부 서비스 계정 등록" aria-busy={pending} onClose={onClose} onCancel={event=>{if(pending)event.preventDefault();}}>
     <div className="ea-registration-close"><button type="button" disabled={pending} onClick={onClose} aria-label="등록 패널 닫기">닫기 ×</button></div>
-    <div className="ea-split ea-registration-form"><AccountDetail members={members} logs={[]} master={false} pending={pending} onSave={onSave}/><p role="status">{message}</p></div>
+    <div className="ea-split ea-registration-form"><AccountDetail members={members} logs={[]} pending={pending} onSave={onSave}/><p role="status">{message}</p></div>
   </dialog>;
 }
-export function AccountDetail({account,members,logs,master,pending,onSave,onClose}:{account?:ExternalAccount;members:AccountMember[];logs:AccountLog[];master:boolean;pending:boolean;onSave:SaveAccount;onClose?:()=>void}) {
+export function AccountDetail({account,members,logs,pending,onSave,onClose}:{account?:ExternalAccount;members:AccountMember[];logs:AccountLog[];pending:boolean;onSave:SaveAccount;onClose?:()=>void}) {
   const [draft,setDraft]=useState<ExternalAccount|null>(null);
   const [resetVersion,setResetVersion]=useState(0);
   const [secret,setSecret]=useState('');
@@ -114,21 +114,21 @@ export function AccountDetail({account,members,logs,master,pending,onSave,onClos
       if(await onSave(values,false)){setDraft(null);setResetVersion(value=>value+1);setSecret('');}
     }}>
       <input type="hidden" name="id" value={record?.id??''}/><input type="hidden" name="updated_at" value={record?.updated_at??''}/>
-      <fieldset disabled={!editing||pending} className="ea-fields"><legend>계정 정보</legend>
+      <fieldset disabled={!editing||pending} className="ea-fields grid grid-cols-2"><legend>계정 정보</legend>
         <label>서비스명<input name="service_name" required maxLength={120} defaultValue={record?.service_name??''}/></label>
         <label>서비스 접속 URL<input name="service_url" type="url" required maxLength={2000} placeholder="https://www.canva.com" defaultValue={record?.service_url??''}/></label>
         <label>계정 ID / 이메일<input name="login_id" required maxLength={254} defaultValue={record?.login_id??''}/></label>
-        <label>담당자<select name="manager_person_id" defaultValue={record?.manager_person_id||(record?.primary_manager?`legacy:${record.primary_manager}`:'')}><option value="">미지정</option>{record?.primary_manager&&!record.manager_person_id&&<option value={`legacy:${record.primary_manager}`}>기존 담당자: {members.find(m=>m.user_id===record.primary_manager)?.display_name??record.primary_manager}</option>}{members.filter(member=>!member.legacy).map(member=><option key={member.user_id} value={member.user_id}>{member.display_name}</option>)}</select></label>
-        {editing&&<label className="ea-full">{account?'새 비밀번호 (변경할 때만 입력)':'비밀번호'}<input name="password" type="password" required={!account} maxLength={4096} autoComplete="new-password"/></label>}
+        <label>{account?'새 비밀번호 (변경할 때만 입력)':'비밀번호'}<input name="password" type="password" disabled={!editing||pending} required={!account} maxLength={4096} autoComplete="new-password" placeholder={account?'변경할 때만 입력':''}/></label>
+        <label>담당자<select name="manager_person_id" defaultValue={record?.manager_person_id||(record?.primary_manager?`legacy:${record.primary_manager}`:'')}><option value="">미지정</option>{record?.manager_person_id&&!members.some(m=>m.user_id===record.manager_person_id&&m.active!==false)&&<option value={record.manager_person_id} disabled>기존 담당자 (비활동 · 변경 시 활동 프로필 선택)</option>}{record?.primary_manager&&!record.manager_person_id&&<option value={`legacy:${record.primary_manager}`} disabled>기존 담당자: {members.find(m=>m.user_id===record.primary_manager)?.display_name??record.primary_manager}</option>}{members.filter(member=>!member.legacy&&member.active!==false).map(member=><option key={member.user_id} value={member.user_id}>{member.display_name}</option>)}</select></label>
+        <label>갱신 알림 (일 전)<input type="number" min="0" max="90" required name="renewal_notice_days" defaultValue={record?.renewal_notice_days??7}/></label>
         <label>결제 주기<select name="billing_cycle" defaultValue={record?.billing_cycle??'none'}><option value="none">구독 없음</option><option value="monthly">월</option><option value="yearly">연</option></select></label>
         <label>결제 금액<input name="amount" type="number" min="0" step="0.01" max="999999999999.99" required defaultValue={record?.amount??0}/></label>
         <label>통화<select name="currency" defaultValue={record?.currency??'KRW'}>{['KRW','USD','EUR','JPY'].map(currency=><option key={currency}>{currency}</option>)}</select></label>
         <label>다음 결제일<input type="date" name="next_billing_date" defaultValue={record?.next_billing_date??''}/></label>
-        <label>갱신 알림 (일 전)<input type="number" min="0" max="90" required name="renewal_notice_days" defaultValue={record?.renewal_notice_days??7}/></label>
         <label className="ea-full">메모<textarea name="notes" maxLength={5000} defaultValue={record?.notes??''}/></label>
       </fieldset>
       <div className="ea-form-footer">
-        <div className="ea-delete-action">{master&&account&&editing&&<button type="button" disabled={pending} onClick={async event=>{if(window.confirm('정말로 이 계정 정보를 삭제하시겠습니까?'))await onSave(new FormData(event.currentTarget.form!),true);}}>삭제</button>}</div>
+        <div className="ea-delete-action">{account&&editing&&<button type="button" disabled={pending} onClick={async event=>{if(window.confirm('정말로 이 계정 정보를 삭제하시겠습니까?'))await onSave(new FormData(event.currentTarget.form!),true);}}>계정 삭제</button>}</div>
         <div className="ea-actions">{!editing?<button type="button" className="ea-primary" disabled={pending} onClick={beginEdit}>수정</button>:<><button className="ea-primary" type="submit" disabled={pending}>{pending?'저장 중…':account?'저장':'새 계정 등록'}</button>{account&&<button type="button" disabled={pending} onClick={cancelEdit}>취소</button>}</>}</div>
       </div>
     </form>

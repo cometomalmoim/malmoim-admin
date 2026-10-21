@@ -18,6 +18,7 @@ export function externalAccountErrorMessage(error:DbError,reference:string) {
   if(error.code==='23503')return '선택한 담당자가 더 이상 유효하지 않습니다. 새로고침 후 다시 선택해주세요.'+suffix;
   if(error.code==='23514'||error.code==='22P02'||error.code==='22007')return '입력 형식이 DB 조건에 맞지 않습니다. 금액·날짜·카테고리를 확인해주세요.'+suffix;
   if(error.code==='42501'||error.message==='Forbidden')return '관리자 권한 또는 DB 권한 정책을 확인해주세요. 최신 외부 계정 마이그레이션이 필요할 수 있습니다.'+suffix;
+  if(error.message==='Select an active People profile')return '활동 중인 담당자를 다시 선택해주세요. 비활동 프로필은 새로 지정할 수 없습니다.'+suffix;
   if(error.message==='Stale account')return '다른 운영진이 계정을 수정했습니다. 새로고침 후 다시 저장해주세요.'+suffix;
   return '저장하지 못했습니다. 서버 터미널에서 오류 참조 번호에 해당하는 DB 오류를 확인해주세요.'+suffix;
 }

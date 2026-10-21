@@ -5,7 +5,7 @@ export type ExternalAccount = {
   billing_cycle: string; payment_method: string; amount: number; currency: string; next_billing_date: string | null;
   renewal_notice_days: number; notes: string; updated_at: string;
 };
-export type AccountMember = { legacy?: boolean; user_id: string; role: string; department: string; display_name: string };
+export type AccountMember = { legacy?: boolean; active?: boolean; user_id: string; role: string; department: string; display_name: string };
 export type AccountLog = { id: number; account_id: string; actor_name: string; action: string; created_at: string; changes: Record<string, unknown> };
 export function renewalDays(date: string | null, today: string) {
   return date ? Math.ceil((Date.parse(`${date}T00:00:00Z`) - Date.parse(`${today}T00:00:00Z`)) / 86400000) : null;

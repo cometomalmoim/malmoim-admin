@@ -1,27 +1,27 @@
 # 외부 서비스 계정 관리: 초기 운영 정책
 
-현재 정책은 어드민에 등록된 모든 Admin/Staff에게 전체 계정 조회·등록·수정 및 MFA 없는 비밀번호 보기·복사를 허용합니다. 일반 회원 로그인이나 익명 사용자는 접근할 수 없습니다. 삭제는 기존 Master 전용 정책을 유지합니다.
+현재 정책은 어드민에 등록된 모든 Admin/Staff에게 전체 계정 조회·등록·수정 및 MFA 없는 비밀번호 보기·복사를 허용합니다. 일반 회원 로그인이나 익명 사용자는 접근할 수 없습니다. 046 적용 후 삭제도 모든 Admin/Staff에게 허용합니다.
 
 | 작업 | Admin/Staff | Master |
 |---|---|---|
 | 모든 계정 조회, 신규 등록, 기존 계정 수정 | 허용 | 허용 |
 | 비밀번호 보기·복사 | MFA 없이 허용, 매번 감사 기록 | 동일 |
-| 계정 삭제 | 불가 | 허용, 감사 기록 보존 |
+| 계정 삭제 | 허용, 감사 기록 보존 | 허용, 감사 기록 보존 |
 | 암호문 직접 조회, 테이블 직접 쓰기·감사 로그 조작 | 불가 | 불가 |
 
 ## 적용 순서
 
 ### 저장 오류 및 기존 DB 복구
 
-현재 연결 DB에서 `42703: column external_accounts.created_by does not exist`가 확인된 경우 043 이후 스키마가 누락된 상태입니다. 키 설정과 서버 재시작만으로는 해결되지 않습니다. **같은 프로젝트의 Supabase SQL Editor에서 `supabase/manual/repair_external_accounts.sql` 전체를 실행**하세요. 이 스크립트는 022/043/044를 현재 초기 운영 정책으로 맞추며 기존 계정·암호문·등록자·감사 기록을 삭제하지 않습니다. 여러 번 실행할 수 있고 PostgREST 스키마 캐시 갱신도 요청합니다. 관리자/스케줄 기반 테이블은 기존 설치를 사용합니다.
+현재 연결 DB에서 `42703: column external_accounts.created_by does not exist`가 확인된 경우 043 이후 스키마가 누락된 상태입니다. 키 설정과 서버 재시작만으로는 해결되지 않습니다. **같은 프로젝트의 Supabase SQL Editor에서 `supabase/manual/repair_external_accounts.sql` 전체를 실행**하세요. 이 스크립트는 022/043/044를 현재 초기 운영 정책으로 맞추며 기존 계정·암호문·등록자·감사 기록을 삭제하지 않습니다. 여러 번 실행할 수 있고 PostgREST 스키마 캐시 갱신도 요청합니다. 복구 스크립트 적용 후 최신 정책을 위해 045→046을 순서대로 다시 적용하세요. 관리자/스케줄 기반 테이블은 기존 설치를 사용합니다.
 
 `npm run check:external-accounts`로 현재 `.env.local`이 가리키는 프로젝트의 공개 API 스키마를 점검할 수 있습니다. 익명·0행 조회와 항상 실패하는 잘못된 작업 요청만 사용하며 계정을 만들거나 비밀번호를 조회하지 않습니다. `42703`, `PGRST202/205` 등은 누락/불일치입니다. 익명 요청의 `42501`은 보호된 객체의 정상적인 권한 거부이며 이를 해결하려고 **anon 권한을 추가하면 안 됩니다.** 이 검사로 인증된 저장 성공이나 최신 RPC 내부 권한까지 확정할 수는 없습니다.
 
 저장 RPC 실패 시 서버 터미널에 `[external-accounts] Database operation failed`와 참조 번호, 작업 종류, DB `code/message/details/hint`가 출력됩니다. 비밀번호·암호문·실패 행의 값·키 충돌 값은 숨깁니다. 클라이언트에는 원문 DB 오류 대신 참조 번호와 오류 종류에 맞는 안내만 표시합니다. 선택 결제 필드는 기본값을 적용하고 날짜·금액·담당자 UUID·필드 길이는 RPC 호출 전에 검증합니다.
 
-1. 관리자 및 `018_schedule_management.sql` 적용 환경에 `022_external_accounts.sql` → `043_external_account_creation.sql` → `044_external_account_initial_access.sql` → `045_external_account_people.sql` 순서로 실행합니다. 기존 022/043/044 설치 환경에는 045만 추가 적용합니다. 045는 피플 테이블(019)이 필요합니다. `022_board_idea_category.sql`은 별개입니다.
+1. 관리자 및 `018_schedule_management.sql` 적용 환경에 `022_external_accounts.sql` → `043_external_account_creation.sql` → `044_external_account_initial_access.sql` → `045_external_account_people.sql` → `046_external_account_admin_delete.sql` 순서로 실행합니다. 기존 045 설치 환경에는 046만 추가 적용합니다. 045는 피플 테이블(019)이 필요합니다. `022_board_idea_category.sql`은 별개입니다.
 2. 개발 환경에서는 `npm run setup:external-accounts`를 실행합니다. `.env.local`의 기존 설정과 유효한 키를 보존하며 누락/빈 값에만 32바이트 무작위 키를 64자리 hex로 설정합니다. 값은 출력하지 않습니다. 실제 이름은 복수형 **`EXTERNAL_ACCOUNTS_ENCRYPTION_KEY`**이며 `NEXT_PUBLIC_` 접두사를 붙이면 안 됩니다. 변경 후 개발 서버를 재시작하세요.
-3. 관리자 기준은 기존 `admin_users`입니다. 사용자를 Master로 자동 승격하거나 기존 인증기를 삭제하지 않습니다. `external_account_members`는 Master 삭제 권한 판단에 사용하며, 담당자 후보는 피플의 `people` 테이블에서 조회합니다.
+3. 관리자 기준은 기존 `admin_users`입니다. 사용자를 Master로 자동 승격하거나 기존 인증기를 삭제하지 않습니다. `external_account_members`는 이전 정책의 역할 기록을 보존하며, 담당자 후보는 피플의 `people` 테이블에서 조회합니다.
 
 개발/테스트에서 키가 누락되면 암호화 모듈은 프로젝트 루트의 `.env.external-accounts.key`에 로컬 전용 무작위 키를 한 번 생성해 재사용합니다. 이 파일과 `.env.local`은 Git에서 제외되며 로컬 키 파일은 배포 파일 추적에서도 제외합니다. 공용 기본 키나 요청마다 바뀌는 임시 키를 사용하지 않습니다. 잘못된 기존 환경 변수나 손상된 로컬 키 파일은 자동 교체하지 않고 오류로 처리합니다.
 
@@ -65,10 +65,20 @@ UI 개편 회귀 검증: `node --test tests/external-account-panel.test.mjs test
 
 ## 삭제·담당자·반복 결제일 개선 (045)
 
-Master는 수정 모드 하단 ‘삭제’에서 확인창 승인 후 삭제할 수 있습니다. 성공하면 상세를 닫고 목록을 재조회하며 성공 토스트를 표시합니다. Staff의 삭제 권한은 기존대로 제한합니다. 감사 이력은 삭제 이후에도 보존됩니다.
+모든 관리자는 수정 모드 하단 ‘계정 삭제’에서 확인창 승인 후 삭제할 수 있습니다. 성공하면 상세를 닫고 목록을 재조회하며 성공 토스트를 표시합니다. 046 적용 후 모든 Admin/Staff가 동일하게 삭제할 수 있습니다. 감사 이력은 삭제 이후에도 보존됩니다.
 
 피플 프로필은 로그인 계정과 독립적입니다. `supabase/045_external_account_people.sql` 전체를 Supabase SQL Editor에서 실행하세요. 기존 계정·비밀번호·담당자 기록을 삭제하지 않습니다. `manager_person_id`는 people 외래키이며 프로필 삭제 시 NULL로 변경됩니다. 등록/수정 RPC의 감사 기록에도 해당 필드 변경이 남습니다.
 
 목록 카드는 동일 높이이며 결제 배지는 우측에 표시합니다. 과거 결제 기준일은 월/연 주기를 따라 오늘 이후의 가장 가까운 예정일로 계산하며 오늘은 D-0입니다. 월말은 해당 월의 말일로 조정하되 원래 기준일을 유지합니다. 윤년 2월 29일은 평년 2월 28일로 계산합니다. 계산은 목록 표시용이며 DB 기준일과 스케줄 뷰는 자동 변경하지 않습니다.
 
 추가 DB 검증: `node tests/external-account-people-db.mjs` (045 반복 적용, 피플 담당자 외래키·변경 감사, Staff 삭제 차단, Master 삭제·암호문 정리·감사 보존).
+
+## 컴팩트 상세 폼과 전체 관리자 삭제 (046)
+
+`supabase/046_external_account_admin_delete.sql`을 SQL Editor에서 실행합니다. 관리자 allow-list인 `admin_users` 검사는 유지하고, 삭제에 대한 Master 전용 검사만 제거합니다. 직접 테이블 쓰기는 여전히 차단하며 RPC에서 버전 검증·암호문 삭제·감사 로그 저장을 트랜잭션으로 처리합니다. 서버 액션과 UI도 동일하게 Admin/Staff 삭제를 허용합니다.
+
+담당자 선택은 `people.status='active'` 조회 결과만 사용합니다. 현재 연결된 비활동 프로필은 표시용으로만 보존하고 드롭다운에서는 선택 불가 안내로 표시합니다. 해당 필드를 바꾸지 않고 다른 정보를 저장해도 기존 연결은 유지됩니다. DB는 비활동 프로필로의 신규 연결을 거부합니다.
+
+상세 폼은 서비스명/URL → ID/새 비밀번호 → 담당자/갱신 알림 → 결제 주기/금액 → 통화/결제일 순서의 2열이며 메모는 전체 폭입니다. 단일 입력 높이는 34px, 매우 좁은 화면에서는 한 열로 전환합니다. 조회 모드는 비활성 입력을 유지하고 수정 모드 하단에 계정 삭제·저장·취소를 표시합니다.
+
+검증: `node tests/external-account-admin-delete-db.mjs`는 045→046 반복 적용, Staff/Admin/Master 삭제 및 감사 보존, 비관리자 차단, 비활동 담당자 신규 연결 차단을 검증합니다. 과거 정책 DB 테스트는 해당 마이그레이션 시점의 Master 삭제 제한을 계속 검증합니다.

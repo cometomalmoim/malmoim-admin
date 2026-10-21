@@ -35,3 +35,9 @@ test('legacy assignment survives untouched edits; People selection and explicit 
  f.set('manager_person_id','');assert.equal(externalAccountInput(f,legacy).primary_manager,'');
  f.set('manager_person_id','legacy:forged');assert.throws(()=>externalAccountInput(f,legacy));
 });
+
+test('disabled archived assignee preserves stored People assignment; explicit unassignment clears it',()=>{
+ const legacy={manager_person_id:'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',primary_manager:null,category:'other',department:'',sub_manager:null,payment_method:''};
+ const f=form();assert.equal(externalAccountInput(f,legacy).manager_person_id,legacy.manager_person_id);
+ f.set('manager_person_id','');assert.equal(externalAccountInput(f,legacy).manager_person_id,'');
+});

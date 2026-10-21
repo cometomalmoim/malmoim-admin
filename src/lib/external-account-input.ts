@@ -1,13 +1,13 @@
 import {accountCategories} from './external-account-types.ts';
 import {validUuid} from './resource-validation.ts';
 import type {ExternalAccount} from './external-account-types.ts';
-export type LegacyAccountFields=Pick<ExternalAccount,'primary_manager'|'category'|'department'|'sub_manager'|'payment_method'>;
+export type LegacyAccountFields=Pick<ExternalAccount,'manager_person_id'|'primary_manager'|'category'|'department'|'sub_manager'|'payment_method'>;
 export function externalAccountInput(form:FormData,legacy?:LegacyAccountFields) {
   const value=(name:string,fallback='')=>String(form.get(name)??'').trim()||fallback;
   const manager=value('manager_person_id');
   const keepLegacy=!!legacy?.primary_manager&&manager===`legacy:${legacy.primary_manager}`;
   // Removed UI fields remain archival metadata. Read them from DB on edit, never from the client.
-  const input={service_name:value('service_name'),service_url:value('service_url'),login_id:value('login_id'),category:legacy?.category??'other',department:legacy?.department??'',primary_manager:form.has('manager_person_id')&&!keepLegacy?'':legacy?.primary_manager??'',manager_person_id:keepLegacy?'':manager,sub_manager:legacy?.sub_manager??'',billing_cycle:value('billing_cycle','monthly'),payment_method:legacy?.payment_method??'',amount:value('amount','0'),currency:value('currency','KRW'),next_billing_date:value('next_billing_date'),renewal_notice_days:value('renewal_notice_days','7'),notes:value('notes')};
+  const input={service_name:value('service_name'),service_url:value('service_url'),login_id:value('login_id'),category:legacy?.category??'other',department:legacy?.department??'',primary_manager:form.has('manager_person_id')&&!keepLegacy?'':legacy?.primary_manager??'',manager_person_id:!form.has('manager_person_id')?legacy?.manager_person_id??'':keepLegacy?'':manager,sub_manager:legacy?.sub_manager??'',billing_cycle:value('billing_cycle','monthly'),payment_method:legacy?.payment_method??'',amount:value('amount','0'),currency:value('currency','KRW'),next_billing_date:value('next_billing_date'),renewal_notice_days:value('renewal_notice_days','7'),notes:value('notes')};
   if(!input.service_name||input.service_name.length>120||!input.login_id||input.login_id.length>254)throw new Error('서비스명(120자 이하)과 계정 ID(254자 이하)를 입력해주세요.');
   let url:URL;try{url=new URL(input.service_url);}catch{throw new Error('HTTPS 서비스 URL을 입력해주세요.');}
   if(url.protocol!=='https:'||url.username||url.password||input.service_url.length>2000)throw new Error('인증 정보가 없는 HTTPS 서비스 URL을 입력해주세요.');

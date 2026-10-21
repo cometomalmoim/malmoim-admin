@@ -45,9 +45,9 @@ test('Staff action edits an existing account without a Master check',async()=>{
   const input=a.calls.find(([name])=>name==='manage_external_account')[1].p_input;
   assert.equal(input.category,'design');assert.equal(input.department,'Legacy department');assert.equal(input.payment_method,'Legacy card');
 });
-test('Staff action still blocks deletion',async()=>{
+test('Staff action deletes without a Master check',async()=>{
   const a=actions();const result=await a.saveExternalAccount(form('11111111-1111-4111-8111-111111111111'),true);
-  assert.equal(result.success,false);assert.ok(!a.calls.some(([name])=>name==='manage_external_account'));
+  assert.equal(result.success,true);assert.ok(a.calls.some(([name,input])=>name==='manage_external_account'&&input.p_delete));assert.ok(!a.calls.some(([name])=>name==='external_account_master'));
 });
 for(const kind of ['view','copy'])test(`Staff action reveals for ${kind} without MFA APIs or a code`,async()=>{
   const a=actions();const result=await a.revealExternalAccount('11111111-1111-4111-8111-111111111111',kind);
@@ -68,4 +68,9 @@ test('missing DB column logs the original error code on the server and returns a
   assert.equal(result.success,false);assert.match(result.message,/repair_external_accounts.sql/);
   assert.equal(logs[0][1].code,'42703');assert.equal(logs[0][1].message,'column created_by does not exist');assert.equal(logs[0][1].details,null);
   assert.ok(!JSON.stringify(logs).includes('synthetic-only-password'));assert.ok(!JSON.stringify(logs).includes('encrypted-test-ciphertext'));
+});
+
+test('non-admin deletion is blocked before RPC',async()=>{
+ const a=actions({access:'denied'});const result=await a.saveExternalAccount(form('11111111-1111-4111-8111-111111111111'),true);
+ assert.equal(result.success,false);assert.equal(a.calls.length,0);
 });

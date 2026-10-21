@@ -19,22 +19,16 @@ async function adminClient() {
   if ((await getAdminAccess()).status !== 'admin') throw new Error('관리자 권한이 필요합니다.');
   return createClient();
 }
-async function masterClient() {
-  const client = await adminClient();
-  const allowed = await client.rpc('external_account_master');
-  if (allowed.error || allowed.data !== true) throw new Error('Master Admin 권한이 필요합니다.');
-  return client;
-}
 export async function saveExternalAccount(form: FormData, remove = false) {
   try {
-    // Initial operation: all admins may create/edit; deletion remains master-only.
-    const client = remove ? await masterClient() : await adminClient();
+    // Initial operation: all allow-listed admins may create, edit and delete.
+    const client = await adminClient();
     const id=String(form.get('id')??'');
     const version=String(form.get('updated_at')??'');
     if((id&&!validUuid(id))||(remove&&!id)||(id&&!Number.isFinite(Date.parse(version))))throw new Error('계정 정보를 새로고침한 뒤 다시 시도해주세요.');
     let legacy:LegacyAccountFields|undefined;
     if(id&&!remove){
-      const previous=await client.from('external_accounts').select('primary_manager,category,department,sub_manager,payment_method').eq('id',id).maybeSingle();
+      const previous=await client.from('external_accounts').select('manager_person_id,primary_manager,category,department,sub_manager,payment_method').eq('id',id).maybeSingle();
       if(previous.error){const reference=logExternalAccountError('load-before-update',previous.error);return {success:false,message:externalAccountErrorMessage(previous.error,reference)};}
       if(!previous.data)throw new Error('계정을 찾을 수 없습니다. 목록을 새로고침해주세요.');
       legacy=previous.data as LegacyAccountFields;
