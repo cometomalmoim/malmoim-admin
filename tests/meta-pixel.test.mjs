@@ -8,9 +8,13 @@ test('운영 4개 랜딩만 허용하고 관리자·신청·미리보기·로컬
 });
 test('동의 없으면 초기화·조회 전송 없음',()=>{const w={};metaPageView(w,'/season9','malmoim.com',false);assert.equal(w.fbq,undefined);assert.equal(w.malmoimMetaInitialized,undefined);});
 test('한 번 초기화·자동 수집 해제·명시적 PageView만 전송하며 반복 렌더 중복 제외',()=>{
- const w={};initializeMeta(w);initializeMeta(w);metaPageView(w,'/season9','malmoim.com',true);metaPageView(w,'/season9','malmoim.com',true);
+ const w={};initializeMeta(w);initializeMeta(w);w.malmoimMetaReady=true;metaPageView(w,'/season9','malmoim.com',true);metaPageView(w,'/season9','malmoim.com',true);
  const q=w.fbq.queue;assert.equal(q.filter(v=>v[0]==='init').length,1);assert.deepEqual(q.find(v=>v[0]==='set'),['set','autoConfig',false,META_PIXEL_ID]);assert.deepEqual(q.filter(v=>v[0]==='trackSingle'),[['trackSingle',META_PIXEL_ID,'PageView']]);
  metaPageView(w,'/season9/en','malmoim.com',true);assert.equal(q.filter(v=>v[0]==='trackSingle').length,2);
  metaPageView(w,'/admin','malmoim.com',true);assert.deepEqual(q.at(-1),['consent','revoke']);assert.equal(q.filter(v=>v[0]==='trackSingle').length,2);
 });
-test('동의 철회 시 이벤트 중지, 개인정보나 Lead/Purchase 매개변수 없음',()=>{const w={};initializeMeta(w);metaPageView(w,'/2026halloweenparty','malmoim.com',true);metaPageView(w,'/2026halloweenparty','malmoim.com',false);assert.deepEqual(w.fbq.queue.at(-1),['consent','revoke']);for(const event of w.fbq.queue.filter(v=>v[0]==='trackSingle'))assert.deepEqual(event,['trackSingle',META_PIXEL_ID,'PageView']);});
+test('동의 철회 시 이벤트 중지, 개인정보나 Lead/Purchase 매개변수 없음',()=>{const w={};initializeMeta(w);w.malmoimMetaReady=true;metaPageView(w,'/2026halloweenparty','malmoim.com',true);metaPageView(w,'/2026halloweenparty','malmoim.com',false);assert.deepEqual(w.fbq.queue.at(-1),['consent','revoke']);for(const event of w.fbq.queue.filter(v=>v[0]==='trackSingle'))assert.deepEqual(event,['trackSingle',META_PIXEL_ID,'PageView']);});
+
+test('SDK 로드 전에는 PageView를 큐에 남기지 않아 철회 후 과거 이벤트가 전송되지 않음',()=>{const w={};initializeMeta(w);metaPageView(w,'/season9','malmoim.com',true);assert.equal(w.fbq.queue.filter(v=>v[0]==='trackSingle').length,0);metaPageView(w,'/season9','malmoim.com',false);w.malmoimMetaReady=true;metaPageView(w,'/season9','malmoim.com',false);assert.equal(w.fbq.queue.filter(v=>v[0]==='trackSingle').length,0);});
+
+test('Meta 초기화·조회 예외가 페이지 UI로 전파되지 않음',()=>{const w={fbq:()=>{throw Error('blocked');}};assert.doesNotThrow(()=>initializeMeta(w));w.malmoimMetaInitialized=true;w.malmoimMetaReady=true;assert.doesNotThrow(()=>metaPageView(w,'/season9','malmoim.com',true));});
