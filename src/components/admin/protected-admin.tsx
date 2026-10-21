@@ -2,6 +2,7 @@ import {EsignAdminDemo} from '@/components/document-admin/esign-admin-demo';
 import {EventReviewsView} from './event-reviews-view';
 import {InquiriesView} from './inquiries-view';
 import { ScheduleView } from './schedule-view';
+import { ExternalAccountsView } from './external-accounts-view';
 import { PeopleView } from './people-view';
 import { BoardView } from './board-view';
 import {CertificateView} from './certificate-view';
@@ -41,6 +42,7 @@ export async function ProtectedAdmin({ segments = [], page, query }: { segments?
   if(segments.length===3&&segments[0]==='events'&&segments[2]==='inquiries')return <InquiriesView email={access.email} slug={segments[1]} query={query} page={page}/>;
   if(segments.length===1&&segments[0]==='messages')return <MessageView email={access.email}/>;
   if(segments.length===1&&segments[0]==='schedule')return <ScheduleView email={access.email}/>;
+  if(segments.length===1&&segments[0]==='external-accounts')return <ExternalAccountsView email={access.email}/>;
   if(segments.length===1&&segments[0]==='people')return <PeopleView email={access.email}/>;
   if(segments.length===1&&segments[0]==='internal-board')return <BoardView email={access.email}/>;
   if (segments[0] === "member-board" && segments.length <= 3) {

@@ -1,0 +1,51 @@
+// Disposable local Postgres. Authenticated actors are switched via the same auth.uid contract as Supabase.
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const {PGlite}=await import('../work/sql/node_modules/@electric-sql/pglite/dist/index.js');
+const db=new PGlite();
+const master='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',staff='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',admin='cccccccc-cccc-4ccc-8ccc-cccccccccccc',outsider='dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+await db.exec(`create role anon;create role authenticated;create schema auth;
+create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('test.uid',true),'')::uuid$$;
+create function auth.jwt() returns jsonb language sql stable as $$select '{}'::jsonb$$;
+create table admin_users(user_id uuid primary key);create table admin_profiles(user_id uuid primary key,display_name text);
+insert into admin_users values('${master}'),('${staff}'),('${admin}');
+insert into admin_profiles values('${master}','Master'),('${staff}','Staff'),('${admin}','Admin');
+grant usage on schema auth to anon,authenticated;`);
+await db.exec(await readFile('supabase/022_external_accounts.sql','utf8'));
+await db.query("insert into external_account_members values($1,'master','임원'),($2,'staff','디자인')",[master,staff]);
+const input={service_name:'Canva',service_url:'https://canva.com',login_id:'synthetic@example.com',category:'design',department:'다른 부서',primary_manager:'',sub_manager:'',billing_cycle:'none',payment_method:'',amount:0,currency:'KRW',next_billing_date:'',renewal_notice_days:7,notes:''};
+const save=(id=null,version=null,remove=false,patch={})=>db.query('select manage_external_account($1,$2,$3::jsonb,$4,$5) id',[id,version,JSON.stringify({...input,...patch}),'encrypted-placeholder-password-123456',remove]);
+async function as(id){await db.exec('reset role');await db.query("select set_config('test.uid',$1,false)",[id]);await db.exec('set role authenticated');}
+const row=async id=>(await db.query('select *,updated_at::text version from external_accounts where id=$1',[id])).rows[0];
+await as(master);
+const legacy=(await save()).rows[0].id;
+await db.exec('reset role');
+await db.exec(await readFile('supabase/043_external_account_creation.sql','utf8'));
+assert.equal((await row(legacy)).created_by,master,'backfill recovers real creator from audit');
+for(const actor of [staff,admin]){
+  await as(actor);
+  assert.equal((await db.query('select * from external_accounts')).rows.length,0,'unrelated accounts remain hidden');
+  const id=(await save(null,null,false,{created_by:master})).rows[0].id;
+  const created=await row(id);
+  assert.equal(created.created_by,actor,'client cannot forge creator');
+  assert.equal(created.service_name,'Canva');
+  assert.equal((await db.query('select * from account_access_logs where account_id=$1',[id])).rows[0].actor_id,actor);
+  await assert.rejects(()=>save(id,created.version,false,{login_id:'changed'}),'creator may not edit');
+  await assert.rejects(()=>save(id,created.version,true),'creator may not delete');
+  await assert.rejects(()=>save(legacy,null,false),'supplying existing ID never becomes create');
+  await assert.rejects(()=>db.query('select reveal_external_account($1,$2)',[id,'view']));
+  await assert.rejects(()=>db.query('select * from external_account_secrets'));
+  await assert.rejects(()=>db.query('update external_accounts set created_by=$1 where id=$2',[master,id]));
+  await assert.rejects(()=>db.query("insert into external_accounts(service_name) values('direct')"));
+  await as(master);
+  await save(id,(await row(id)).version,false,{service_name:'Updated by Master',created_by:master});
+  assert.equal((await row(id)).created_by,actor,'master editing preserves creator');
+  await save(id,(await row(id)).version,true);
+  assert.ok((await db.query('select * from account_access_logs where account_id=$1',[id])).rows.length>=3);
+}
+await as(outsider);
+await assert.rejects(()=>save(),'signed-in non-admin cannot create');
+await db.exec('reset role;set role anon');
+await assert.rejects(()=>save(),'anonymous cannot create');
+await db.close();
+console.log('PASS Staff and ordinary Admin create; creator attribution and visibility; spoofing/edit/delete/secret access denied; Master edit/delete retained; legacy backfill');
