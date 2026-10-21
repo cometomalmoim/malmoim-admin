@@ -1,6 +1,18 @@
 import type { PublicLocale } from "./public-content";
 // UI text only. Never translate persisted country/language/gender/proficiency codes.
 const english: Record<string, string> = {
+  "별표(*)가 있는 항목을 입력해 주세요. 추가 외국어는 선택입니다.": "Complete the fields marked with an asterisk (*). Additional languages are optional.",
+  "닉네임": "Nickname",
+  "게시판과 커뮤니티 활동에서 표시되는 이름입니다.": "This name will be displayed in community posts and comments.",
+  "사용할 닉네임을 입력해 주세요.": "Enter your nickname",
+  "한글·영문·숫자·밑줄 2~20자. 닉네임 중복은 회원가입 저장 시 최종 확인합니다.": "Use 2–20 Korean or English letters, numbers, or underscores. Availability is confirmed when registration is saved.",
+  "만 19세 이상만 가입할 수 있습니다. 입력한 날짜 확인은 본인·연령 인증을 의미하지 않습니다.": "You must be at least 19. Checking the date you enter is not identity or age verification.",
+  "만 19세 이상 가입 여부 확인을 위해 생년월일을 입력해주세요.": "Enter your date of birth to check the minimum age of 19.",
+  "회원가입은 만 19세 이상만 가능합니다. 입력한 생년월일을 확인해주세요.": "You must be at least 19 to register. Check your date of birth.",
+  "이용약관 동의가 필요합니다.": "You must agree to the Terms of Use.",
+  "안내 문서가 변경되었습니다. 페이지를 새로 열어 확인해주세요.": "The notices have changed. Reopen the page and review them.",
+  "닉네임 중복 검사를 완료하지 못했습니다. 가입을 진행하지 않았습니다.": "Nickname availability could not be checked. Registration did not proceed.",
+  "이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해주세요.": "This nickname is already in use. Choose another nickname.",
   "로그인": "Log in",
   "회원가입": "Sign up",
   "홈으로 돌아가기": "Back to home",

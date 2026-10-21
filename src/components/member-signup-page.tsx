@@ -4,6 +4,7 @@ import { connection } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { getCountryOptions, getTodayInKorea } from "@/lib/signup-options";
 import { memberRegistrationPolicy } from "@/lib/member-registration-policy";
+import {publishedMemberLegal} from "@/lib/member-legal";
 import { SignupForm } from "./signup-form";
 import { memberText } from "@/lib/member-messages";
 import { localizedPublicPath } from "@/lib/public-locale";
@@ -20,7 +21,7 @@ async function SignupContent({ locale }: { locale: PublicLocale }) {
     if (!error && user) accountEmail = user.email ?? "";
   } catch { /* UI stays available; the independent server policy still blocks signup. */ }
   return <SignupForm countries={getCountryOptions(locale)} today={getTodayInKorea()} locale={locale}
-    accountEmail={accountEmail} registrationEnabled={memberRegistrationPolicy !== null} />;
+    accountEmail={accountEmail} registrationEnabled={memberRegistrationPolicy !== null&&publishedMemberLegal!==null} legal={publishedMemberLegal}/>;
 }
 export function MemberSignupPage({ locale }: { locale: PublicLocale }) {
   const t = (text: string) => memberText(locale, text);

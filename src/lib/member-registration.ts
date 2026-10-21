@@ -7,7 +7,7 @@ export type RegistrationState = {
   message: string;
   errors?: SignupErrors;
 };
-export type RegistrationPolicy = { minPasswordLength: number; requiredFields: string[]; consentVersion: string };
+export type RegistrationPolicy = { minPasswordLength: number; requiredFields: string[]; consentVersion: string;termsVersion:string;privacyVersion:string;privacyConsentRequired:boolean };
 type BackendError = { code?: string; status?: number };
 type User = { id: string; email?: string };
 export type RegistrationBackend = {
@@ -24,19 +24,27 @@ export async function registerMember(
   input: SignupInput, backend: RegistrationBackend, policy: RegistrationPolicy | null, locale: PublicLocale = "ko",
 ): Promise<RegistrationState> {
   const t = (text: string) => memberText(locale, text);
-  if (!policy) return { status: "blocked", message: t("개인정보 정책과 저장 준비가 완료되지 않아 가입을 진행하지 않았습니다.") };
+  if (!policy||!policy.termsVersion||!policy.privacyVersion||!policy.consentVersion) return { status: "blocked", message: t("개인정보 정책과 저장 준비가 완료되지 않아 가입을 진행하지 않았습니다.") };
   let authCreated = false;
   try {
     const current = await backend.auth.getUser();
     if (current.error && !(typeof current.error === "object" && "name" in current.error && current.error.name === "AuthSessionMissingError")) return { status: "error", message: t("로그인 상태를 확인하지 못했습니다. 다시 로그인해주세요.") };
     const currentUser = current.error ? null : current.data.user;
-    const checked = validateSignup(input, { authenticated: !!currentUser, requireConsent: true,
+    const checked = validateSignup(input, { authenticated: !!currentUser, requireConsent: policy.privacyConsentRequired,requireTerms:true,
       minPasswordLength: policy.minPasswordLength, requiredFields: policy.requiredFields, locale });
     if (!checked.profile) return { status: "invalid", message: t("입력 내용을 확인해주세요."), errors: checked.errors };
+    if(input.termsVersion!==policy.termsVersion||input.privacyVersion!==policy.privacyVersion||input.collectionVersion!==policy.consentVersion)return {status:"invalid",message:t("안내 문서가 변경되었습니다. 페이지를 새로 열어 확인해주세요.")};
     // The endpoint must include approved consent persistence, not just profile tables.
-    const ready = await backend.rpc("member_registration_ready");
-    if (ready.error || ready.data !== policy.consentVersion)
+    const ready = await backend.rpc("member_registration_v2_ready");
+    if (ready.error || !ready.data || typeof ready.data!=="object"||
+        (ready.data as Record<string,unknown>).terms_version!==policy.termsVersion||
+        (ready.data as Record<string,unknown>).privacy_version!==policy.privacyVersion||
+        (ready.data as Record<string,unknown>).collection_version!==policy.consentVersion||
+        (ready.data as Record<string,unknown>).requires_consent!==policy.privacyConsentRequired)
       return { status: "blocked", message: t("회원가입 저장 준비가 완료되지 않았습니다. 계정은 생성하지 않았습니다.") };
+    const available=await backend.rpc("member_nickname_available",{p_nickname:checked.profile.nickname});
+    if(available.error)return {status:"blocked",message:t("닉네임 중복 검사를 완료하지 못했습니다. 가입을 진행하지 않았습니다.")};
+    if(available.data!==true)return {status:"invalid",message:t("입력 내용을 확인해주세요."),errors:{nickname:t("이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해주세요.")}};
     let user = currentUser;
     if (!user) {
       const result = await backend.auth.signUp({ email: checked.profile.email, password: input.password });
@@ -54,13 +62,16 @@ export async function registerMember(
         return { status: "profile_pending", message: t("계정 요청 후 로그인 상태를 확인하지 못했습니다. 가입은 완료되지 않았습니다. 로그인 후 이 화면에서 프로필 저장을 다시 시도해주세요.") };
     }
     const p = checked.profile;
-    const saved = await backend.rpc("save_member_profile", {
+    const saved = await backend.rpc("save_member_registration_v2", {
+      p_nickname:p.nickname,p_terms_version:policy.termsVersion,p_privacy_version:policy.privacyVersion,
+      p_terms_accepted:input.termsConsent,p_collection_accepted:input.privacyConsent,
       p_profile: { name: p.name || null, phone_country_code: p.phoneNumber ? p.callingCode : null,
         phone_number: p.phoneNumber || null, nationality_code: p.nationality || null, gender: p.gender || null,
         birth_date: p.birthDate || null, korean_proficiency: p.koreanLevel, english_proficiency: p.englishLevel },
       p_languages: p.foreignLanguages.map(entry => ({ language_code: entry.language, proficiency: entry.level })),
       p_consent_version: policy.consentVersion,
     });
+    if(saved.error?.code==="23505")return {status:"profile_pending",message:t("이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해주세요."),errors:{nickname:t("이미 사용 중인 닉네임입니다. 다른 닉네임을 입력해주세요.")}};
     if (saved.error || saved.data !== user.id)
       return { status: "profile_pending", message: t("프로필 저장이 완료되지 않았습니다. 계정이 있다면 로그인 후 이 화면에서 다시 저장해주세요. 가입 완료 상태가 아닙니다.") };
     return { status: "complete", message: t("프로필과 언어 정보가 저장되었습니다. 홈페이지를 이용할 수 있습니다.") };
