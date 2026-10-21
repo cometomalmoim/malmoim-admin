@@ -34,3 +34,9 @@ test('실패 receipt 없음은 hook에서 전환 실행·이벤트 대기 없음
  const hook=load('src/components/use-registration-conversion.ts',{'react':{useEffect:fn=>fn()},'@/lib/meta-registration':{completeRegistration:()=>{called=true;}}});
  hook.useRegistrationConversion(undefined);assert.equal(called,false);
 });
+
+test('QR 영어 신청 경로의 DB 성공 receipt도 전환 전송',async()=>{
+ const h=harness();h.ctx.path='/season9/apply/en';
+ assert.equal(await completeRegistration(h.w,registrationReceipt('season9',id,'en'),h.ctx),true);
+ assert.equal(h.calls.find(v=>v[0]==='trackSingle')[3].language,'en');
+});

@@ -3,7 +3,7 @@
 픽셀 ID: `1120189660978956` (공개 식별자).
 
 ## 적용 범위
-운영 `malmoim.com`/`www.malmoim.com`의 `/season9`, `/season9/en`, `/2026halloweenparty`, `/2026halloweenparty/en`만 추적. 9기 신청 `/season9/apply`, `/season9/en/apply`는 신청 완료 전환만 허용하고 PageView는 보내지 않는다. 관리자·로그인·기타 공개 페이지, localhost, Vercel 미리보기는 제외한다.
+운영 `malmoim.com`/`www.malmoim.com`의 `/season9`, `/season9/ko`, `/season9/en`, `/2026halloweenparty`, `/2026halloweenparty/en`만 추적. 9기 신청 `/season9/apply`, `/season9/en/apply`, `/season9/apply/en`는 신청 완료 전환만 허용하고 PageView는 보내지 않는다. 관리자·로그인·기타 공개 페이지, localhost, Vercel 미리보기는 제외한다.
 
 - 사용자 요청으로 광고 측정 배너·설정 버튼·별도 동의 조건을 제거했다. 대상 운영 페이지의 모든 방문자에 대해 SDK를 로드한다. 과거 localStorage 동의 값은 읽거나 쓰지 않는다.
 - 대상 페이지에서 Next Script로 Meta SDK를 한 번 로드. 초기화 한 번, 같은 경로의 반복 렌더/onLoad/onReady에서 PageView 중복 방지. 언어/랜딩 경로 이동은 새로운 조회로 처리.
