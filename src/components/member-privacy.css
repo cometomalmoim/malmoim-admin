@@ -1,0 +1,11 @@
+.member-privacy{max-width:900px;margin:auto;padding:48px 28px 80px;color:#243039;line-height:1.9;overflow-wrap:anywhere}
+.member-privacy>a,.member-privacy section a{display:inline-flex;align-items:center;min-height:44px;color:#08717c;text-decoration:underline;text-underline-offset:4px}
+.member-privacy h1{font-size:clamp(28px,4vw,40px);line-height:1.4;margin:20px 0 24px}
+.member-privacy h2{font-size:21px;margin:32px 0 12px;line-height:1.5}
+.member-privacy p{margin:12px 0;font-size:16px}
+.member-privacy-date{color:#596970;font-size:14px!important}
+.member-privacy nav,.member-privacy-status{border:1px solid #dce5e7;padding:24px;background:#f8faf9;border-radius:6px}
+.member-privacy-status h2{margin-top:0}
+.member-privacy nav a{color:#08717c;text-decoration:underline;text-underline-offset:3px}
+.member-privacy section[id]{scroll-margin-top:24px}
+@media(max-width:640px){.member-privacy{padding:28px 20px 56px}.member-privacy nav,.member-privacy-status{padding:18px}.member-privacy p{font-size:15px}}

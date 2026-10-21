@@ -14,7 +14,7 @@ function load(name, mocks = {}) {
   const { outputText } = ts.transpileModule(readFileSync(file, "utf8"), {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
   });
-  runInNewContext(outputText, { module: loaded, exports: loaded.exports, FormData, Date, Intl, console, process: { env: { NODE_ENV: "test" } },
+  runInNewContext(outputText, { module: loaded, exports: loaded.exports, FormData, Date, Intl, console, ...mocks.__globals, process: { env: { NODE_ENV: "test" } },
     require: id => Object.hasOwn(mocks, id) ? mocks[id] :
       id.startsWith("@/") ? load("src/" + id.slice(2) + ".ts", mocks) : id.startsWith(".") ? load(path.relative(root, path.resolve(path.dirname(file), id + ".ts")), mocks) : require(id),
   });
@@ -25,11 +25,132 @@ const { validateSignup, readSignupForm } = load("src/lib/signup-validation.ts");
 const { registerMember } = load("src/lib/member-registration.ts");
 const valid = () => ({
   email: " member@example.test ", password: "test-only-Password1!", passwordConfirmation: "test-only-Password1!",
-  name: "테스트", callingCode: "82", phoneNumber: "010-0000-0000", nationality: "KR",
+  nickname:"언어친구",termsConsent:true,termsVersion:"test-terms",privacyVersion:"test-privacy",collectionVersion:"test-policy-only",name: "테스트", callingCode: "82", phoneNumber: "010-0000-0000", nationality: "KR",
   gender: "undisclosed", birthDate: "2000-01-01", koreanLevel: "none", englishLevel: "none",
   foreignLanguages: [{ language: "ja", level: "basic" }], privacyConsent: true,
 });
-const policy = { minPasswordLength: 8, requiredFields: [], consentVersion: "test-policy-only" };
+const policy = { minPasswordLength: 8, requiredFields: [], consentVersion: "test-policy-only",termsVersion:"test-terms",privacyVersion:"test-privacy",privacyConsentRequired:true };
+const readiness={terms_version:policy.termsVersion,privacy_version:policy.privacyVersion,collection_version:policy.consentVersion,requires_consent:true};
+const nicknameTools=load("src/lib/member-nickname.ts");
+test("nicknames normalize before validation and reject invalid/reserved names in both languages",()=>{
+ assert.equal(nicknameTools.normalizeNickname("  Ｎａｍｅ_한글  "),"Name_한글");
+ assert.equal(nicknameTools.nicknameKey("Name_한글"),nicknameTools.nicknameKey("ｎａｍｅ_한글"));
+ assert.equal(nicknameTools.nicknameError("언어친구"),null);
+ assert.equal(nicknameTools.nicknameError("a".repeat(20)),null);
+ for(const name of ["","a","a".repeat(21),"two words","<script>","admin_123","관리자님","시스템","말모임공식","Former_Member","탈퇴한_회원"]){
+  assert.ok(nicknameTools.nicknameError(name));assert.doesNotMatch(nicknameTools.nicknameError(name,"en"),/[가-힣]/);
+ }
+});
+test("age 19 is required, allowed on the birthday, and evaluated at Seoul day boundaries",()=>{
+ const check=(birthDate,today)=>validateSignup({...valid(),birthDate},{today});
+ assert.ok(check("2007-10-20","2026-10-20").profile);
+ assert.ok(check("2007-10-21","2026-10-20").errors.birthDate);
+ assert.ok(check("","2026-10-20").errors.birthDate);
+ assert.ok(check("2008-02-29","2027-02-28").errors.birthDate);
+ assert.ok(check("2008-02-29","2027-03-01").profile);
+ assert.ok(check("2007-10-20",options.getTodayInKorea(new Date("2026-10-19T14:59:59Z"))).errors.birthDate);
+ assert.ok(check("2007-10-20",options.getTodayInKorea(new Date("2026-10-19T15:00:00Z"))).profile);
+});
+test("missing/forged consent versions and underage profiles stop before storage or account creation",async()=>{
+ for(const change of [{termsConsent:false},{privacyConsent:false},{termsVersion:"forged"},{privacyVersion:"forged"},{collectionVersion:"forged"},{nickname:""},{birthDate:"9999-01-01"}]){
+  const {api,calls}=backend();const result=await registerMember({...valid(),...change},api,policy,"en");
+  assert.equal(result.status,"invalid");assert.equal(calls.length,0);assert.doesNotMatch(result.message,/[가-힣]/);
+ }
+});
+test("nickname availability and concurrent unique violations never claim registration success",async()=>{
+ const {api,calls}=backend();
+ api.rpc=async name=>({data:name==="member_registration_v2_ready"?readiness:false,error:null});
+ assert.equal((await registerMember(valid(),api,policy)).status,"invalid");assert.equal(calls.some(([n])=>n==="signUp"),false);
+ api.rpc=async name=>({data:name==="member_registration_v2_ready"?readiness:null,error:name==="member_registration_v2_ready"?null:{code:"PGRST202"}});
+ assert.equal((await registerMember(valid(),api,policy)).status,"blocked");
+ api.auth.getUser=async()=>({data:{user:{id:"user-a"}},error:null});
+ api.rpc=async name=>({data:name==="member_registration_v2_ready"?readiness:true,error:name==="save_member_registration_v2"?{code:"23505"}:null});
+ const raced=await registerMember(valid(),api,policy,"en");assert.equal(raced.status,"profile_pending");assert.match(raced.errors.nickname,/already in use/);
+});
+test("contract-based collection does not manufacture privacy consent; terms acceptance stays required",async()=>{
+ const {api}=backend();api.auth.getUser=async()=>({data:{user:{id:"user-a"}},error:null});
+ let saved;
+ api.rpc=async(name,args)=>{if(name==="save_member_registration_v2")saved=args;return {data:name==="member_registration_v2_ready"?{...readiness,requires_consent:false}:name==="member_nickname_available"?true:"user-a",error:null};};
+ assert.equal((await registerMember({...valid(),privacyConsent:false},api,{...policy,privacyConsentRequired:false})).status,"complete");
+ assert.equal(saved.p_collection_accepted,false);assert.equal(saved.p_terms_accepted,true);assert.equal(saved.p_nickname,"언어친구");
+ assert.equal(saved.p_terms_version,policy.termsVersion);assert.equal(saved.p_privacy_version,policy.privacyVersion);
+});
+test("board display uses only the public alias and an explicit former-member marker",()=>{
+ assert.equal(nicknameTools.communityAuthorName("언어친구","en"),"언어친구");
+ assert.equal(nicknameTools.communityAuthorName("Member-legacy","ko"),"Member-legacy");
+ assert.equal(nicknameTools.communityAuthorName("탈퇴한 회원","en"),"Former Member");
+ assert.equal(nicknameTools.communityAuthorName("old nickname","ko",true),"탈퇴한 회원");
+ assert.equal(nicknameTools.communityAuthorName(null,"en"),"Member");
+});
+test("privacy route withholds internal drafts and only renders an approved effective date/content",()=>{
+ const React=require("react"),{renderToStaticMarkup}=require("react-dom/server");
+ const {MemberLegalContent}=load("src/components/member-legal-content.tsx",{"./member-legal.css":{}});
+ const render=(publication,locale)=>{
+  const {MemberPrivacyPage}=load("src/components/member-privacy-page.tsx",{"next/link":{__esModule:true,default:"a"},"./member-privacy.css":{},"./member-legal-content":{MemberLegalContent},"@/lib/member-legal":{publishedMemberLegal:publication}});
+  return renderToStaticMarkup(React.createElement(MemberPrivacyPage,{locale}));
+ };
+ const pending=render(null,"en");assert.match(pending,/Publication is being prepared/);assert.doesNotMatch(pending,/TODO|확인 필요|Effective date|시행일/);
+ const policy={version:"synthetic",effectiveDate:"2026-10-20",sections:[{id:"purpose",title:{ko:"목적",en:"Purpose"},paragraphs:{ko:["승인 테스트"],en:["Approved fixture only"]}}]};
+ const approved=render({privacy:policy},"en");assert.match(approved,/datetime="2026-10-20"/i);assert.match(approved,/Approved fixture only/);assert.match(approved,/href="#purpose"/);
+ assert.equal(localeTools.publicLocaleDecision("/privacy","en").pathname,"/en/privacy");
+});
+test("terms and collection consent remain separate, unchecked, versioned and unavailable before approval",()=>{
+ const React=require("react"),{renderToStaticMarkup}=require("react-dom/server");
+ const {MemberLegalContent}=load("src/components/member-legal-content.tsx",{"./member-legal.css":{}});
+ const {MemberLegalModal}=load("src/components/member-legal-modal.tsx",{"./member-legal-content":{MemberLegalContent}});
+ const {SignupLegalNotice}=load("src/components/signup-legal-notice.tsx",{"./member-legal-modal":{MemberLegalModal}});
+ const doc={version:"fixture-v1",effectiveDate:"2026-10-20",sections:[]};
+ const text={ko:"가상 테스트",en:"Synthetic test"};
+ const legal={privacy:doc,terms:doc,collection:{version:"collection-fixture",basis:"consent",purpose:text,items:text,retention:text,refusal:text}};
+ const render=(publication,enabled)=>renderToStaticMarkup(React.createElement(SignupLegalNotice,{legal:publication,enabled,locale:"en",errors:{}}));
+ const pending=render(null,false);assert.match(pending,/disabled=""/);assert.doesNotMatch(pending,/checked=""|TODO|확정 대기/);
+ const consent=render(legal,true);assert.match(consent,/name="termsConsent"/);assert.match(consent,/name="privacyConsent"/);assert.match(consent,/name="termsVersion"/);assert.doesNotMatch(consent,/checked=""/);
+ const contract=render({...legal,collection:{...legal.collection,basis:"contract"}},true);assert.doesNotMatch(contract,/name="privacyConsent"/);assert.match(contract,/name="termsConsent"/);
+ assert.match(consent,/aria-haspopup="dialog"/);assert.match(consent,/Read full Privacy Policy/);assert.match(consent,/Read full Terms of Use/);
+ assert.doesNotMatch(consent,/target="_blank"|<details|<a /);
+});
+test("legal modal locks scrolling, focuses its title and restores the trigger and prior overflow on close",()=>{
+ const React=require("react");let effect,refIndex=0;
+ const events=[];
+ class Element {isConnected=true;focus(){events.push("trigger-focus");}}
+ const trigger=new Element();
+ const dialog={showModal:()=>events.push("show"),close:()=>events.push("close")};
+ const title={focus:()=>events.push("title-focus")},body={scrollTop:420};
+ const page={body:{style:{overflow:"scroll"}},activeElement:trigger};
+ const {MemberLegalModal}=load("src/components/member-legal-modal.tsx",{
+  react:{...React,useRef:()=>({current:[dialog,title,body][refIndex++]}),useId:()=>"fixture",useEffect:fn=>{effect=fn;}},
+  "./member-legal-content":{MemberLegalContent:()=>null},__globals:{window:{document:page},HTMLElement:Element},
+ });
+ const element=MemberLegalModal({open:true,onClose:()=>{},document:null,locale:"ko",kind:"privacy"});
+ assert.equal(element.type,"dialog");assert.equal(element.props["aria-labelledby"],"fixture-title");assert.equal(element.props["aria-modal"],"true");
+ const cleanup=effect();assert.equal(page.body.style.overflow,"hidden");assert.equal(body.scrollTop,0);assert.deepEqual(events,["show","title-focus"]);
+ cleanup();assert.equal(page.body.style.overflow,"scroll");assert.deepEqual(events,["show","title-focus","close","trigger-focus"]);
+});
+test("legal modal handles Escape and backdrop only; its controls never submit the signup form",()=>{
+ const React=require("react");let closed=0;
+ const {MemberLegalModal}=load("src/components/member-legal-modal.tsx",{
+  react:{...React,useRef:()=>({current:null}),useId:()=>"fixture",useEffect:()=>{}},
+  "./member-legal-content":{MemberLegalContent:()=>null},
+ });
+ const element=MemberLegalModal({open:true,onClose:()=>closed++,document:null,locale:"en",kind:"terms"});
+ let prevented=false;element.props.onCancel({preventDefault:()=>{prevented=true;}});assert.equal(prevented,true);assert.equal(closed,1);
+ const currentTarget={getBoundingClientRect:()=>({left:100,right:500,top:100,bottom:500})};
+ const click=(x,y,target=currentTarget)=>element.props.onClick({target,currentTarget,clientX:x,clientY:y});
+ click(200,200);click(0,0,{});assert.equal(closed,1);click(50,200);assert.equal(closed,2);
+ const buttons=[];const walk=node=>{if(!node||typeof node!=="object")return;if(node.type==="button")buttons.push(node);React.Children.forEach(node.props?.children,walk);};walk(element);
+ assert.equal(buttons.length,2);for(const button of buttons){assert.equal(button.props.type,"button");button.props.onClick();}assert.equal(closed,4);
+});
+test("shared legal content renders approved bilingual text with isolated anchors and no unpublished legal claims",()=>{
+ const React=require("react"),{renderToStaticMarkup}=require("react-dom/server");
+ const {MemberLegalContent}=load("src/components/member-legal-content.tsx",{"./member-legal.css":{}});
+ const doc={version:"fixture-only",effectiveDate:"2026-10-21",sections:[{id:"purpose",title:{ko:"목적",en:"Purpose"},paragraphs:{ko:["승인된 가상 문서"],en:["Approved synthetic document"]}}]};
+ for(const locale of ["ko","en"]){
+  const content=renderToStaticMarkup(React.createElement(MemberLegalContent,{document:doc,locale,idPrefix:"modal-"}));
+  assert.match(content,/href="#modal-purpose"/);assert.match(content,/id="modal-purpose"/);assert.match(content,/2026-10-21/);assert.ok(content.includes(doc.sections[0].paragraphs[locale][0]));
+  const pending=renderToStaticMarkup(React.createElement(MemberLegalContent,{document:null,locale,kind:"terms"}));
+  assert.doesNotMatch(pending,/fixture-only|2026-10-21|TODO|확인 필요/);
+ }
+});
 function backend(overrides = {}) {
   const calls = [];
   const api = {
@@ -42,7 +163,7 @@ function backend(overrides = {}) {
     },
     rpc: async (name, args) => {
       calls.push([name, args]);
-      return { data: name === "member_registration_ready" ? policy.consentVersion : "user-a", error: null };
+      return { data: name === "member_registration_v2_ready" ? readiness : name==="member_nickname_available"?true:"user-a", error: null };
     },
     ...overrides,
   };
@@ -74,10 +195,10 @@ test("email, confirmation, dates, country, gender, phone and length are validate
   ]) assert.ok(Object.keys(validateSignup({ ...valid(), ...change }).errors).length > 0, JSON.stringify(change));
 });
 test("unapproved collection requirements are not fabricated; configured requirements apply", () => {
-  const input = { ...valid(), name: "", phoneNumber: "", nationality: "", gender: "", birthDate: "" };
+  const input = { ...valid(), name: "", phoneNumber: "", nationality: "", gender: "", birthDate: "2000-01-01" };
   assert.ok(validateSignup(input).profile);
   assert.ok(validateSignup(input, { requiredFields: ["name", "birthDate"] }).errors.name);
-  assert.ok(validateSignup(input, { requiredFields: ["name", "birthDate"] }).errors.birthDate);
+  assert.ok(validateSignup({...input,birthDate:""}, { requiredFields: ["name", "birthDate"] }).errors.birthDate);
   assert.ok(validateSignup({ ...valid(), password: "short", passwordConfirmation: "short" }, { minPasswordLength: 8 }).errors.password);
 });
 test("zero to three additional languages validate; four, duplicates, ko/en and none fail", () => {
@@ -142,14 +263,14 @@ test("email confirmation without a session never saves a profile or claims compl
   const result = await registerMember(valid(), api, policy);
   assert.equal(result.status, "confirmation");
   assert.match(result.message, /아직 저장되지/);
-  assert.ok(!calls.some(([name]) => name === "save_member_profile"));
+  assert.ok(!calls.some(([name]) => name === "save_member_registration_v2"));
 });
 test("verified signup uses one atomic profile RPC and sends no password or owner field", async () => {
   const { api, calls } = backend();
   let count = 0;
   api.auth.getUser = async () => ({ data: { user: count++ ? { id: "user-a" } : null }, error: null });
   assert.equal((await registerMember(valid(), api, policy)).status, "complete");
-  const writes = calls.filter(([name]) => name === "save_member_profile");
+  const writes = calls.filter(([name]) => name === "save_member_registration_v2");
   assert.equal(writes.length, 1);
   const args = writes[0][1];
   assert.equal(args.p_languages.length, 1);
@@ -163,11 +284,11 @@ test("partial failure is explicitly pending and signed-in users can retry withou
   const { api } = backend();
   api.auth.getUser = async () => ({ data: { user: { id: "user-a" } }, error: null });
   api.auth.signUp = () => assert.fail("Must not create another account");
-  api.rpc = async name => ({ data: name === "member_registration_ready" ? policy.consentVersion : null,
-    error: name === "member_registration_ready" ? null : { code: "23514" } });
+  api.rpc = async name => ({ data: name === "member_registration_v2_ready" ? readiness : name==="member_nickname_available"?true:null,
+    error: ["member_registration_v2_ready","member_nickname_available"].includes(name) ? null : { code: "23514" } });
   const input = { ...valid(), email: "", password: "", passwordConfirmation: "" };
   assert.equal((await registerMember(input, api, policy)).status, "profile_pending");
-  api.rpc = async name => ({ data: name === "member_registration_ready" ? policy.consentVersion : "user-a", error: null });
+  api.rpc = async name => ({ data: name === "member_registration_v2_ready" ? readiness : name==="member_nickname_available"?true:"user-a", error: null });
   assert.equal((await registerMember(input, api, policy)).status, "complete");
 });
 test("Auth rejection or uncertain identity cannot trigger profile writes", async () => {
@@ -175,11 +296,11 @@ test("Auth rejection or uncertain identity cannot trigger profile writes", async
     const { api, calls } = backend();
     api.auth.signUp = async () => ({ data: { user: null, session: null }, error: failure });
     assert.equal((await registerMember(valid(), api, policy)).status, "error");
-    assert.ok(!calls.some(([name]) => name === "save_member_profile"));
+    assert.ok(!calls.some(([name]) => name === "save_member_registration_v2"));
   }
   const { api, calls } = backend();
   assert.equal((await registerMember(valid(), api, policy)).status, "profile_pending");
-  assert.ok(!calls.some(([name]) => name === "save_member_profile"));
+  assert.ok(!calls.some(([name]) => name === "save_member_registration_v2"));
 });
 test("existing session network failure stops registration instead of creating an account", async () => {
   const { api, calls } = backend();
@@ -284,7 +405,7 @@ test("empty additional-language list and both fixed levels are passed in one ato
   api.auth.signUp = () => assert.fail("Existing member must not create another account");
   const input = { ...valid(), koreanLevel: "basic", englishLevel: "none", foreignLanguages: [] };
   assert.equal((await registerMember(input, api, policy, "en")).status, "complete");
-  const args = calls.find(([name]) => name === "save_member_profile")[1];
+  const args = calls.find(([name]) => name === "save_member_registration_v2")[1];
   assert.equal(args.p_profile.korean_proficiency, "basic");
   assert.equal(args.p_profile.english_proficiency, "none");
   assert.equal(args.p_languages.length, 0);
@@ -299,8 +420,8 @@ test("English signup blocked, confirmation and partial-failure messages stay Eng
   assert.equal(confirmation.status, "confirmation");
   assert.doesNotMatch(confirmation.message, /[가-힣]/);
   api.auth.getUser = async () => ({ data: { user: { id: "user-a" } }, error: null });
-  api.rpc = async name => ({ data: name === "member_registration_ready" ? policy.consentVersion : null,
-    error: name === "member_registration_ready" ? null : { code: "23514" } });
+  api.rpc = async name => ({ data: name === "member_registration_v2_ready" ? readiness : name==="member_nickname_available"?true:null,
+    error: ["member_registration_v2_ready","member_nickname_available"].includes(name) ? null : { code: "23514" } });
   const pending = await registerMember(valid(), api, policy, "en");
   assert.equal(pending.status, "profile_pending");
   assert.doesNotMatch(pending.message, /[가-힣]/);
@@ -369,12 +490,12 @@ test("Korean calendar date changes exactly at Seoul midnight regardless of host 
   for (const [instant, expected] of cases) {
     const today = options.getTodayInKorea(new Date(instant));
     assert.equal(today, expected);
-    assert.ok(validateSignup({ ...valid(), birthDate: expected }, { today }).profile);
+    assert.ok(validateSignup({ ...valid(), birthDate: expected }, { today }).errors.birthDate);
   }
   assert.ok(validateSignup({ ...valid(), birthDate: "2026-10-16" },
     { today: options.getTodayInKorea(new Date("2026-10-15T14:59:59.999Z")) }).errors.birthDate);
   assert.ok(validateSignup({ ...valid(), birthDate: "2026-10-16" },
-    { today: options.getTodayInKorea(new Date("2026-10-15T15:00:00.000Z")) }).profile);
+    { today: options.getTodayInKorea(new Date("2026-10-15T15:00:00.000Z")) }).errors.birthDate);
 });
 
 test("signup waits for the request before reading time even if Supabase configuration fails", async () => {

@@ -1,17 +1,18 @@
 import type { PublicLocale } from "./public-content";
 import { memberText } from "./member-messages";
+import {normalizeNickname,nicknameError} from "./member-nickname";
 import { COUNTRY_CODES, FOREIGN_LANGUAGES, GENDERS, KOREAN_LEVELS, ENGLISH_LEVELS, FOREIGN_LEVELS, SIGNUP_RULES, getTodayInKorea } from "./signup-options";
 
 export type SignupInput = {
-  email: string; password: string; passwordConfirmation: string;
+  email: string; password: string; passwordConfirmation: string;nickname:string;
   name: string; callingCode: string; phoneNumber: string; nationality: string;
   gender: string; birthDate: string; koreanLevel: string; englishLevel: string;
   foreignLanguages: { language: string; level: string }[];
-  privacyConsent: boolean;
+  privacyConsent: boolean;termsConsent:boolean;termsVersion:string;privacyVersion:string;collectionVersion:string;
 };
 export type SignupErrors = Record<string, string>;
 export type SignupProfile = {
-  email: string; name: string; callingCode: string; phoneNumber: string;
+  email: string; name: string; callingCode: string; phoneNumber: string;nickname:string;
   nationality: string; gender: string; birthDate: string; koreanLevel: string; englishLevel: string;
   foreignLanguages: { language: string; level: string }[];
 };
@@ -22,7 +23,8 @@ export function readSignupForm(form: FormData): SignupInput {
   const languages = form.getAll("foreignLanguage");
   const levels = form.getAll("foreignLevel");
   return {
-    email: text("email"), password: text("password"), passwordConfirmation: text("passwordConfirmation"),
+    email: text("email"), password: text("password"), passwordConfirmation: text("passwordConfirmation"),nickname:text("nickname"),
+    termsConsent:form.get("termsConsent")==="on",termsVersion:text("termsVersion"),privacyVersion:text("privacyVersion"),collectionVersion:text("collectionVersion"),
     name: text("name"), callingCode: text("callingCode") === "other" ? text("customCallingCode") : text("callingCode"),
     phoneNumber: text("phoneNumber"), nationality: text("nationality"), gender: text("gender"),
     birthDate: text("birthDate"), koreanLevel: text("koreanLevel"), englishLevel: text("englishLevel"), privacyConsent: form.get("privacyConsent") === "on",
@@ -34,10 +36,12 @@ export function readSignupForm(form: FormData): SignupInput {
 }
 
 // Shared pure validator: browser preview and future server registration must use the same rules.
-export function validateSignup(input: SignupInput, { today = getTodayInKorea(), requireConsent = false, authenticated = false, minPasswordLength = SIGNUP_RULES.minPasswordLength as number, requiredFields = [] as string[], locale = "ko" as PublicLocale } = {}): SignupValidation {
+export function validateSignup(input: SignupInput, { today = getTodayInKorea(), requireConsent = false, requireTerms=false, authenticated = false, minPasswordLength = SIGNUP_RULES.minPasswordLength as number, requiredFields = [] as string[], locale = "ko" as PublicLocale } = {}): SignupValidation {
   const errors: SignupErrors = {};
   const email = input.email.trim();
   const name = input.name.trim();
+  const nickname=normalizeNickname(input.nickname??"");
+  const nicknameMessage=nicknameError(nickname,locale);if(nicknameMessage)errors.nickname=nicknameMessage;
   const callingCode = input.callingCode.trim();
   const rawNumber = input.phoneNumber.replace(/[\s().-]/g, "");
   const phoneNumber = callingCode === "82" ? rawNumber.replace(/^0/, "") : rawNumber;
@@ -60,6 +64,8 @@ export function validateSignup(input: SignupInput, { today = getTodayInKorea(), 
   const date = match ? new Date(input.birthDate + "T00:00:00Z") : null;
   if (input.birthDate && (!date || !Number.isFinite(date.getTime()) || date.toISOString().slice(0, 10) !== input.birthDate ||
       input.birthDate < "0001-01-01" || input.birthDate > today)) errors.birthDate = "미래가 아닌 유효한 생년월일을 선택해주세요.";
+  if(!input.birthDate)errors.birthDate="만 19세 이상 가입 여부 확인을 위해 생년월일을 입력해주세요.";
+  else if(!errors.birthDate&&input.birthDate>adultBirthDateLimit(today))errors.birthDate="회원가입은 만 19세 이상만 가능합니다. 입력한 생년월일을 확인해주세요.";
   if (!validLevel(input.koreanLevel)) errors.koreanLevel = "한국어 실력을 선택해주세요.";
   if (!ENGLISH_LEVELS.some(option => option.value === input.englishLevel)) errors.englishLevel = "영어 실력을 선택해주세요.";
   if (input.foreignLanguages.length < SIGNUP_RULES.minForeignLanguages || input.foreignLanguages.length > SIGNUP_RULES.maxForeignLanguages)
@@ -76,9 +82,17 @@ export function validateSignup(input: SignupInput, { today = getTodayInKorea(), 
         !String(input[field as keyof SignupInput] ?? "").trim()) errors[field] = "필수 입력 항목입니다.";
   }
   if (requireConsent && !input.privacyConsent) errors.privacyConsent = "확정된 개인정보 수집·이용 안내에 대한 동의가 필요합니다.";
+  if(requireTerms&&!input.termsConsent)errors.termsConsent="이용약관 동의가 필요합니다.";
   for (const key of Object.keys(errors)) errors[key] = memberText(locale, errors[key]);
   if (Object.keys(errors).length) return { errors, profile: null };
-  return { errors, profile: { email, name, callingCode, phoneNumber, nationality: input.nationality,
+  return { errors, profile: { email, name, callingCode, phoneNumber,nickname, nationality: input.nationality,
     gender: input.gender, birthDate: input.birthDate, koreanLevel: input.koreanLevel, englishLevel: input.englishLevel,
     foreignLanguages: input.foreignLanguages.map(entry => ({ ...entry })) } };
+}
+
+export function adultBirthDateLimit(today:string){
+ const year=Number(today.slice(0,4))-19;
+ const month=Number(today.slice(5,7)),day=Number(today.slice(8,10));
+ const last=new Date(Date.UTC(year,month,0)).getUTCDate();
+ return String(year).padStart(4,"0")+"-"+String(month).padStart(2,"0")+"-"+String(Math.min(day,last)).padStart(2,"0");
 }

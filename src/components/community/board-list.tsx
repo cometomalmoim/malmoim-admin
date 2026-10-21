@@ -1,3 +1,4 @@
+import {communityAuthorName} from "@/lib/member-nickname";
 import Link from "next/link";
 import { BoardForm } from "./board-form";
 import { boardCategories, boardText, boardHref, type CommunityList, type CommunityPost, type CommunityQuery } from "@/lib/community-board-model";
@@ -42,7 +43,7 @@ function PostTable({ data, query, base, locale, admin }: { data: CommunityList |
         <td className="community-post-number">{admin ? <span title={p.id}>{p.id.slice(0, 8)}</span> : p.is_pinned ? t("고정", "Pinned") : p.category === "notice" ? t("공지", "Notice") : data.total - (query.page - 1) * 20 - index}</td>
         <td className="community-post-category-cell"><Category value={p.category} locale={locale} /></td>
         <td className="community-post-title"><Link href={base + "/" + p.id}>{p.is_pinned && <span className="community-mobile-pin">{t("고정", "Pinned")} · </span>}{p.title}</Link></td>
-        <td className="community-post-author">{p.author_name}</td>
+        <td className="community-post-author">{communityAuthorName(p.author_name,locale)}</td>
         <td className="community-post-date"><time dateTime={p.created_at}>{listDate(p.created_at, locale)}</time></td>
         <td className="community-post-views" title={t("로그인 회원별 하루 1회 집계", "Counted once per signed-in member per day")}><span className="community-mobile-label">{t("조회", "Views")} </span>{p.view_count.toLocaleString(locale)}</td>
         <td className="community-post-comments"><span className="community-mobile-label">{t("댓글", "Replies")} </span>{p.comment_count.toLocaleString(locale)}</td>
