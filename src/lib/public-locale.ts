@@ -7,7 +7,8 @@ export function publicBasePath(pathname: string): string {
   return pathname.replace(/^\/en(?=\/|$)/, "") || "/";
 }
 export function isLocalizedPublicPath(pathname: string): boolean {
-  return publicPaths.has(publicBasePath(pathname));
+  const base = publicBasePath(pathname);
+  return publicPaths.has(base) || /^\/board\/(?:new|[0-9a-f-]{36}(?:\/edit)?)$/.test(base);
 }
 export function localizedPublicPath(pathname: string, locale: PublicLocale): string {
   const base = publicBasePath(pathname);
@@ -20,4 +21,10 @@ export function publicLocaleDecision(pathname: string, preference?: string, sele
   const locale = selection === "en" || selection === "ko" ? selection :
     pathname === "/en" || pathname.startsWith("/en/") ? "en" : parsePublicLocale(preference);
   return { locale, pathname: localizedPublicPath(pathname, locale) };
+}
+
+// Login may return only to known board screens, never admin or another origin.
+export function boardReturnPath(value: unknown, locale: PublicLocale): string | null {
+  if (typeof value !== "string" || !/^\/(?:en\/)?board\/(?:new|[0-9a-f-]{36}(?:\/edit)?)$/.test(value)) return null;
+  return localizedPublicPath(value, locale);
 }

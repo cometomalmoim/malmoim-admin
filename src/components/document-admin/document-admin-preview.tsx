@@ -29,7 +29,9 @@ function RequestDetail({ row, onClose }: { row: SigningRequest; onClose: () => v
   </section>;
 }
 
-export function DocumentAdminPreview() {
+export function DocumentAdminPreview({ browserOnly = false }: { browserOnly?: boolean } = {}) {
+  const Root = browserOnly ? 'section' : 'main';
+  const assetBase = browserOnly ? '/admin/esign-demo/assets' : '/preview/pdf-fields/assets';
   const [fixtures] = useState(documentAdminFixtures);
   const [templates, setTemplates] = useState(fixtures.templates);
   const requests = fixtures.requests;
@@ -62,7 +64,7 @@ export function DocumentAdminPreview() {
     try {
       if (sources.current.size>=10 && (!existing || !sources.current.has(existing.id))) throw new Error('이 탭에서는 PDF 원본을 최대 10개까지 관리합니다. 사용하지 않는 템플릿을 삭제해주세요.');
       const name=existing ? existing.name : templateName(newName || file.name.replace(/\.pdf$/i,''));
-      loaded=await openLocalPdf(file);
+      loaded=await openLocalPdf(file, assetBase);
       if (!alive.current) {await loaded.destroy();return;}
       const now=new Date().toISOString(),id=existing?.id ?? crypto.randomUUID();
       const template:DocumentTemplate={id,name,revision:existing?existing.revision+1:1,createdAt:existing?.createdAt??now,updatedAt:now,origin:'local',original:{filename:file.name,bytes:file.size,fingerprint:loaded.fingerprint},settings:{version:1,fingerprint:loaded.fingerprint,pages:loaded.pages,fields:[]}};
@@ -81,21 +83,21 @@ export function DocumentAdminPreview() {
     const source=sources.current.get(id);sources.current.delete(id);setAvailableSources(new Map(sources.current));if(source)void source.destroy();
     setTemplates(rows=>rows.filter(t=>t.id!==id));setDeleting('');setNotice('템플릿을 이 탭의 목록에서 삭제했습니다. 기존 가상 요청 이력은 보존했습니다.');
   }
-  return <main className={styles.admin}>
+  return <Root className={`${styles.admin} ${browserOnly ? styles.embedded : ''}`}>
     <header className={styles.header}><div><p className={styles.eyebrow}>MALMOIM · DOCUMENTS / STEP 04</p><h1>서류·전자서명 관리</h1><p>템플릿부터 참가자별 서명 현황까지 한곳에서 확인하세요.</p></div><span className={styles.demoBadge}>가상 데이터 · 브라우저 메모리</span></header>
-    <aside className={styles.banner}><strong>개발 전용 관리자 UI 미리보기</strong><span>실제 참가자·발송·서명·보관 데이터가 아닙니다. 업로드한 원본과 설정도 이 탭에서만 유지되며 새로고침하면 사라집니다.</span><Link href="/preview/pdf-fields" target="_blank" rel="noopener noreferrer">기존 3단계 테스트 별도 열기 ↗</Link></aside>
+    <aside className={styles.banner}><strong>개발 전용 관리자 UI 미리보기</strong><span>실제 참가자·발송·서명·보관 데이터가 아닙니다. 업로드한 원본과 설정도 이 탭에서만 유지되며 새로고침하면 사라집니다.</span>{!browserOnly && <Link href="/preview/pdf-fields" target="_blank" rel="noopener noreferrer">기존 3단계 테스트 별도 열기 ↗</Link>}{browserOnly && <p>개발용 시연 / 실제 신청자 정보 없음 / 문자 발송 없음 / PDF 영구 저장 없음. 실제 개인정보가 없는 테스트 PDF만 선택하세요. 서버 요청·링크·OTP 기능은 제공하지 않습니다.</p>}</aside>
     <section className={styles.stats} aria-label="전체 가상 요청 현황">{[{label:'전체 서명 요청',value:counts.total,hint:'미발송 준비 건 포함'},{label:'서명 대기',value:counts.pending,hint:'가상 발송 이력 기준'},{label:'서명 완료',value:counts.completed,hint:'가상 상태 · 실제 PDF 없음'},{label:'미발송',value:counts.unsent,hint:'링크·문자 발급 전'}].map(item=><article key={item.label}><span>{item.label}</span><strong>{item.value}<small>건</small></strong><p>{item.hint}</p></article>)}</section>
     <p className={styles.muted}>대시보드는 필터와 관계없이 전체 가상 이력 {counts.total}건 기준입니다.</p>
-    <nav className={styles.tabs} aria-label="관리 화면 선택"><button aria-pressed={tab==='targets'} onClick={()=>setTab('targets')}>합격자 요청 준비 · 6단계</button><button aria-pressed={tab==='requests'} onClick={()=>setTab('requests')}>참가자별 서명 현황</button><button aria-pressed={tab==='templates'} onClick={()=>setTab('templates')}>서류 템플릿 {templates.length}개</button></nav>
+    <nav className={styles.tabs} aria-label="관리 화면 선택">{!browserOnly && <button aria-pressed={tab==='targets'} onClick={()=>setTab('targets')}>합격자 요청 준비 · 6단계</button>}<button aria-pressed={tab==='requests'} onClick={()=>setTab('requests')}>참가자별 서명 현황</button><button aria-pressed={tab==='templates'} onClick={()=>setTab('templates')}>서류 템플릿 {templates.length}개</button></nav>
     <p role="status" aria-live="polite" className={styles.notice}>{notice}</p>
-    <div hidden={tab!=='targets'}><SigningTargetPreview templates={templates}/></div>
+    {!browserOnly && <div hidden={tab!=='targets'}><SigningTargetPreview templates={templates}/></div>}
     {tab==='targets' ? null : tab==='templates' ? <>
       <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>서류 템플릿</h2><p>가상 템플릿은 원본 없이 제공됩니다. 직접 선택한 PDF만 미리볼 수 있습니다.</p></div><span>{templates.length}개 등록</span></div>
         <div className={styles.upload}><label>새 서류 이름<input maxLength={100} placeholder="예: 활동 동의서 (테스트용)" value={newName} disabled={busy} onChange={e=>setNewName(e.target.value)}/></label><label className={styles.fileLabel}>PDF 선택하여 등록<input type="file" accept=".pdf,application/pdf" disabled={busy} onChange={e=>{const file=e.target.files?.[0];e.target.value='';void upload(file);}}/></label><p>5MiB 이하 · 50페이지 · 서버 업로드 없음</p></div>
         {!templates.length && <p className={styles.empty}>등록된 템플릿이 없습니다. PDF를 선택해 새로 등록하세요.</p>}
         <div className={styles.templateGrid}>{templates.map(template=><article key={template.id} className={styles.templateCard}><div className={styles.cardTop}><span>{template.origin==='fixture'?'가상 메타데이터':'이 탭의 PDF'}</span><small>v{template.revision}</small></div><h3>{template.name}</h3><p>{templateReadiness(template)}</p><p className={styles.muted}>{template.original?`${template.original.filename} · ${(template.original.bytes/1024/1024).toFixed(2)}MiB`:'원본 파일 없음 · PDF 자동 생성 안 함'}</p><p className={styles.muted}>수정 {date(template.updatedAt)}</p><div className={styles.actions}><button disabled={busy} onClick={()=>{setEditing(template.id);setDeleting('');}}>이름·설정 편집</button><button disabled={busy || !availableSources.has(template.id)} onClick={()=>setEditing(template.id)}>원본 PDF 미리보기</button><button disabled={busy} onClick={()=>{setTab('requests');changeFilter({templateId:template.id,eventId:'',status:'',name:''});}}>서명 이력 {requests.filter(r=>r.templateId===template.id).length}건</button></div><label className={styles.replaceLabel}>{template.original?'원본 PDF 교체 (필드 초기화)':'원본 PDF 선택'}<input type="file" accept=".pdf,application/pdf" disabled={busy} onChange={e=>{const file=e.target.files?.[0];e.target.value='';void upload(file,template);}}/></label>{deleting===template.id?<div className={styles.deleteConfirm}><p>이 탭에서 템플릿을 삭제할까요? 요청 당시 이력은 보존됩니다. 로컬 원본·설정은 다시 등록해야 합니다.</p><button disabled={busy} onClick={()=>removeTemplate(template.id)}>이 탭에서 삭제 확인</button><button onClick={()=>setDeleting('')}>취소</button></div>:<button className={styles.danger} disabled={busy} onClick={()=>setDeleting(template.id)}>템플릿 삭제</button>}</article>)}</div>
       </section>
-      {currentTemplate && <TemplateWorkspace key={`${currentTemplate.id}:${availableSources.get(currentTemplate.id)?.sessionKey ?? 'no-pdf'}`} template={currentTemplate} source={availableSources.get(currentTemplate.id)} onSave={save} onClose={()=>setEditing('')}/>}
+      {currentTemplate && <TemplateWorkspace rendererAssetBase={assetBase} key={`${currentTemplate.id}:${availableSources.get(currentTemplate.id)?.sessionKey ?? 'no-pdf'}`} template={currentTemplate} source={availableSources.get(currentTemplate.id)} onSave={save} onClose={()=>setEditing('')}/>}
     </> : <>
       <section className={styles.panel}><div className={styles.sectionHeading}><div><h2>참가자별 서명 현황</h2><p>서류명과 버전은 요청 당시의 가상 스냅샷입니다. 표의 완료 상태는 실제 완료 증명이 아닙니다.</p></div><strong>{visible.length} / {requests.length}건</strong></div>
         <div className={styles.filters}><label>이벤트<select value={filter.eventId} onChange={e=>changeFilter({eventId:e.target.value})}><option value="">전체 이벤트</option>{eventOptions.map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label><label>서명 상태<select value={filter.status} onChange={e=>changeFilter({status:e.target.value})}><option value="">전체 상태</option>{Object.entries(signatureStatuses).map(([id,name])=><option key={id} value={id}>{name}</option>)}</select></label><label>서류<select value={filter.templateId} onChange={e=>changeFilter({templateId:e.target.value})}><option value="">전체 서류</option>{templateOptions.map(([id,name])=><option key={id} value={id}>{name}{templates.some(t=>t.id===id)?'':' (목록에서 삭제됨)'}</option>)}</select></label><label>참가자 이름 검색<input placeholder="가상 참가자 이름" maxLength={100} value={filter.name} onChange={e=>changeFilter({name:e.target.value})}/></label><button onClick={()=>{setFilter({eventId:'',status:'',name:'',templateId:''});setSelection([]);setDetail(null);}}>필터 초기화</button></div>
@@ -107,5 +109,5 @@ export function DocumentAdminPreview() {
         <div className={styles.actions}><button disabled>선택 대상 문자 발송 · 미연동</button><button disabled>재발송 · 미연동</button><button disabled>개인별 링크 발급 · 미연동</button><button disabled>본인 인증 · 미연동</button><button disabled={!selection.length} onClick={()=>setSelection([])}>선택 해제</button></div>
       </section>
     </>}
-  </main>;
+  </Root>;
 }

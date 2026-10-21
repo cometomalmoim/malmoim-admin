@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { Suspense } from "react";
 import { MemberLoginForm } from "./member-login-form";
 import { memberText } from "@/lib/member-messages";
 import { localizedPublicPath } from "@/lib/public-locale";
@@ -34,7 +35,7 @@ export function MemberLoginPage({ locale }: { locale: PublicLocale }) {
       <section className="member-login-panel" aria-labelledby="member-login-title">
         <h1 id="member-login-title">{t("로그인")}</h1>
         <p className="member-login-intro">{t("이메일로 말모임에 로그인하세요.")}</p>
-        <MemberLoginForm locale={locale} />
+        <Suspense fallback={<p role="status">{locale === "en" ? "Loading login…" : "로그인 화면을 준비하고 있습니다…"}</p>}><MemberLoginForm locale={locale} /></Suspense>
         <p className="member-login-signup">{t("아직 계정이 없으신가요?")} <Link href={localizedPublicPath("/signup", locale)}>{t("회원가입")}<span aria-hidden="true">›</span></Link></p>
       </section>
     </div>

@@ -3,14 +3,14 @@ import { fieldLimits, type PdfPageInfo } from '@/lib/pdf-fields';
 import { validateFieldPdf } from '@/lib/pdf-fields-validation';
 
 export type LocalPdf = { sessionKey: string; bytes: Uint8Array; pdf: PDFDocumentProxy; pages: PdfPageInfo[]; fingerprint: string; name: string; destroy: () => Promise<void> };
-export async function openLocalPdf(file: File): Promise<LocalPdf> {
+export async function openLocalPdf(file: File, assetBase = '/preview/pdf-fields/assets'): Promise<LocalPdf> {
   if (file.size < 1 || file.size > fieldLimits.bytes) throw new Error('PDF는 0바이트보다 크고 5MiB 이하여야 합니다.');
   const bytes = new Uint8Array(await file.arrayBuffer());
   await validateFieldPdf(file.name, file.type, bytes);
   const digest = await crypto.subtle.digest('SHA-256', bytes.slice().buffer);
   const fingerprint = Array.from(new Uint8Array(digest), n => n.toString(16).padStart(2, '0')).join('');
   const pdfjs = await import('pdfjs-dist');
-  const base = new URL('/preview/pdf-fields/assets/', location.origin);
+  const base = new URL(assetBase.replace(/\/$/, '') + '/', location.origin);
   pdfjs.GlobalWorkerOptions.workerSrc = new URL('build/pdf.worker.min.mjs', base).href;
   const task = pdfjs.getDocument({ data: bytes.slice(), enableXfa: false, useWorkerFetch: false, stopAtErrors: true, canvasMaxAreaInBytes: 32000000,
     cMapUrl: new URL('cmaps/', base).href, cMapPacked: true, standardFontDataUrl: new URL('standard_fonts/', base).href, wasmUrl: new URL('wasm/', base).href, useSystemFonts: true });
