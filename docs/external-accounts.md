@@ -11,6 +11,14 @@
 
 ## 적용 순서
 
+### 저장 오류 및 기존 DB 복구
+
+현재 연결 DB에서 `42703: column external_accounts.created_by does not exist`가 확인된 경우 043 이후 스키마가 누락된 상태입니다. 키 설정과 서버 재시작만으로는 해결되지 않습니다. **같은 프로젝트의 Supabase SQL Editor에서 `supabase/manual/repair_external_accounts.sql` 전체를 실행**하세요. 이 스크립트는 022/043/044를 현재 초기 운영 정책으로 맞추며 기존 계정·암호문·등록자·감사 기록을 삭제하지 않습니다. 여러 번 실행할 수 있고 PostgREST 스키마 캐시 갱신도 요청합니다. 관리자/스케줄 기반 테이블은 기존 설치를 사용합니다.
+
+`npm run check:external-accounts`로 현재 `.env.local`이 가리키는 프로젝트의 공개 API 스키마를 점검할 수 있습니다. 익명·0행 조회와 항상 실패하는 잘못된 작업 요청만 사용하며 계정을 만들거나 비밀번호를 조회하지 않습니다. `42703`, `PGRST202/205` 등은 누락/불일치입니다. 익명 요청의 `42501`은 보호된 객체의 정상적인 권한 거부이며 이를 해결하려고 **anon 권한을 추가하면 안 됩니다.** 이 검사로 인증된 저장 성공이나 최신 RPC 내부 권한까지 확정할 수는 없습니다.
+
+저장 RPC 실패 시 서버 터미널에 `[external-accounts] Database operation failed`와 참조 번호, 작업 종류, DB `code/message/details/hint`가 출력됩니다. 비밀번호·암호문·실패 행의 값·키 충돌 값은 숨깁니다. 클라이언트에는 원문 DB 오류 대신 참조 번호와 오류 종류에 맞는 안내만 표시합니다. 선택 결제 필드는 기본값을 적용하고 날짜·금액·담당자 UUID·필드 길이는 RPC 호출 전에 검증합니다.
+
 1. 관리자 및 `018_schedule_management.sql` 적용 환경에 `022_external_accounts.sql` → `043_external_account_creation.sql` → `044_external_account_initial_access.sql` 순서로 실행합니다. 기존 022/043 설치 환경에는 044만 추가 적용합니다. `022_board_idea_category.sql`은 별개입니다.
 2. 개발 환경에서는 `npm run setup:external-accounts`를 실행합니다. `.env.local`의 기존 설정과 유효한 키를 보존하며 누락/빈 값에만 32바이트 무작위 키를 64자리 hex로 설정합니다. 값은 출력하지 않습니다. 실제 이름은 복수형 **`EXTERNAL_ACCOUNTS_ENCRYPTION_KEY`**이며 `NEXT_PUBLIC_` 접두사를 붙이면 안 됩니다. 변경 후 개발 서버를 재시작하세요.
 3. 관리자 기준은 기존 `admin_users`입니다. 사용자를 Master로 자동 승격하거나 기존 인증기를 삭제하지 않습니다. `external_account_members`는 담당자 후보 및 삭제 권한에 계속 사용하며 모든 관리자가 담당자 후보를 조회할 수 있습니다.

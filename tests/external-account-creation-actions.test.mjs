@@ -4,15 +4,19 @@ import {readFileSync} from 'node:fs';
 import {createRequire} from 'node:module';
 import {runInNewContext} from 'node:vm';
 import ts from 'typescript';
+import * as accountInput from '../src/lib/external-account-input.ts';
+import * as accountErrors from '../src/lib/external-account-errors.ts';
 const require=createRequire(import.meta.url);
-function actions({access='admin',master=false}={}){
+function actions({access='admin',master=false,rpcError=null}={}){
   const calls=[];
   const mocks={
     'next/cache':{revalidatePath:path=>calls.push(['refresh',path])},
     '@/lib/auth':{getAdminAccess:async()=>({status:access})},
-    '@/lib/supabase/server':{createClient:async()=>({rpc:async(name,input)=>{calls.push([name,input]);return name==='external_account_master'?{data:master}:{data:'11111111-1111-4111-8111-111111111111'};}})},
+    '@/lib/supabase/server':{createClient:async()=>({rpc:async(name,input)=>{calls.push([name,input]);return name==='external_account_master'?{data:master}:rpcError?{error:rpcError}:{data:'11111111-1111-4111-8111-111111111111'};}})},
     '@/lib/external-account-crypto':{encryptAccountPassword:()=> 'encrypted-test-ciphertext',decryptAccountPassword:()=> 'synthetic-revealed-password'},
     '@/lib/external-account-types':{accountCategories:{design:'디자인'}},
+    '@/lib/external-account-input':accountInput,
+    '@/lib/external-account-errors':accountErrors,
     '@/lib/resource-validation':{validUuid:value=>/^[a-f\d-]{36}$/.test(value)},
   };
   const {outputText}=ts.transpileModule(readFileSync('src/app/actions/external-accounts.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}});
@@ -22,7 +26,7 @@ function actions({access='admin',master=false}={}){
 }
 function form(id=''){
   const data=new FormData();
-  for(const [key,value] of Object.entries({id,service_name:'Canva',service_url:'https://canva.com',login_id:'synthetic@example.com',category:'design',password:'synthetic-only-password',amount:'0',created_by:'spoofed-user'}))data.set(key,value);
+  for(const [key,value] of Object.entries({id,updated_at:id?'2026-10-21T00:00:00Z':'',service_name:'Canva',service_url:'https://canva.com',login_id:'synthetic@example.com',category:'design',password:'synthetic-only-password',amount:'0',created_by:'spoofed-user'}))data.set(key,value);
   return data;
 }
 test('Staff action allows new account creation and refresh without a Master check',async()=>{
@@ -54,4 +58,12 @@ test('non-admin cannot request password decryption',async()=>{
 });
 test('ordinary signed-in users cannot create through the action',async()=>{
   const a=actions({access:'denied'});assert.equal((await a.saveExternalAccount(form())).success,false);assert.equal(a.calls.length,0);
+});
+test('missing DB column logs the original error code on the server and returns an actionable migration message',async t=>{
+  const logs=[];t.mock.method(console,'error',(...args)=>logs.push(args));
+  const a=actions({rpcError:{code:'42703',message:'column created_by does not exist',details:null,hint:'check schema'}});
+  const result=await a.saveExternalAccount(form());
+  assert.equal(result.success,false);assert.match(result.message,/repair_external_accounts.sql/);
+  assert.equal(logs[0][1].code,'42703');assert.equal(logs[0][1].message,'column created_by does not exist');assert.equal(logs[0][1].details,null);
+  assert.ok(!JSON.stringify(logs).includes('synthetic-only-password'));assert.ok(!JSON.stringify(logs).includes('encrypted-test-ciphertext'));
 });

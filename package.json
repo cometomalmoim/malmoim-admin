@@ -4,6 +4,7 @@
   "private": true,
   "scripts": {
     "setup:external-accounts": "node scripts/setup-external-account-key.mjs",
+    "check:external-accounts": "node scripts/check-external-accounts.mjs",
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
