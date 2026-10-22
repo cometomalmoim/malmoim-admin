@@ -46,7 +46,7 @@ export const adminGroups = [
       },
       {
         "slug": "esign-demo",
-        "title": "전자서명 · 개발 시연",
+        "title": "서류·전자서명 관리",
         "description": "가상 데이터로 PDF 편집과 서명 현황을 확인합니다. 실제 발송·영구 저장은 없습니다."
       }
     ]
