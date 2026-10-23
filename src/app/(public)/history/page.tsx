@@ -1,3 +1,5 @@
+
+import {Localized} from "@/components/public-translation";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -27,11 +29,11 @@ const heroPhotos = [
 
 async function ReviewBoard() {
   const [reviews, userId] = await Promise.all([readReviews(), reviewUser()]);
-  return <HistoryReviews initial={reviews} userId={userId} />;
+  return <Localized>{<HistoryReviews initial={reviews} userId={userId} />}</Localized>;
 }
 
 export default function HistoryPage() {
-  return <main id="public-main" className="history-page" tabIndex={-1}>
+  return <Localized>{<main id="public-main" className="history-page" tabIndex={-1}>
     <section className="history-hero" aria-labelledby="history-title">
       <div className="history-heading"><p className="history-label">OUR HISTORY</p><h1 id="history-title">말모임의 <span>순간들</span></h1><p>{description}</p></div>
       <div className="history-collage" role="group" aria-label="활동 사진 콜라주">
@@ -52,5 +54,5 @@ export default function HistoryPage() {
       <div><p lang="en">YOUR NEXT CHAPTER</p><h2 id="history-closing-title">다음 순간은,<br />우리 함께 만들어요.</h2></div>
       <Link href="/about#about-recruitment">말모임 참여 안내 <span aria-hidden="true">↗</span></Link>
     </aside>
-  </main>;
+  </main>}</Localized>;
 }

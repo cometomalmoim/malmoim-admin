@@ -13,7 +13,7 @@ function setup(count = 10) {
   };
   const loaded = { exports: {} };
   const { outputText } = ts.transpileModule(readFileSync(new URL('./history-photo-dialog.tsx', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX } });
-  runInNewContext(outputText, { exports: loaded.exports, module: loaded, Array, Math, require: name => name === 'react' ? react : name === 'next/image' ? { default: () => null } : name === './history-data' ? { displayDate: value => value } : require(name) });
+  runInNewContext(outputText, { exports: loaded.exports, module: loaded, Array, Math, require: name => name === '@/components/public-translation' ? {Localized:({children})=>children} : name === 'react' ? react : name === 'next/image' ? { default: () => null } : name === './history-data' ? { displayDate: value => value } : require(name) });
   let closed = 0;
   const photo = { id: 'mock', category: 'regular', cohort: 9, title: '입력한 제목', date: '2026-01-01', description: '입력한 설명', src: 'blob:mock-cover', alt: '대표', additionalPhotos: Array.from({ length: count - 1 }, (_, i) => ({ src: `blob:mock-${i}`, alt: `추가 ${i}` })) };
   const flatten = node => !node || typeof node !== 'object' ? [] : Array.isArray(node) ? node.flatMap(flatten) : [node, ...flatten(node.props?.children)];
@@ -46,13 +46,13 @@ test('horizontal swipes navigate, vertical/short/cancelled gestures do not', () 
 });
 test('keyboard arrows navigate and do not bubble to a parent dialog', () => {
   const view = setup(); let prevented = false; let stopped = false;
-  view.render()[0].props.onKeyDown({ key: 'ArrowRight', preventDefault() { prevented = true; }, stopPropagation() { stopped = true; } });
+  view.render().find(node => node.type === 'dialog').props.onKeyDown({ key: 'ArrowRight', preventDefault() { prevented = true; }, stopPropagation() { stopped = true; } });
   assert.ok(prevented && stopped); assert.equal(view.position(), '사진 2 / 10');
 });
 test('close button and native Escape cancellation call close', () => {
   const view = setup();
   view.render().find(node => node.type === 'button' && node.props.children === '닫기').props.onClick();
-  view.render()[0].props.onCancel({ preventDefault() {} }); assert.equal(view.closed(), 2);
+  view.render().find(node => node.type === 'dialog').props.onCancel({ preventDefault() {} }); assert.equal(view.closed(), 2);
 });
 test('one photo has no navigation buttons and ignores swipe', () => {
   const view = setup(1); assert.equal(view.button('다음 사진'), undefined);

@@ -15,7 +15,7 @@ function load(file, mocks) {
   const loaded = { exports: {} };
   runInNewContext(outputText, {
     module: loaded, exports: loaded.exports, process: { env: { NODE_ENV: "test" } },
-    require: name => Object.hasOwn(mocks, name) ? mocks[name] : require(name),
+    require: name => name === "@/components/public-translation" ? {Localized:({children})=>children} : Object.hasOwn(mocks, name) ? mocks[name] : require(name),
   });
   return loaded.exports;
 }

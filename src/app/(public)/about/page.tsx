@@ -1,3 +1,5 @@
+
+import {Localized} from "@/components/public-translation";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { ProgramTabs } from "./program-tabs";
@@ -23,7 +25,7 @@ const questions = [
 ] as const;
 
 export default function AboutPage() {
-  return (
+  return <Localized>{(
     <main id="public-main" className="about-page" tabIndex={-1}>
       <section className="about-hero" aria-labelledby="about-title">
         <div className="about-hero-copy">
@@ -114,5 +116,5 @@ export default function AboutPage() {
         <div><button type="button" disabled aria-describedby="about-contact-status">신청 준비 중</button><button type="button" disabled aria-describedby="about-contact-status">문의 준비 중</button></div>
       </aside>
     </main>
-  );
+  )}</Localized>;
 }
