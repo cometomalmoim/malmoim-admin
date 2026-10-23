@@ -4,12 +4,12 @@ export function englishPublicText(value:string):string {
  if(exact)return value.replace(value.trim(),exact);
  const rules:[RegExp,(...parts:string[])=>string][]=[
   [/^\|\s*(\d+)분$/,n=>`| ${n} min`],
-  [/^(\d+)기$/,n=>`Cohort ${n}`],
-  [/^(\d+)기 정규 세션 사진이 아직 없습니다[.]$/,n=>`No regular session photos for Cohort ${n} yet.`],
+  [/^(\d+)기$/,n=>`Season ${n}`],
+  [/^(\d+)기 정규 세션 사진이 아직 없습니다[.]$/,n=>`No regular session photos for Season ${n} yet.`],
   [/^(\d+)년 특별 활동 사진이 아직 없습니다[.]$/,n=>`No special event photos from ${n} yet.`],
-  [/^(.+) (기수|연도) 필터$/,(label,kind)=>`Filter ${englishPublicText(label)} by ${kind==='기수'?'cohort':'year'}`],
+  [/^(.+) (기수|연도) 필터$/,(label,kind)=>`Filter ${englishPublicText(label)} by ${kind==='기수'?'season':'year'}`],
   [/^(.+) 특징$/,label=>`${englishPublicText(label)} features`],
-  [/^정규 세션 · (\d+)기$/,n=>`Regular sessions · Cohort ${n}`],
+  [/^정규 세션 · (\d+)기$/,n=>`Regular sessions · Season ${n}`],
   [/^(.+) 사진 상세 보기$/,title=>`View photos: ${title}`],
   [/^(.+) 후기 상세 보기$/,title=>`Read story: ${title}`],
   [/^(.+) 첨부 사진 (\d+)$/,(title,n)=>`${title}, attached photo ${n}`],
