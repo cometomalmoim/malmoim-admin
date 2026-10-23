@@ -3,7 +3,7 @@ import {applicationStatuses,paymentStatuses,type ApplicantQuery} from './applica
 import "server-only";
 import { getAdminAccess } from "./auth";
 import { createClient } from "./supabase/server";
-export type RecruitmentEvent = { id: string; slug: string; title: string; status: string; applications_open: boolean; closes_at: string | null; starts_at:string|null;ends_at:string|null;is_archived:boolean;archive_revision:number; visual_theme: 'default' | 'halloween' };
+export type RecruitmentEvent = { image_url?: string | null; id: string; slug: string; title: string; status: string; applications_open: boolean; closes_at: string | null; starts_at:string|null;ends_at:string|null;is_archived:boolean;archive_revision:number; visual_theme: 'default' | 'halloween' };
 export type ApplicationRow = { gender?:string|null; korean_level?:string|null;english_level?:string|null; archive_revision:number;is_archived:boolean; id: string; name: string; contact: string; contact_type: string; preferred_class: string | null; participation_history: string | null; history_detail: string | null; status: string; created_at: string; source:string; birth_year:number|null; nationality:string|null; payment_status:string; internal_note:string; revision:number; source_note:string|null; event_id:string; event_slug?:string; event_title?:string; utm_source:string|null; utm_medium:string|null; utm_campaign:string|null };
 export type RecruitmentResult =
   | { kind: "error" }
@@ -14,7 +14,7 @@ export async function getRecruitment(slug?: string, page = 1, query:ApplicantQue
   if ((await getAdminAccess()).status !== "admin") return { kind: "error" };
   try {
     const client = await createClient();
-    const eventsResult = await client.from("recruitment_events").select("id,slug,title,status,applications_open,closes_at,visual_theme,starts_at,ends_at,is_archived,archive_revision").order("created_at", { ascending: false });
+    const eventsResult = await client.from("recruitment_events").select("id,slug,title,status,applications_open,closes_at,visual_theme,starts_at,ends_at,is_archived,archive_revision,image_url").order("created_at", { ascending: false });
     if (eventsResult.error) return { kind: "error" };
     const events = eventsResult.data as RecruitmentEvent[];
     if (!slug&&!all) return { kind: "ready", events, rows: [], count: 0, page: 1 };
