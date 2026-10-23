@@ -141,3 +141,5 @@
 
 /* Keep wide tables inside their own scrollport, not the page viewport. */
 .ops-shell.ops-event-workspace { overflow-x: clip; }
+
+.ops-shell.ops-event-workspace .applicant-save-feedback{display:block;max-width:180px;white-space:normal;font-size:11px;line-height:1.7;color:#a33b24;margin-top:6px}.ops-shell.ops-event-workspace .applicant-save-feedback.is-saved{color:#11694f}.ops-shell.ops-event-workspace .attendance-feedback{display:block;white-space:normal;max-width:360px;line-height:1.7;margin-top:8px}
