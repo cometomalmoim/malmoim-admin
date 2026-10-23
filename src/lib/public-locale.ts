@@ -28,3 +28,8 @@ export function boardReturnPath(value: unknown, locale: PublicLocale): string | 
   if (typeof value !== "string" || !/^\/(?:en\/)?board\/(?:new|[0-9a-f-]{36}(?:\/edit)?)$/.test(value)) return null;
   return localizedPublicPath(value, locale);
 }
+
+// Only the history destination token is accepted; arbitrary redirects stay blocked.
+export function historyReturnPath(value: unknown, locale: PublicLocale): string | null {
+  return value === "history" ? localizedPublicPath("/history", locale) : null;
+}

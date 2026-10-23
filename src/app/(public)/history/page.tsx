@@ -9,7 +9,8 @@ import heroPhoto02 from "../../../../public/history/history-hero-02.jpeg";
 import heroPhoto03 from "../../../../public/history/history-hero-03.jpeg";
 import { PublishedGallery } from "./published-gallery";
 import { HistoryReviews } from "./history-reviews";
-import { readReviews, reviewUser } from "./review-store";
+import { readReviews } from "./review-store";
+import { getReviewAccess } from "./review-permission";
 import { historyPhotos } from "./history-data";
 import "./history.css";
 import "./history-brand.css";
@@ -28,8 +29,8 @@ const heroPhotos = [
 ];
 
 async function ReviewBoard() {
-  const [reviews, userId] = await Promise.all([readReviews(), reviewUser()]);
-  return <Localized>{<HistoryReviews initial={reviews} userId={userId} />}</Localized>;
+  const [reviews, access] = await Promise.all([readReviews(), getReviewAccess()]);
+  return <Localized>{<HistoryReviews initial={reviews} userId={access.userId} permission={access.permission} />}</Localized>;
 }
 
 export default function HistoryPage() {

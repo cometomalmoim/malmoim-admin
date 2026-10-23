@@ -4,8 +4,8 @@ import {Localized} from "@/components/public-translation";
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
-import { deleteReview, loadReviews, saveReview } from "./review-actions";
-import { MAX_PHOTOS, ORIGINAL_PHOTO_LIMIT, reviewCategories, reviewDate, type Review, type ReviewFilter, type ReviewPage } from "./review-types";
+import { deleteReview, loadReviews, loadReviewAccess, saveReview } from "./review-actions";
+import { reviewApprovalNotice, reviewApprovalError, type ReviewPermission, MAX_PHOTOS, ORIGINAL_PHOTO_LIMIT, reviewCategories, reviewDate, type Review, type ReviewFilter, type ReviewPage } from "./review-types";
 import { prepareReviewPhoto } from "./review-photo-client";
 
 export function ReviewDialog({ title, children, close, busy = false, editor = false, userTitle = false }: { userTitle?: boolean; title: string; children: ReactNode; close: () => void; busy?: boolean; editor?: boolean }) {
@@ -167,7 +167,27 @@ export function ReviewDetail({ review, close, edit, remove, busy = false, error 
     {error && <p role="alert" className="review-error">{error}</p>}
   </ReviewDialog>}</Localized>;
 }
-export function HistoryReviews({ initial, userId }: { initial: ReviewPage; userId: string | null }) {
+export function HistoryReviews({ initial, userId, permission }: { initial: ReviewPage; userId: string | null; permission: ReviewPermission }) {
+  const [access, setAccess] = useState({ userId, permission });
+  const [checking, check] = useTransition();
+  const [permissionNotice, setPermissionNotice] = useState<string | null>(null);
+  function requestNewReview() {
+    setPermissionNotice(null);
+    setLogin(false);
+    setMessage("");
+    check(async () => {
+      try {
+        const next = await loadReviewAccess();
+        setAccess(next);
+        if (next.permission === "approved") setEditor("new");
+        else if (next.permission === "anonymous") setLogin(true);
+        else setPermissionNotice(next.permission === "unapproved" ? reviewApprovalNotice : reviewApprovalError);
+      } catch {
+        setAccess((current) => ({ ...current, permission: "error" }));
+        setPermissionNotice(reviewApprovalError);
+      }
+    });
+  }
   const cardTrigger = useRef<HTMLElement | null>(null);
   const [page, setPage] = useState(initial);
   const [filter, setFilter] = useState<ReviewFilter>("all");
@@ -177,6 +197,14 @@ export function HistoryReviews({ initial, userId }: { initial: ReviewPage; userI
   const [message, setMessage] = useState("");
   const [detailError, setDetailError] = useState("");
   const [busy, start] = useTransition();
+  const [serverAccess, setServerAccess] = useState({ userId, permission });
+  // Reconcile only when server authentication props change; local RPC results remain usable.
+  if (serverAccess.userId !== userId || serverAccess.permission !== permission) {
+    setServerAccess({ userId, permission });
+    setAccess({ userId, permission });
+    setLogin(false);
+    setPermissionNotice(null);
+  }
   async function reload(notice: string) {
     setEditor(null); setSelected(null); setMessage(notice);
     try { setPage(await loadReviews(filter, 0)); }
@@ -192,7 +220,8 @@ export function HistoryReviews({ initial, userId }: { initial: ReviewPage; userI
     });
   }
   return <Localized>{<>
-    <div className="review-toolbar"><div className="history-filters" role="group" aria-label="후기 카테고리 필터">{(["all", "regular", "special", "other"] as const).map((key) => <button type="button" key={key} aria-pressed={filter === key} disabled={busy} onClick={() => { setMessage(""); fetchPage(key); }}>{key === "all" ? "전체" : reviewCategories[key]}</button>)}</div><button className="review-create" type="button" onClick={() => { setMessage(""); if (userId) setEditor("new"); else setLogin(true); }}>후기 등록하기</button></div>
+    <div className="review-toolbar"><div className="history-filters" role="group" aria-label="후기 카테고리 필터">{(["all", "regular", "special", "other"] as const).map((key) => <button type="button" key={key} aria-pressed={filter === key} disabled={busy} onClick={() => { setMessage(""); fetchPage(key); }}>{key === "all" ? "전체" : reviewCategories[key]}</button>)}</div><button className="review-create" type="button" disabled={checking} onClick={requestNewReview}>{checking ? "작성 권한 확인 중…" : access.permission === "error" ? "작성 권한 다시 확인" : "후기 등록하기"}</button></div>
+    {(access.permission === "unapproved" || access.permission === "error") && <p className="review-notice" role="status">{access.permission === "unapproved" ? reviewApprovalNotice : reviewApprovalError}</p>}
     {process.env.NODE_ENV === "development" && <p className="review-demo-notice"><Link href="/history/preview">후기 UI 개발용 미리보기</Link> · 실제 데이터 저장 없이 폼과 카드를 확인합니다.</p>}
     <p className="review-notice" role="status">{busy ? "요청을 처리하고 있어요. 잠시만 기다려주세요." : message}</p>
     <div aria-busy={busy}>
@@ -201,11 +230,12 @@ export function HistoryReviews({ initial, userId }: { initial: ReviewPage; userI
       </>}
       {page.more && <button className="history-more" type="button" disabled={busy} onClick={() => fetchPage(filter, true)}>더 많은 후기 보기 <span aria-hidden="true">＋</span></button>}
     </div>
-    {login && <ReviewDialog title="로그인이 필요합니다" close={() => setLogin(false)}><p>후기를 작성하려면 로그인이 필요합니다. 로그인 후 후기 페이지로 돌아와 작성할 수 있습니다.</p><div className="review-actions"><Link className="review-create" href="/auth/login">로그인하기</Link><button type="button" onClick={() => setLogin(false)}>취소</button></div></ReviewDialog>}
-    {editor && <ReviewEditor review={editor === "new" ? undefined : editor} close={() => setEditor(null)} saved={reload} />}
+    {permissionNotice && <ReviewDialog title="후기 작성 권한 안내" close={() => setPermissionNotice(null)}><p role="alert">{permissionNotice}</p><div className="review-actions"><button type="button" onClick={() => setPermissionNotice(null)}>확인</button></div></ReviewDialog>}
+    {login && <ReviewDialog title="로그인이 필요합니다" close={() => setLogin(false)}><p>후기를 작성하려면 로그인이 필요합니다. 로그인 후 후기 페이지로 돌아와 작성할 수 있습니다.</p><div className="review-actions"><Link className="review-create" href="/auth/login?returnTo=history" onClick={() => setLogin(false)}>로그인하기</Link><button type="button" onClick={() => setLogin(false)}>취소</button></div></ReviewDialog>}
+    {editor && (editor !== "new" || access.permission === "approved") && <ReviewEditor review={editor === "new" ? undefined : editor} close={() => setEditor(null)} saved={reload} />}
     {selected && !editor && <ReviewDetail review={selected} close={() => { setSelected(null); requestAnimationFrame(() => cardTrigger.current?.isConnected && cardTrigger.current.focus()); }} busy={busy} error={detailError}
-      edit={userId === selected.author_id ? () => setEditor(selected) : undefined}
-      remove={userId === selected.author_id ? () => start(async () => {
+      edit={access.userId === selected.author_id ? () => setEditor(selected) : undefined}
+      remove={access.userId === selected.author_id ? () => start(async () => {
         setDetailError("");
         try { const result = await deleteReview(selected.id); if (result.ok) await reload(result.message); else setDetailError(result.message); }
         catch { setDetailError("삭제 결과를 확인하지 못했어요. 목록에서 삭제 여부를 확인한 뒤 다시 시도해주세요."); }

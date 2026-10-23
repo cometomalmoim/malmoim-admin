@@ -106,6 +106,7 @@ function actions({ previous = [], uploadError = false } = {}) {
   };
   return { ...load("./review-actions.ts", {
     "next/cache": { revalidatePath() {} }, "@/lib/supabase/server": { createClient: async () => client },
+    "./review-permission": { checkReviewApproval: async () => "approved" },
     "./review-store": { REVIEW_BUCKET: "history-review-photos" }, "./review-types": types, "./review-photo-format": format,
   }, { crypto: globalThis.crypto }), writes, table: () => table };
 }
