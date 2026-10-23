@@ -1,0 +1,34 @@
+import {policyModule} from './photo-policy.test-support.mjs';
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
+import {test} from 'node:test';
+import ts from 'typescript';
+function load(file,mode='test'){
+ const loaded={exports:{}};const {outputText}=ts.transpileModule(readFileSync(new URL(file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}});
+ runInNewContext(outputText,{module:loaded,exports:loaded.exports,structuredClone,Uint8Array,process:{env:{NODE_ENV:mode}},require:name=>{assert.ok(name.endsWith('photo-policy'));return policyModule;}});return loaded.exports;
+}
+const {createDirectUploadContract,simulateBrowserDirectUpload}=load('./direct-upload.ts');
+const {createMemoryDirectUploadLab}=load('./test-support/memory-direct-upload.ts');
+const actor='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',activityId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
+function setup(){let clock=100;const lab=createMemoryDirectUploadLab(()=>clock);const context=lab.admin(actor);const contract=createDirectUploadContract(lab.authority);const metadata={activityId,size:3,mime:'image/jpeg'};return {lab,context,contract,metadata,expire(){clock+=7200001;},async permit(){return contract.prepare(context,metadata);}};}
+test('normal mock direct transfer sends bytes only to Storage; server status stays uncertain',async()=>{const s=setup();const permit=await s.permit();const control={async claim(...args){assert.ok(!args.some(a=>a instanceof Uint8Array));return s.contract.claim(...args);},async notify(...args){assert.ok(!args.some(a=>a instanceof Uint8Array));return s.contract.notify(...args);}};assert.equal(await simulateBrowserDirectUpload(control,s.context,permit,new Uint8Array(3),s.lab.transport),'uncertain');assert.ok(s.lab.exists(permit.binding.path));assert.equal(s.lab.inspect(permit.binding.requestId).phase,'uncertain');});
+test('no authority defaults disabled and fake admin is denied',async()=>{const s=setup();assert.equal(await createDirectUploadContract().prepare({},s.metadata),null);assert.equal(await s.contract.prepare({actorId:actor,admin:true},s.metadata),null);});
+for(const field of ['bucket','path','requestId','photoId','bytes','completed','proofs'])test(`server metadata rejects client supplied ${field}`,async()=>{const s=setup();assert.equal(await s.contract.prepare(s.context,{...s.metadata,[field]:'forged'}),null);});
+for(const field of ['bucket','path','photoId','ticket'])test(`bearer and claim reject changed ${field}`,async()=>{const s=setup();const permit=await s.permit();const forged={...permit,binding:{...permit.binding,[field]:'other'}};assert.equal(await s.contract.claim(s.context,forged),false);await assert.rejects(s.lab.transport.send(forged,new Uint8Array(3)),/scope/);});
+test('provider expiry rejects both control claim and leaked bearer',async()=>{const s=setup();const permit=await s.permit();s.expire();assert.equal(await s.contract.claim(s.context,permit),false);await assert.rejects(s.lab.transport.send(permit,new Uint8Array(3)));});
+test('same permit has one cooperative dispatch claim across concurrent clients',async()=>{const s=setup();const permit=await s.permit();const results=await Promise.all([s.contract.claim(s.context,permit),s.contract.claim(s.context,permit)]);assert.equal(results.filter(Boolean).length,1);});
+test('deletion immediately after signing blocks cooperative upload',async()=>{const s=setup();const permit=await s.permit();s.lab.deleteIntent(permit.binding.requestId);assert.equal(await simulateBrowserDirectUpload(s.contract,s.context,permit,new Uint8Array(3),s.lab.transport),'blocked');assert.equal(s.lab.exists(permit.binding.path),false);assert.equal(s.lab.inspect(permit.binding.requestId).deleteRequested,true);});
+test('leaked bearer can arrive after deletion: retain tombstone and cleanup obligation',async()=>{const s=setup();const permit=await s.permit();s.lab.deleteIntent(permit.binding.requestId);await s.lab.transport.send(permit,new Uint8Array(3));assert.ok(s.lab.exists(permit.binding.path));const record=s.lab.inspect(permit.binding.requestId);assert.equal(record.deleteRequested,true);assert.equal(record.cleanupRequired,true);assert.notEqual(record.phase,'completed');});
+test('upsert=false does NOT imply single-use after object cleanup',async()=>{const s=setup();const permit=await s.permit();await s.lab.transport.send(permit,new Uint8Array(3));await assert.rejects(s.lab.transport.send(permit,new Uint8Array(3)),/conflict/);s.lab.removeMockObject(permit.binding.path);await s.lab.transport.send(permit,new Uint8Array(3));assert.ok(s.lab.exists(permit.binding.path));});
+test('browser forged success notification never creates server completion evidence',async()=>{const s=setup();const permit=await s.permit();await s.contract.claim(s.context,permit);assert.equal(await s.contract.notify(s.context,{...permit,completed:true,proofs:['fake']}),'uncertain');assert.equal(s.lab.exists(permit.binding.path),false);assert.equal(s.lab.inspect(permit.binding.requestId).phase,'uncertain');});
+for(const failure of ['network timeout','response lost'])test(`${failure} remains uncertain and is never automatically resent`,async()=>{const s=setup();const permit=await s.permit();let calls=0;const transport={async send(p,b){calls++;if(failure==='response lost')await s.lab.transport.send(p,b);throw Error(failure);}};assert.equal(await simulateBrowserDirectUpload(s.contract,s.context,permit,new Uint8Array(3),transport),'uncertain');assert.equal(await simulateBrowserDirectUpload(s.contract,s.context,permit,new Uint8Array(3),transport),'blocked');assert.equal(calls,1);});
+test('new byte policy and total reservations: ten exact max files accepted; eleventh rejected',async()=>{const s=setup();for(let i=0;i<10;i++)assert.ok(await s.contract.prepare(s.context,{...s.metadata,size:4_718_592}));assert.equal(await s.permit(),null);const other=setup();assert.equal(await other.contract.prepare(other.context,{...other.metadata,size:4_718_593}),null);});
+test('test issuer cannot instantiate in production',()=>{assert.throws(()=>load('./test-support/memory-direct-upload.ts','production').createMemoryDirectUploadLab(),/test-only/);});
+test('timeout followed by late remote write never resolves server uncertainty',async()=>{
+ const s=setup();const permit=await s.permit();let late;
+ const transport={async send(p,b){late=()=>s.lab.transport.send(p,b);throw Error('local timeout');}};
+ await simulateBrowserDirectUpload(s.contract,s.context,permit,new Uint8Array(3),transport);
+ s.lab.deleteIntent(permit.binding.requestId);await late();
+ const state=s.lab.inspect(permit.binding.requestId);assert.equal(state.phase,'uncertain');assert.equal(state.deleteRequested,true);assert.equal(state.cleanupRequired,true);
+});

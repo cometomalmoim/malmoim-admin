@@ -231,7 +231,7 @@
 .history-photo-dialog-heading h2 { margin-top: 4px; font-size: 22px; line-height: 1.4; font-weight: 800; }
 .history-photo-dialog button { min-height: 44px; padding: 8px 16px; border: 1px solid #dcdde5; border-radius: 24px; background: #fff; color: #231815; font: inherit; cursor: pointer; }
 .history-photo-dialog-heading > button { flex-shrink: 0; }
-.history-photo-stage { display: flex; align-items: center; justify-content: center; min-height: 160px; border-radius: 10px; background: #f5f7f8; overflow: hidden; }
+.history-photo-stage { touch-action: pan-y pinch-zoom; display: flex; align-items: center; justify-content: center; min-height: 160px; border-radius: 10px; background: #f5f7f8; overflow: hidden; }
 .history-photo-stage > img { display: block; width: 100%; height: auto; max-height: 52dvh; object-fit: contain; }
 .history-photo-dialog .history-photo-error { padding: 24px; color: #646474; }
 .history-photo-navigation { display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; margin-top: 12px; }

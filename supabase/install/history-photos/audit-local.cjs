@@ -1,0 +1,45 @@
+// Real negative tests: new package lab only, no deletion of stored objects.
+const fs=require('node:fs'),crypto=require('node:crypto'),path=require('node:path'),{execFileSync}=require('node:child_process'),{connect,install}=require('./install-local.cjs');
+(async()=>{const root=process.argv[2],{sql,t,docker,pin}=connect(root);install(root);const repo=path.resolve(__dirname,'../../..'),status=JSON.parse(execFileSync(repo+'/node_modules/.bin/supabase',['status','--workdir',root,'-o','json'],{stdio:['ignore','pipe','pipe']}));if(status.API_URL!==t.apiUrl)throw Error('target');const {createClient}=require(repo+'/node_modules/@supabase/supabase-js');const log=[],ok=(name,b)=>{if(!b)throw Error('failed '+name);log.push(name);},q=s=>"'"+s.replaceAll("'","''")+"'",js=p=>q(JSON.stringify(p))+'::jsonb';
+ const before=sql("BEGIN READ ONLY;SELECT md5(coalesce(string_agg(to_jsonb(o)::text,E'\\n' ORDER BY id),'')) FROM storage.objects o;ROLLBACK;");
+ function as(role,query){pin();const pw=fs.readFileSync(root+'/verified-finalization/'+role+'.private','utf8').trim();return docker(['exec','-i','supabase_db_'+t.projectId,'sh','-c',`read -r PGPASSWORD; export PGPASSWORD; exec psql -h127.0.0.1 -X -qAt -U ${role} -d postgres -v ON_ERROR_STOP=1`],pw+'\n'+query).trim();}
+ function denied(name,fn){let refused=false;try{fn();}catch{refused=true;}ok(name,refused);}
+ denied('worker direct table write',()=>as('photo_finish_worker',"BEGIN;UPDATE photo_finish_v2.jobs SET state='blocked' WHERE false;ROLLBACK;"));
+ denied('worker cannot call administrator RPC',()=>as('photo_finish_worker',"SELECT public.photo_service_command_v4('{}');"));
+ denied('worker cannot assume owner',()=>as('photo_finish_worker','SET ROLE photo_finish_owner;'));
+ denied('attestor cannot consume receipt',()=>as('photo_finish_attestor',"SELECT photo_finish_v2.commit('{}');"));
+ denied('reader cannot attest',()=>as('photo_scope_reader',"SELECT photo_finish_v2.attest('{}');"));
+ const bad=fs.readFileSync(__dirname+'/002_verify.read-only.sql','utf8').replace('BEGIN READ ONLY;','').replace('ROLLBACK;','');
+ denied('modified policy rejected before commit',()=>sql('BEGIN;ALTER POLICY hp_create_final ON storage.objects WITH CHECK(true);'+bad+'ROLLBACK;'));
+ denied('modified function body rejected before commit',()=>sql("BEGIN;CREATE OR REPLACE FUNCTION photo_service_v4.managed_job(j uuid,who uuid) RETURNS boolean LANGUAGE sql SECURITY DEFINER SET search_path='' AS $$SELECT true$$;"+bad+'ROLLBACK;'));
+ install(root);
+ const creds=JSON.parse(fs.readFileSync(root+'/login-private.json')),client=createClient(t.apiUrl,status.ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false}}),signed=await client.auth.signInWithPassword(creds);if(signed.error)throw Error('admin');const session=signed.data.session.access_token,actor=signed.data.user.id;
+ const browser=createClient(t.apiUrl,status.ANON_KEY,{global:{headers:{authorization:'Bearer '+session}},auth:{persistSession:false,autoRefreshToken:false}}),anon=createClient(t.apiUrl,status.ANON_KEY,{auth:{persistSession:false,autoRefreshToken:false}});
+ async function rpc(p){const r=await fetch(t.apiUrl+'/rest/v1/rpc/photo_service_command_v4',{method:'POST',headers:{apikey:status.ANON_KEY,authorization:'Bearer '+session,'content-type':'application/json'},body:JSON.stringify({p})});return {r,data:await r.json()};}
+ const a=await rpc({op:'create',requestId:crypto.randomUUID(),title:'Limits audit only',date:'2026-10-22',description:'No files uploaded for quota checks'});if(!a.r.ok)throw Error('limits fixture');let revision=0;
+ for(let i=0;i<10;i++){const r=await rpc({op:'reserve',activityId:a.data.activityId,requestId:crypto.randomUUID(),revision,size:4718592,mime:'image/png'});ok('boundary reserve '+(i+1),r.r.ok);revision=r.data.revision;}
+ ok('eleventh photo denied',!(await rpc({op:'reserve',activityId:a.data.activityId,requestId:crypto.randomUUID(),revision,size:1,mime:'image/png'})).r.ok);
+ const b=await rpc({op:'create',requestId:crypto.randomUUID(),title:'Individual size audit',date:'2026-10-22',description:'No file upload'});ok('oversize photo denied',!(await rpc({op:'reserve',activityId:b.data.activityId,requestId:crypto.randomUUID(),revision:0,size:4718593,mime:'image/png'})).r.ok);
+ ok('pending activity cannot publish',!(await rpc({op:'visibility',activityId:a.data.activityId,requestId:crypto.randomUUID(),revision,published:true})).r.ok);
+ const completed=JSON.parse(sql("BEGIN READ ONLY;SELECT jsonb_build_object('id',id,'activity',activity,'photo',photo,'temp',temp_path,'final',final_path,'digest',digest) FROM photo_finish_v2.jobs WHERE state='complete' ORDER BY id LIMIT 1;ROLLBACK;"));
+ const tokenSecret=JSON.parse(docker(['inspect','supabase_auth_'+t.projectId]))[0].Config.Env.find(s=>s.startsWith('GOTRUE_JWT_SECRET=')).slice('GOTRUE_JWT_SECRET='.length);
+ function jwt(role,jti,expiry=120){const now=Math.floor(Date.now()/1000),header=Buffer.from(JSON.stringify({alg:'HS256',typ:'JWT'})).toString('base64url'),payload=Buffer.from(JSON.stringify({iss:t.apiUrl+'/auth/v1',aud:'authenticated',role,sub:actor,jti,iat:now,exp:now+expiry})).toString('base64url');return header+'.'+payload+'.'+crypto.createHmac('sha256',tokenSecret).update(header+'.'+payload).digest('base64url');}
+ function scoped(role){const jti=crypto.randomUUID();as('photo_finish_attestor',`SELECT photo_finish_v2.cap(${q(completed.id)}::uuid,${q(actor)}::uuid,${q(jti)}::uuid,${q(role)},${q(completed.final)});`);return {jti,client:createClient(t.apiUrl,status.ANON_KEY,{global:{headers:{authorization:'Bearer '+jwt(role,jti)}},auth:{persistSession:false,autoRefreshToken:false}})};}
+ const issuer=scoped('photo_storage_issuer'),finalizer=scoped('photo_storage_finalizer'),temp='history-activity-photos',final='history-activity-final-photos',missing=completed.activity+'/'+crypto.randomUUID()+'/never-created.png';
+ async function rejectApi(name,p){const r=await p;ok(name,!!r.error);}
+ await rejectApi('issuer cannot authorize other photo',issuer.client.storage.from(temp).createSignedUploadUrl(crypto.randomUUID()+'.png',{upsert:false}));
+ await rejectApi('issuer cannot authorize final path',issuer.client.storage.from(final).createSignedUploadUrl(completed.final,{upsert:false}));
+ await rejectApi('finalizer cannot issue browser final permit',finalizer.client.storage.from(final).createSignedUploadUrl(completed.final,{upsert:false}));
+ await rejectApi('anonymous cannot insert final',anon.storage.from(final).upload(missing,Buffer.from([1]),{contentType:'image/png',upsert:false}));
+ await rejectApi('administrator browser cannot insert final',browser.storage.from(final).upload(missing,Buffer.from([1]),{contentType:'image/png',upsert:false}));
+ await rejectApi('finalizer cannot create another photo',finalizer.client.storage.from(final).upload(missing,Buffer.from([1]),{contentType:'image/png',upsert:false}));
+ await rejectApi('finalizer cannot access other bucket',finalizer.client.storage.from('not-a-photo-bucket').download('never-created.png'));
+ await rejectApi('finalizer cannot UPDATE',finalizer.client.storage.from(final).update(missing,Buffer.from([1]),{contentType:'image/png'}));
+ const removal=await finalizer.client.storage.from(final).remove([missing]);ok('DELETE privilege absent and no removal',sql("BEGIN READ ONLY;SELECT has_table_privilege('photo_storage_finalizer','storage.objects','DELETE');ROLLBACK;")==='f'&&(removal.error||removal.data?.length===0));
+ const read=await finalizer.client.storage.from(final).download(completed.final);ok('scoped final read matches stored digest',!read.error&&crypto.createHash('sha256').update(Buffer.from(await read.data.arrayBuffer())).digest('hex')===completed.digest);
+ const expired=createClient(t.apiUrl,status.ANON_KEY,{global:{headers:{authorization:'Bearer '+jwt('photo_storage_finalizer',finalizer.jti,-1)}},auth:{persistSession:false,autoRefreshToken:false}});await rejectApi('expired token rejected',expired.storage.from(final).download(completed.final));
+ ok('private public-reader returns no snapshot',as('photo_scope_reader','SELECT photo_scope_v3.read('+js({op:'snapshot',activityId:completed.activity})+');')==='');
+ const after=sql("BEGIN READ ONLY;SELECT md5(coalesce(string_agg(to_jsonb(o)::text,E'\\n' ORDER BY id),'')) FROM storage.objects o;ROLLBACK;");ok('all stored objects unchanged',before===after);install(root);
+ const count=Number(sql("BEGIN READ ONLY;SELECT count(*) FROM pg_proc WHERE pronamespace IN (SELECT oid FROM pg_namespace WHERE nspname IN ('scope_private','photo_finish_v2','photo_scope_v3','photo_service_v4')) OR (pronamespace='public'::regnamespace AND proname LIKE 'photo_%');ROLLBACK;"));
+ fs.writeFileSync(root+'/permission-audit-result.json',JSON.stringify({passed:log.length,checks:log,functions:count,storagePreserved:true,production:false},null,2));console.log(JSON.stringify({realPermissionAndBoundaryChecks:log.length,functions:count,storagePreserved:true}));
+})().catch(()=>{console.error('local_permission_audit_failed; preserved test fixtures require inspection');process.exitCode=1;});

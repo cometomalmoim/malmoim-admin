@@ -1,0 +1,102 @@
+{
+  "moved": {
+    "photo_scope_v3.activity_actor(uuid)": "photo_helper_reader_owner",
+    "photo_scope_v3.verified_state(uuid)": "photo_helper_reader_owner",
+    "photo_service_v4.managed_job(uuid,uuid)": "photo_helper_reader_owner",
+    "photo_service_v4.jobs(uuid)": "photo_helper_reader_owner",
+    "photo_service_v4.public_version(uuid)": "photo_helper_reader_owner",
+    "photo_service_v4.public_valid(uuid)": "photo_helper_reader_owner",
+    "photo_finish_v2.cap(uuid,uuid,uuid,text,text)": "photo_capability_owner"
+  },
+  "remainingPostgres": [
+    "photo_finish_v2.actor()",
+    "photo_finish_v2.admin(uuid)",
+    "photo_scope_v3.current_actor()",
+    "photo_scope_v3.allowed(text,text)",
+    "photo_service_v4.actor()",
+    "scope_private.allowed(text,text)"
+  ],
+  "select": {
+    "photo_helper_reader_owner": {
+      "photo_finish_v2.activities": [
+        "id",
+        "actor",
+        "epoch"
+      ],
+      "photo_finish_v2.jobs": [
+        "id",
+        "request_id",
+        "activity",
+        "photo",
+        "size",
+        "mime",
+        "epoch",
+        "revision",
+        "state",
+        "digest",
+        "final_path"
+      ],
+      "photo_finish_v2.receipts": [
+        "id",
+        "job",
+        "evidence",
+        "consumed"
+      ],
+      "photo_scope_v3.publications": [
+        "activity",
+        "actor",
+        "version",
+        "published",
+        "snapshot"
+      ],
+      "photo_service_v4.activities": [
+        "id",
+        "actor"
+      ]
+    },
+    "photo_capability_owner": {
+      "photo_finish_v2.jobs": [
+        "id",
+        "request_id",
+        "activity",
+        "photo",
+        "actor",
+        "size",
+        "mime",
+        "temp_path",
+        "epoch",
+        "revision",
+        "state",
+        "digest",
+        "final_path"
+      ],
+      "photo_finish_v2.activities": [
+        "id",
+        "actor",
+        "epoch"
+      ]
+    }
+  },
+  "insert": {
+    "photo_capability_owner": {
+      "scope_private.capabilities": [
+        "jti",
+        "subject",
+        "role_name",
+        "temp_path",
+        "final_path",
+        "expires_at"
+      ]
+    }
+  },
+  "extraExecute": {
+    "photo_capability_owner": [
+      "photo_finish_v2.admin(uuid)"
+    ]
+  },
+  "retainedCallerExecute": {
+    "postgres": [
+      "photo_scope_v3.verified_state(uuid)"
+    ]
+  }
+}

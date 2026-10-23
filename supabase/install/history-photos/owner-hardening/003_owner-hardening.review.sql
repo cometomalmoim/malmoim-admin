@@ -1,0 +1,62 @@
+-- Approved local 60422 photo-only ownership experiment. NOT a production migration.
+BEGIN;
+DO $$ BEGIN
+ IF current_user<>'postgres' OR current_database()<>'postgres' OR current_setting('photo_owner.approved',true) IS DISTINCT FROM 'malmoim-photo-package-e118b7ab:60422' OR NOT EXISTS(SELECT FROM scope_private.configuration WHERE issuer='http://127.0.0.1:60421/auth/v1') THEN RAISE EXCEPTION 'wrong ownership target';END IF;
+ IF EXISTS(SELECT FROM pg_roles WHERE rolname IN ('photo_helper_reader_owner','photo_capability_owner')) THEN RAISE EXCEPTION 'owner role conflict';END IF;
+END $$;
+CREATE ROLE photo_helper_reader_owner NOLOGIN NOINHERIT NOSUPERUSER NOBYPASSRLS NOCREATEROLE NOCREATEDB NOREPLICATION;
+CREATE ROLE photo_capability_owner NOLOGIN NOINHERIT NOSUPERUSER NOBYPASSRLS NOCREATEROLE NOCREATEDB NOREPLICATION;
+GRANT photo_helper_reader_owner,photo_capability_owner,photo_finish_owner,photo_scope_owner,photo_service_owner TO postgres WITH INHERIT TRUE,SET TRUE;
+GRANT USAGE,CREATE ON SCHEMA photo_finish_v2,photo_scope_v3,photo_service_v4 TO photo_helper_reader_owner;
+GRANT USAGE,CREATE ON SCHEMA photo_finish_v2 TO photo_capability_owner;
+GRANT USAGE ON SCHEMA scope_private TO photo_capability_owner;
+GRANT SELECT (id,actor,epoch) ON photo_finish_v2.activities TO photo_helper_reader_owner;
+CREATE POLICY hp_owner_read ON photo_finish_v2.activities FOR SELECT TO photo_helper_reader_owner USING(true);
+GRANT SELECT (id,request_id,activity,photo,size,mime,epoch,revision,state,digest,final_path) ON photo_finish_v2.jobs TO photo_helper_reader_owner;
+CREATE POLICY hp_owner_read ON photo_finish_v2.jobs FOR SELECT TO photo_helper_reader_owner USING(true);
+GRANT SELECT (id,job,evidence,consumed) ON photo_finish_v2.receipts TO photo_helper_reader_owner;
+CREATE POLICY hp_owner_read ON photo_finish_v2.receipts FOR SELECT TO photo_helper_reader_owner USING(true);
+GRANT SELECT (activity,actor,version,published,snapshot) ON photo_scope_v3.publications TO photo_helper_reader_owner;
+CREATE POLICY hp_owner_read ON photo_scope_v3.publications FOR SELECT TO photo_helper_reader_owner USING(true);
+GRANT SELECT (id,actor) ON photo_service_v4.activities TO photo_helper_reader_owner;
+CREATE POLICY hp_owner_read ON photo_service_v4.activities FOR SELECT TO photo_helper_reader_owner USING(true);
+GRANT SELECT (id,request_id,activity,photo,actor,size,mime,temp_path,epoch,revision,state,digest,final_path) ON photo_finish_v2.jobs TO photo_capability_owner;
+CREATE POLICY hp_owner_cap ON photo_finish_v2.jobs FOR SELECT TO photo_capability_owner USING(true);
+GRANT SELECT (id,actor,epoch) ON photo_finish_v2.activities TO photo_capability_owner;
+CREATE POLICY hp_owner_cap ON photo_finish_v2.activities FOR SELECT TO photo_capability_owner USING(true);
+GRANT INSERT (jti,subject,role_name,temp_path,final_path,expires_at) ON scope_private.capabilities TO photo_capability_owner;
+CREATE POLICY hp_owner_cap_insert ON scope_private.capabilities FOR INSERT TO photo_capability_owner WITH CHECK(true);
+GRANT EXECUTE ON FUNCTION photo_finish_v2.admin(uuid) TO photo_capability_owner;
+CREATE OR REPLACE FUNCTION photo_finish_v2.cap(job uuid,who uuid,jti uuid,kind text,final text DEFAULT 'unavailable') RETURNS void LANGUAGE plpgsql SECURITY DEFINER SET search_path='' AS $$
+DECLARE j photo_finish_v2.jobs;BEGIN
+ SELECT * INTO STRICT j FROM photo_finish_v2.jobs WHERE id=job AND actor=who;
+ IF NOT photo_finish_v2.admin(who) OR j.state='blocked' OR NOT EXISTS(SELECT FROM photo_finish_v2.activities a WHERE a.id=j.activity AND a.epoch=j.epoch) OR kind NOT IN ('photo_storage_issuer','photo_storage_finalizer') THEN RAISE EXCEPTION 'cap denied';END IF;
+ IF final<>'unavailable' AND final !~ ('^'||j.activity::text||'/'||j.photo::text||'/[a-f0-9]{64}[.](png|jpg|webp)$') THEN RAISE EXCEPTION 'path denied';END IF;
+ INSERT INTO scope_private.capabilities(jti,subject,role_name,temp_path,final_path,expires_at) VALUES(cap.jti,who,kind,j.temp_path,final,clock_timestamp()+interval '2 minutes');
+END $$;
+ALTER FUNCTION photo_scope_v3.activity_actor(uuid) OWNER TO photo_helper_reader_owner;
+GRANT EXECUTE ON FUNCTION photo_scope_v3.activity_actor(uuid) TO photo_helper_reader_owner;
+REVOKE EXECUTE ON FUNCTION photo_scope_v3.activity_actor(uuid) FROM postgres;
+ALTER FUNCTION photo_scope_v3.verified_state(uuid) OWNER TO photo_helper_reader_owner;
+GRANT EXECUTE ON FUNCTION photo_scope_v3.verified_state(uuid) TO photo_helper_reader_owner;
+-- Existing auth-dependent Storage policy helper still runs as postgres and calls only this reader.
+GRANT EXECUTE ON FUNCTION photo_scope_v3.verified_state(uuid) TO postgres;
+ALTER FUNCTION photo_service_v4.managed_job(uuid,uuid) OWNER TO photo_helper_reader_owner;
+GRANT EXECUTE ON FUNCTION photo_service_v4.managed_job(uuid,uuid) TO photo_helper_reader_owner;
+REVOKE EXECUTE ON FUNCTION photo_service_v4.managed_job(uuid,uuid) FROM postgres;
+ALTER FUNCTION photo_service_v4.jobs(uuid) OWNER TO photo_helper_reader_owner;
+GRANT EXECUTE ON FUNCTION photo_service_v4.jobs(uuid) TO photo_helper_reader_owner;
+REVOKE EXECUTE ON FUNCTION photo_service_v4.jobs(uuid) FROM postgres;
+ALTER FUNCTION photo_service_v4.public_version(uuid) OWNER TO photo_helper_reader_owner;
+GRANT EXECUTE ON FUNCTION photo_service_v4.public_version(uuid) TO photo_helper_reader_owner;
+REVOKE EXECUTE ON FUNCTION photo_service_v4.public_version(uuid) FROM postgres;
+ALTER FUNCTION photo_service_v4.public_valid(uuid) OWNER TO photo_helper_reader_owner;
+GRANT EXECUTE ON FUNCTION photo_service_v4.public_valid(uuid) TO photo_helper_reader_owner;
+REVOKE EXECUTE ON FUNCTION photo_service_v4.public_valid(uuid) FROM postgres;
+ALTER FUNCTION photo_finish_v2.cap(uuid,uuid,uuid,text,text) OWNER TO photo_capability_owner;
+GRANT EXECUTE ON FUNCTION photo_finish_v2.cap(uuid,uuid,uuid,text,text) TO photo_capability_owner;
+REVOKE EXECUTE ON FUNCTION photo_finish_v2.cap(uuid,uuid,uuid,text,text) FROM postgres;
+REVOKE CREATE ON SCHEMA photo_finish_v2,photo_scope_v3,photo_service_v4 FROM photo_helper_reader_owner;
+REVOKE CREATE ON SCHEMA photo_finish_v2 FROM photo_capability_owner;
+REVOKE photo_helper_reader_owner,photo_capability_owner,photo_finish_owner,photo_scope_owner,photo_service_owner FROM postgres;
+COMMIT;

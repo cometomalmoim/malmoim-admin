@@ -1,0 +1,181 @@
+{
+  "roles": [
+    "photo_finish_owner",
+    "photo_finish_attestor",
+    "photo_finish_worker",
+    "photo_scope_owner",
+    "photo_scope_reader",
+    "photo_scope_storage_reader",
+    "photo_service_owner",
+    "photo_storage_issuer",
+    "photo_storage_finalizer"
+  ],
+  "schemas": [
+    "scope_private",
+    "photo_finish_v2",
+    "photo_scope_v3",
+    "photo_service_v4"
+  ],
+  "tables": [
+    "scope_private.configuration",
+    "scope_private.installation",
+    "scope_private.capabilities",
+    "photo_finish_v2.activities",
+    "photo_finish_v2.jobs",
+    "photo_finish_v2.receipts",
+    "photo_scope_v3.publications",
+    "photo_scope_v3.caps",
+    "photo_service_v4.activities",
+    "photo_service_v4.requests",
+    "photo_service_v4.permits"
+  ],
+  "functions": [
+    {
+      "signature": "photo_finish_v2.actor()",
+      "owner": "postgres"
+    },
+    {
+      "signature": "photo_finish_v2.admin(uuid)",
+      "owner": "postgres"
+    },
+    {
+      "signature": "public.photo_finish_request_v2(jsonb)",
+      "owner": "photo_finish_owner"
+    },
+    {
+      "signature": "photo_finish_v2.job_json(photo_finish_v2.jobs)",
+      "owner": "photo_finish_owner"
+    },
+    {
+      "signature": "photo_finish_v2.inspect(uuid,uuid)",
+      "owner": "photo_finish_owner"
+    },
+    {
+      "signature": "photo_finish_v2.attest(jsonb)",
+      "owner": "photo_finish_owner"
+    },
+    {
+      "signature": "photo_finish_v2.commit(jsonb)",
+      "owner": "photo_finish_owner"
+    },
+    {
+      "signature": "photo_finish_v2.cap(uuid,uuid,uuid,text,text)",
+      "owner": "postgres"
+    },
+    {
+      "signature": "photo_scope_v3.current_actor()",
+      "owner": "postgres"
+    },
+    {
+      "signature": "photo_scope_v3.activity_actor(uuid)",
+      "owner": "postgres"
+    },
+    {
+      "signature": "photo_scope_v3.verified_state(uuid)",
+      "owner": "postgres"
+    },
+    {
+      "signature": "public.photo_scope_visibility_v3(jsonb)",
+      "owner": "photo_scope_owner"
+    },
+    {
+      "signature": "photo_scope_v3.read(jsonb)",
+      "owner": "photo_scope_owner"
+    },
+    {
+      "signature": "photo_scope_v3.allowed(text,text)",
+      "owner": "postgres"
+    },
+    {
+      "signature": "photo_service_v4.managed_job(uuid,uuid)",
+      "owner": "postgres"
+    },
+    {
+      "signature": "photo_service_v4.actor()",
+      "owner": "postgres"
+    },
+    {
+      "signature": "photo_service_v4.allocate()",
+      "owner": "photo_finish_owner"
+    },
+    {
+      "signature": "photo_service_v4.jobs(uuid)",
+      "owner": "postgres"
+    },
+    {
+      "signature": "photo_service_v4.public_version(uuid)",
+      "owner": "postgres"
+    },
+    {
+      "signature": "photo_service_v4.public_valid(uuid)",
+      "owner": "postgres"
+    },
+    {
+      "signature": "public.photo_service_command_v4(jsonb)",
+      "owner": "photo_service_owner"
+    },
+    {
+      "signature": "photo_service_v4.public_meta(uuid)",
+      "owner": "photo_service_owner"
+    },
+    {
+      "signature": "scope_private.allowed(text,text)",
+      "owner": "postgres"
+    }
+  ],
+  "grants": {
+    "photo_finish_owner": [
+      "photo_finish_v2.actor()",
+      "photo_finish_v2.admin(uuid)",
+      "photo_service_v4.actor()"
+    ],
+    "photo_finish_attestor": [
+      "photo_finish_v2.inspect(uuid,uuid)",
+      "photo_finish_v2.attest(jsonb)",
+      "photo_finish_v2.cap(uuid,uuid,uuid,text,text)",
+      "photo_service_v4.managed_job(uuid,uuid)"
+    ],
+    "photo_finish_worker": [
+      "photo_finish_v2.commit(jsonb)"
+    ],
+    "photo_scope_owner": [
+      "photo_scope_v3.current_actor()",
+      "photo_scope_v3.activity_actor(uuid)",
+      "photo_scope_v3.verified_state(uuid)"
+    ],
+    "photo_scope_reader": [
+      "photo_scope_v3.read(jsonb)",
+      "photo_service_v4.public_meta(uuid)"
+    ],
+    "photo_scope_storage_reader": [
+      "photo_scope_v3.allowed(text,text)"
+    ],
+    "photo_service_owner": [
+      "photo_service_v4.actor()",
+      "photo_service_v4.allocate()",
+      "photo_service_v4.jobs(uuid)",
+      "photo_service_v4.public_version(uuid)",
+      "photo_service_v4.public_valid(uuid)",
+      "public.photo_finish_request_v2(jsonb)",
+      "public.photo_scope_visibility_v3(jsonb)"
+    ],
+    "photo_storage_issuer": [
+      "scope_private.allowed(text,text)"
+    ],
+    "photo_storage_finalizer": [
+      "scope_private.allowed(text,text)"
+    ],
+    "authenticated": [
+      "public.photo_finish_request_v2(jsonb)",
+      "public.photo_scope_visibility_v3(jsonb)",
+      "public.photo_service_command_v4(jsonb)"
+    ]
+  },
+  "policies": [
+    "hp_issue_temp",
+    "hp_read_temp",
+    "hp_create_final",
+    "hp_verify_final",
+    "hp_public_final"
+  ]
+}

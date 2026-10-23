@@ -1,0 +1,32 @@
+{
+  "version": "history-photos-1-with-explicit-receipt-generations",
+  "productionApproved": false,
+  "files": {
+    "001_install.review.sql": "eab49996cf7fd6b5857a7df23de6af70a6c78ec293dd59aba4fb9c7fd339ff88",
+    "002_verify.read-only.sql": "e01918a60c084adc876eb46524070fababbca950258dacc18c9f3e9057a38856",
+    "README.md": "d9186b24ef12fa353e08f8eb1ef09d03d73e9da782ae9783aa2aab1d2a2a6821",
+    "audit-local.cjs": "ede6c1dad5eda7e0245d3b1a3c88f1454a0f2d7a3c398fcc6952996f0de48ea2",
+    "create-clean-lab.cjs": "3ba962cadb4a818086e93d7a09007ec0601831fcbf2635a3dbe5339f3a530619",
+    "install-local.cjs": "3cb95939b8e74dcf5e9c4b19d968e03f9a5ab4850d41daa7bb4bd5ed6bece9ff",
+    "objects.json": "01f4e0ce43cec20d38f9f7a24129abfa25cd7c13af8b1ccccdb2b313badc28e7",
+    "owner-hardening/003_owner-hardening.review.sql": "1bf4f2fd40f2724ab0aa0654a292a8959458f7beb3affca43d21bb05bb77222a",
+    "owner-hardening/004_verify.read-only.sql": "526fc3b49ce32715815bd6905f3ed6ded7dd48287b27578997617b80b6e313a4",
+    "owner-hardening/README.md": "b1e293ba8b2499d97aa9c4ccea3c4b5d30208840e735e22a8710b91d29afeebd",
+    "owner-hardening/apply-local.cjs": "45cde15140c940206cd35751f0cc945f750161b7282539dc918ac7232751e352",
+    "owner-hardening/contract.json": "bd45630315b349b1bb1b11083097e4cc2f2691fe8063f4f6745b8bed58005a4f",
+    "owner-hardening/test-local.cjs": "6a56db8629f70b857efc62e91077cd359806ec5bfa230d0549aac2c96d2d62e2",
+    "receipt-generations/007_generations.local-approved.sql": "175d2dd85d8d49f5eed7a2bfc8b135a3cc9655ada4a8063ceed0f0d4b65f25b3",
+    "receipt-generations/008_verify.read-only.sql": "c6aa148bdc81842ba5024c4a16871b0a95d5345a1c02b8da6788c434722914bf",
+    "receipt-generations/README.md": "e0e85fff2f639161875802653cf868d8b6a2c2678bcae9d9ca6d2310429fe124",
+    "receipt-generations/apply-local.cjs": "6e5d81a6bfaabc0b4b3d4718e754e3f5e41b0d843d9173cf98f32ca5bd2bfa2b",
+    "receipt-generations/audit-local.cjs": "fb983c32b269b8f405297216f3e5ce1a9353d709efa051c8d357e810c1c9343c",
+    "receipt-generations/resume-local.cjs": "797b69248856066b9e079f8591cf64d5fb7d610bdee8fa35138ae74d0bf826e8",
+    "receipt-generations/test-local.cjs": "ad10d7d3e259dcefdaad4f9d80cf7e8486fe47105a5e6d8645e494df2aa86adc",
+    "receipt-lookup/005_receipt-lookup.review.sql": "76a4dc870153e880fa6867e705f71a0b98f6f5e52f239441e68952da8289e991",
+    "receipt-lookup/006_verify.read-only.sql": "2b06679c5027c37017cabc9945f3b72d031895b7f2859c0baadf57f4f899f640",
+    "receipt-lookup/README.md": "c65c72234b756d6b713368d884e9fac2d5e0d02a4c58d12d5df271bfec40b55c",
+    "receipt-lookup/apply-local.cjs": "856c4795212c197c6b118b0b487a63afe7e5e4d4d82a803fbc139fa4520c73ad",
+    "storage-policies.json": "7f638ac5b3c453eb00babba1fd3bb32b3ef79b29dd7a7be2da2fafcd6a87fbc4",
+    "test-clean-lab.cjs": "57db28300bc848157e480a0dadea94d825288cebc919909150a45a12e6d275e6"
+  }
+}

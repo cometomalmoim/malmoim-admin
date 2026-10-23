@@ -2,7 +2,7 @@
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { ActivityDialog } from "./activity-dialog";
-import { activityPhotoPolicy as policy, cohorts, years, initialFields, validateFields, validatePhotoFiles, type Activity, type ActivityAsset } from "./activity-types";
+import { cohorts, years, initialFields, validateFields, validatePhotoFiles, validatePhotoSelection, type Activity, type ActivityAsset } from "./activity-types";
 export function ActivityForm({ activity, close, save, makeAsset, release }: { activity?: Activity; close: () => void; save: (activity: Activity) => void; makeAsset: (file: File) => ActivityAsset; release: (assets: ActivityAsset[]) => void }) {
   const [fields, setFields] = useState(() => initialFields(activity));
   const [cover, setCover] = useState<ActivityAsset | null>(activity?.cover ?? null);
@@ -38,8 +38,9 @@ export function ActivityForm({ activity, close, save, makeAsset, release }: { ac
     setFileError("");
     const nextCount = additional.length + (isCover ? 1 : files.length + 1);
     const size = additional.reduce((n, p) => n + p.size, 0) + (isCover ? 0 : (cover?.size ?? 0)) + files.reduce((n, f) => n + f.size, 0);
-    if (isCover && files.length !== 1 || nextCount > policy.maxFiles) { setFileError("대표 사진은 1장, 추가 사진은 최대 5장(전체 6장)까지 선택해주세요."); return; }
-    if (size > policy.totalBytes) { setFileError("사진 전체 용량은 20MB 이하로 선택해주세요."); return; }
+    if (isCover && files.length !== 1) { setFileError("대표 사진은 1장만 선택해주세요."); return; }
+    const selectionError = validatePhotoSelection(nextCount, size);
+    if (selectionError) { setFileError(selectionError); return; }
     setBusy(true);
     try {
       const error = await validatePhotoFiles(files);
@@ -71,12 +72,12 @@ export function ActivityForm({ activity, close, save, makeAsset, release }: { ac
         <label htmlFor="activity-title">활동 제목 <small>필수</small></label><input id="activity-title" required maxLength={120} value={fields.title} aria-invalid={!!errors.title} aria-describedby={`activity-title-count${errors.title ? " activity-title-error" : ""}`} onChange={(e) => setFields({ ...fields, title: e.target.value })} />{fieldError("title")}<p id="activity-title-count" className="activity-count">{fields.title.length} / 120자</p>
         <label htmlFor="activity-date">활동 날짜 <small>필수</small></label><input id="activity-date" type="date" required value={fields.date} min={fields.category === "special" && fields.year ? `${fields.year}-01-01` : undefined} max={fields.category === "special" && fields.year ? `${fields.year}-12-31` : undefined} aria-invalid={!!errors.date} aria-describedby={errors.date ? "activity-date-error" : undefined} onChange={(e) => setFields({ ...fields, date: e.target.value })} />{fieldError("date")}
         <label htmlFor="activity-description">활동 설명 <small>필수</small></label><textarea id="activity-description" required rows={5} maxLength={2000} value={fields.description} aria-invalid={!!errors.description} aria-describedby={`activity-description-count${errors.description ? " activity-description-error" : ""}`} onChange={(e) => setFields({ ...fields, description: e.target.value })} />{fieldError("description")}<p id="activity-description-count" className="activity-count">{fields.description.length.toLocaleString()} / 2,000자</p>
-        <p id="activity-photo-policy" className="activity-policy">잠정 제안: JPG·PNG·WebP, 장당 5MB, 대표 포함 최대 6장·합계 20MB. 최종 정책은 운영진과 추후 확정합니다.</p>
+        <p id="activity-photo-policy" className="activity-policy">JPG·PNG·WebP, 장당 4.5MB, 대표 포함 최대 10장·합계 45MB. 대표 사진 1장은 필수입니다.</p>
         <label htmlFor="activity-cover">대표 사진 <small>필수 · 1장</small></label><input id="activity-cover" type="file" accept="image/jpeg,image/png,image/webp" aria-invalid={!!errors.cover} aria-describedby={`activity-photo-policy${errors.cover ? " activity-cover-error" : ""}`} onChange={(e) => { const files = Array.from(e.target.files ?? []); e.target.value = ""; void addPhotos(files, true); }} />{fieldError("cover")}
         {cover && <div className="activity-attachments">{assetCard(cover, () => { release([cover]); setCover(null); }, "대표 사진")}</div>}
         <label htmlFor="activity-additional">추가 사진 <small>선택</small></label><input id="activity-additional" type="file" multiple accept="image/jpeg,image/png,image/webp" aria-describedby="activity-photo-policy" onChange={(e) => { const files = Array.from(e.target.files ?? []); e.target.value = ""; void addPhotos(files, false); }} />
         {!!additional.length && <div className="activity-attachments">{additional.map((asset, i) => assetCard(asset, () => { release([asset]); setAdditional(additional.filter((p) => p.id !== asset.id)); }, `추가 사진 ${i + 1}`))}</div>}
-        <p className="activity-count">사진 {(cover ? 1 : 0) + additional.length} / 6장</p>
+        <p className="activity-count">사진 {(cover ? 1 : 0) + additional.length} / 10장</p>
         <div className="activity-actions"><button type="submit" className="activity-primary">{activity ? "데모 수정 반영" : "데모 목록에 추가"}</button><button type="button" onClick={requestClose}>취소</button></div>
       </fieldset>
       <p role="status">{busy ? "사진 형식과 내용을 확인하고 있어요…" : ""}</p>

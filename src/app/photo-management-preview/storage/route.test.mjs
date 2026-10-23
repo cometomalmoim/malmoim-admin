@@ -1,0 +1,14 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {runInNewContext} from 'node:vm';import ts from 'typescript';
+function load(mode='development'){
+ const calls=[];const loaded={exports:{}};
+ const broker=async b=>{calls.push(b.op);if(b.op==='login')return {session:'private-test-session'};if(b.op==='list')return {photos:[],activities:[]};return {};};
+ runInNewContext(ts.transpileModule(readFileSync(new URL('./route.ts',import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText,{module:loaded,exports:loaded.exports,process:{env:{NODE_ENV:mode}},require:n=>n==='next/server'?{NextResponse:{json:(body,options={})=>({body,status:options.status??200,cookies:{set(){}}})}}:{developmentBroker:broker,developmentPhotoCookie:'test-cookie',developmentStorage:async()=>({execute:async()=>({status:'denied'})})}});
+ return {routes:loaded.exports,calls};
+}
+function req({session,body,origin='http://127.0.0.1:3004',host='127.0.0.1:3004'}={}){return {headers:new Headers({'host':host,'origin':origin,'content-type':'application/json'}),cookies:{get:()=>session?{value:session}:undefined},text:async()=>JSON.stringify(body)};}
+test('production blocked before broker invocation',async()=>{const {routes,calls}=load('production');assert.equal((await routes.GET(req())).status,404);assert.equal((await routes.POST(req())).status,403);assert.equal(calls.length,0);});
+test('unauthenticated read and command refused',async()=>{const {routes,calls}=load();assert.equal((await routes.GET(req())).status,401);assert.equal((await routes.POST(req({body:{op:'command',command:{}}}))).status,401);assert.equal(calls.length,0);});
+test('foreign origin and host refused',async()=>{const {routes,calls}=load();for(const opts of [{origin:'http://127.0.0.1:3003'},{host:'example.com'}])assert.equal((await routes.POST(req({...opts,session:'s',body:{op:'permit',photoId:'a'}}))).status,403);assert.equal(calls.length,0);});
+test('browser bucket, path and completion evidence rejected on permit endpoint',async()=>{const {routes,calls}=load();for(const extra of [{bucket:'foreign'},{path:'final'},{completed:true}])assert.equal((await routes.POST(req({session:'s',body:{op:'permit',photoId:'a'.repeat(36),...extra}}))).status,400);assert.equal(calls.length,0);});
+test('login response never exposes session',async()=>{const {routes}=load();const r=await routes.POST(req({body:{op:'login',email:'example@test.invalid',password:'mock-only'}}));assert.equal(r.status,200);assert.equal(r.body.status,'authenticated');assert.doesNotMatch(JSON.stringify(r.body),/private-test-session/);});
+test('read projection comes from administrator broker, not public fallback',async()=>{const {routes,calls}=load();assert.equal((await routes.GET(req({session:'s'}))).status,200);assert.equal(calls.join(','),'list');});

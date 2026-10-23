@@ -1,0 +1,37 @@
+[
+  {
+    "name": "hp_create_final",
+    "command": "INSERT",
+    "role": "photo_storage_finalizer",
+    "qual": null,
+    "withCheck": "((bucket_id = 'history-activity-final-photos'::text) AND scope_private.allowed(bucket_id, name) AND storage.allow_only_operation('object.upload'::text))"
+  },
+  {
+    "name": "hp_issue_temp",
+    "command": "INSERT",
+    "role": "photo_storage_issuer",
+    "qual": null,
+    "withCheck": "((bucket_id = 'history-activity-photos'::text) AND scope_private.allowed(bucket_id, name) AND storage.allow_only_operation('object.sign_upload_url'::text))"
+  },
+  {
+    "name": "hp_public_final",
+    "command": "SELECT",
+    "role": "photo_scope_storage_reader",
+    "qual": "((bucket_id = 'history-activity-final-photos'::text) AND photo_scope_v3.allowed(bucket_id, name) AND storage.allow_any_operation(ARRAY['object.sign'::text, 'object.get_authenticated'::text]))",
+    "withCheck": null
+  },
+  {
+    "name": "hp_read_temp",
+    "command": "SELECT",
+    "role": "photo_storage_finalizer",
+    "qual": "((bucket_id = 'history-activity-photos'::text) AND scope_private.allowed(bucket_id, name) AND storage.allow_only_operation('object.get_authenticated'::text))",
+    "withCheck": null
+  },
+  {
+    "name": "hp_verify_final",
+    "command": "SELECT",
+    "role": "photo_storage_finalizer",
+    "qual": "((bucket_id = 'history-activity-final-photos'::text) AND scope_private.allowed(bucket_id, name) AND storage.allow_only_operation('object.get_authenticated'::text))",
+    "withCheck": null
+  }
+]
