@@ -43,7 +43,6 @@ export default function AboutPage() {
         <figure className="about-photo">
           <div className="about-hero-visual">
           <Image className="about-image" src="/about/about-hero-real.jpeg" alt="말모임 현수막 앞에서 실내 단체사진을 촬영한 참가자들" width={2958} height={2142} sizes="(max-width: 480px) calc(100vw - 40px), (max-width: 800px) calc(100vw - 48px), (max-width: 1160px) 54vw, 646px" loading="eager" />
-          <span className="about-hero-overlay" lang="en">Different<br />Languages<br />Same Friends</span>
           </div>
         </figure>
       </section>

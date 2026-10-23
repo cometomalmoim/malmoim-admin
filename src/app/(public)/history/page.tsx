@@ -36,16 +36,15 @@ export default function HistoryPage() {
       <div className="history-heading"><p className="history-label">OUR HISTORY</p><h1 id="history-title">말모임의 <span>순간들</span></h1><p>{description}</p></div>
       <div className="history-collage" role="group" aria-label="활동 사진 콜라주">
         {heroPhotos.map((photo, index) => <figure className={`history-collage-frame history-collage-${index + 1}`} key={index}>
-          <Image src={photo.image} alt={photo.alt} sizes="(max-width: 540px) 46vw, (max-width: 800px) 220px, 240px" />
+          <Image src={photo.image} alt={photo.alt} sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 1100px) calc((100vw - 96px) / 3), 382px" />
         </figure>)}
-        <span className="history-collage-note" lang="en" aria-hidden="true">Different<br />Languages<br />Same Friends</span>
       </div>
     </section>
     <PublishedGallery photos={historyPhotos} />
     <section className="history-reviews" aria-labelledby="history-reviews-title">
       <div className="history-review-heading">
         <div className="history-heading"><p className="history-label">REVIEWS</p><h2 id="history-reviews-title">말모임 <span>참여 후기</span></h2><p>말모임에 참여한 멤버들의 이야기를 만나보세요.<br />언어를 통해 넓어진 세상과 교류의 경험을 나눕니다.</p></div>
-        <div className="history-review-art" aria-hidden="true"><span className="history-bubble history-bubble-blue" /><span className="history-bubble history-bubble-yellow" /><span className="history-review-note" lang="en">Real Stories<br />Same Friends</span></div>
+        <div className="history-review-art" aria-hidden="true"><span className="history-bubble history-bubble-blue" /><span className="history-bubble history-bubble-yellow" /></div>
       </div>
       <Suspense fallback={<p role="status">참여 후기를 불러오는 중…</p>}><ReviewBoard /></Suspense>
     </section>
