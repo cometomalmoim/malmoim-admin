@@ -36,7 +36,7 @@ export default function HistoryPage() {
       <div className="history-heading"><p className="history-label">OUR HISTORY</p><h1 id="history-title">말모임의 <span>순간들</span></h1><p>{description}</p></div>
       <div className="history-collage" role="group" aria-label="활동 사진 콜라주">
         {heroPhotos.map((photo, index) => <figure className={`history-collage-frame history-collage-${index + 1}`} key={index}>
-          <Image src={photo.image} alt={photo.alt} sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 1100px) calc((100vw - 96px) / 3), 382px" />
+          <Image src={photo.image} alt={photo.alt} sizes="(max-width: 540px) calc((100vw - 72px) * 0.86), (max-width: 1100px) calc((100vw - 92px) / 3), 382px" />
         </figure>)}
       </div>
     </section>

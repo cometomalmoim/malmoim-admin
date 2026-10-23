@@ -72,9 +72,9 @@
 @keyframes brand-enter { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
 @media(min-width:801px) { .about-page .about-program-header { flex-direction:row; justify-content:space-between; align-items:end; } }
 @media(max-width:800px) { .about-page .about-program-header { flex-direction:column; align-items:stretch; } }
-/* The representative photo stays a rectangular 16:9 composition at every size. */
+/* A taller landscape composition balances the complete hero copy. */
 .about-page .about-hero { grid-template-columns:minmax(0,.9fr) minmax(0,1.1fr); }
-.about-page .about-hero .about-photo { display:block; align-self:center; width:100%; min-height:0; height:auto; margin:0; aspect-ratio:16/9; }
-.about-page .about-hero-visual { position:relative; display:block; width:100%; height:100%; aspect-ratio:16/9; overflow:hidden; border-radius:0; }
-.about-page .about-hero .about-photo .about-image { position:absolute; inset:0; display:block; width:100%; height:100%; max-height:none; aspect-ratio:auto; object-fit:cover; object-position:center 62%; border-radius:0; }
+.about-page .about-hero .about-photo { display:block; align-self:center; width:100%; min-height:0; height:auto; margin:0; aspect-ratio:3/2; }
+.about-page .about-hero-visual { position:relative; display:block; width:100%; height:100%; aspect-ratio:3/2; overflow:hidden; border-radius:0; }
+.about-page .about-hero .about-photo .about-image { position:absolute; inset:0; display:block; width:100%; height:100%; max-height:none; aspect-ratio:auto; object-fit:cover; object-position:center 55%; border-radius:0; }
 @media(max-width:800px) { .about-page .about-hero { grid-template-columns:1fr; } }

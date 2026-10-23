@@ -60,11 +60,14 @@
 @media(prefers-reduced-motion:reduce) { .history-page .history-photo-card img, .about-page .about-anchor { transition:none; } }
 @keyframes history-enter { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
 .history-page .history-hero { background:transparent; }
-/* Separate grid cells, no rotations, overlapping grid areas or forced photo crop. */
+/* Polaroid frames overlap at their edges; images retain intrinsic dimensions. */
 .history-page .history-hero { grid-template-columns:1fr; gap:44px; padding-block:64px; }
 .history-page .history-hero .history-heading { max-width:760px; }
-.history-page .history-collage { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:24px; align-items:center; width:100%; max-width:none; min-height:0; }
-.history-page .history-collage-frame { position:static; grid-area:auto; align-self:center; width:100%; height:auto; min-width:0; margin:0; padding:0; border:0; border-radius:0; aspect-ratio:auto; transform:none; box-shadow:none; background:transparent; overflow:visible; }
+.history-page .history-collage { display:flex; align-items:flex-start; width:100%; max-width:none; min-height:0; padding:22px 20px 36px; gap:0; isolation:isolate; }
+.history-page .history-collage-frame { position:relative; grid-area:auto; align-self:auto; flex:0 0 34%; width:34%; height:auto; min-width:0; margin:0; padding:12px 12px 34px; border:0; border-radius:2px; aspect-ratio:auto; box-shadow:0 10px 26px #193c3f1a,0 2px 5px #193c3f0a; background:#FFFFFF; overflow:visible; transform-origin:center; }
 .history-page .history-collage-frame img { display:block; width:100%; height:auto; max-width:100%; object-fit:contain; object-position:center; aspect-ratio:auto; }
-@media(max-width:800px) { .history-page .history-collage { gap:16px; } }
-@media(max-width:540px) { .history-page .history-hero { padding-block:40px 48px; gap:30px; } .history-page .history-collage { grid-template-columns:1fr; gap:20px; } }
+.history-page .history-collage-1 { transform:rotate(-3deg); z-index:1; }
+.history-page .history-collage-2 { margin-left:-1%; margin-top:46px; transform:rotate(2deg); z-index:2; }
+.history-page .history-collage-3 { margin-left:-1%; margin-top:12px; transform:rotate(-2deg); z-index:3; }
+@media(max-width:800px) { .history-page .history-collage { padding:16px 14px 28px; } .history-page .history-collage-frame { padding:8px 8px 26px; } .history-page .history-collage-2 { margin-top:32px; } }
+@media(max-width:540px) { .history-page .history-hero { padding-block:40px 48px; gap:30px; } .history-page .history-collage { flex-direction:column; align-items:flex-start; padding:14px 16px 20px; } .history-page .history-collage-frame { flex:none; width:86%; padding:10px 10px 32px; } .history-page .history-collage-1 { transform:rotate(-3deg); } .history-page .history-collage-2 { align-self:flex-end; margin-left:0; margin-top:-10px; transform:rotate(3deg); } .history-page .history-collage-3 { margin-left:4px; margin-top:-10px; transform:rotate(-2deg); } }
