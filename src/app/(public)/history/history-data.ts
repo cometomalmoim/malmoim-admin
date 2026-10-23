@@ -1,5 +1,6 @@
 export type HistoryPhoto = {
   id: string;
+  unoptimized?: boolean; // Private media must bypass the shared Next image cache.
   title: string;
   date: string; // YYYY-MM-DD: 실제 활동일
   description: string;

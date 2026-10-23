@@ -4,7 +4,7 @@ import Image from "next/image";
 import heroPhoto01 from "../../../../public/history/history-hero-01.jpeg";
 import heroPhoto02 from "../../../../public/history/history-hero-02.jpeg";
 import heroPhoto03 from "../../../../public/history/history-hero-03.jpeg";
-import { HistoryGallery } from "./history-content";
+import { PublishedGallery } from "./published-gallery";
 import { HistoryReviews } from "./history-reviews";
 import { readReviews, reviewUser } from "./review-store";
 import { historyPhotos } from "./history-data";
@@ -39,7 +39,7 @@ export default function HistoryPage() {
         <span className="history-collage-note" lang="en" aria-hidden="true">Different<br />Languages<br />Same Friends</span>
       </div>
     </section>
-    <HistoryGallery photos={historyPhotos} />
+    <PublishedGallery photos={historyPhotos} />
     <section className="history-reviews" aria-labelledby="history-reviews-title">
       <div className="history-review-heading">
         <div className="history-heading"><p className="history-label">REVIEWS</p><h2 id="history-reviews-title">말모임 <span>참여 후기</span></h2><p>말모임에 참여한 멤버들의 이야기를 만나보세요.<br />언어를 통해 넓어진 세상과 교류의 경험을 나눕니다.</p></div>
