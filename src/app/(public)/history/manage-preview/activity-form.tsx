@@ -3,8 +3,8 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import { ActivityDialog } from "./activity-dialog";
 import { cohorts, years, initialFields, validateFields, validatePhotoFiles, validatePhotoSelection, type Activity, type ActivityAsset } from "./activity-types";
-export function ActivityForm({ activity, close, save, makeAsset, release }: { activity?: Activity; close: () => void; save: (activity: Activity) => void; makeAsset: (file: File) => ActivityAsset; release: (assets: ActivityAsset[]) => void }) {
-  const [fields, setFields] = useState(() => initialFields(activity));
+export function ActivityForm({ activity, close, save, makeAsset, release, storageUnavailable = false, connected = false }: { connected?: boolean; storageUnavailable?: boolean; activity?: Activity; close: () => void; save: (activity: Activity) => void; makeAsset: (file: File) => ActivityAsset; release: (assets: ActivityAsset[]) => void }) {
+  const [fields, setFields] = useState(() => connected ? { ...initialFields(activity), category: "special" as const } : initialFields(activity));
   const [cover, setCover] = useState<ActivityAsset | null>(activity?.cover ?? null);
   const [additional, setAdditional] = useState<ActivityAsset[]>(activity?.additional ?? []);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -53,10 +53,10 @@ export function ActivityForm({ activity, close, save, makeAsset, release }: { ac
     } catch { if (mounted.current) setFileError("사진을 확인하지 못했어요. 파일을 다시 선택해주세요."); }
     finally { if (mounted.current) setBusy(false); }
   }
-  return <ActivityDialog title={activity ? "활동 수정 UI 미리보기" : "활동 등록 UI 미리보기"} close={discard ? resume : requestClose} busy={busy}>
+  return <ActivityDialog title={connected ? "활동 사진 등록" : storageUnavailable ? "활동 사진 입력 미리보기" : activity ? "활동 수정 UI 미리보기" : "활동 등록 UI 미리보기"} close={discard ? resume : requestClose} busy={busy}>
     {discard && <section className="activity-confirm" aria-labelledby="activity-discard"><h3 id="activity-discard">작성 중인 내용을 버릴까요?</h3><p>아직 목록에 반영하지 않은 내용과 첨부 사진이 사라집니다.</p><div className="activity-actions"><button className="activity-primary" ref={keep} type="button" onClick={resume}>계속 작성하기</button><button type="button" onClick={close}>버리고 닫기</button></div></section>}
     <form ref={form} hidden={discard} noValidate aria-busy={busy} onSubmit={(e) => {
-      e.preventDefault(); if (busy) return;
+      e.preventDefault(); if (storageUnavailable || busy) return;
       const next = validateFields(fields); if (!cover) next.cover = "대표 사진 1장을 첨부해주세요.";
       setErrors(next);
       if (Object.keys(next).length) { requestAnimationFrame(() => form.current?.querySelector<HTMLElement>("[aria-invalid=true]")?.focus()); return; }
@@ -64,9 +64,9 @@ export function ActivityForm({ activity, close, save, makeAsset, release }: { ac
       const base = { id: activity?.id ?? crypto.randomUUID(), title: fields.title.trim(), date: fields.date, description: fields.description.trim(), cover, additional };
       save(fields.category === "regular" ? { ...base, category: "regular", cohort: Number(fields.cohort) } : { ...base, category: "special", year: Number(fields.year) });
     }}>
-      <p className="activity-notice">개발용 UI입니다. 아래 반영은 이 탭의 임시 목록만 바꿉니다. 실제 저장·업로드는 하지 않습니다.</p>
+      <p className="activity-notice" id="activity-storage-status">{storageUnavailable ? "운영 연결 준비 중입니다. 입력과 사진 선택은 이 화면의 미리보기이며 서버로 전송하거나 저장하지 않습니다." : connected ? "사진은 허가된 Storage에 직접 업로드하며 서버 검증·확정 후 저장합니다. 실패 시 결과 확인 전 재전송하지 마세요." : "개발용 UI입니다. 아래 반영은 이 탭의 임시 목록만 바꿉니다. 실제 저장·업로드는 하지 않습니다."}</p>
       <fieldset disabled={busy}>
-        <div className="activity-form-grid"><div><label htmlFor="activity-category">카테고리 <small>필수</small></label><select id="activity-category" required value={fields.category} aria-invalid={!!errors.category} aria-describedby={errors.category ? "activity-category-error" : undefined} onChange={(e) => { setFields({ ...fields, category: e.target.value as typeof fields.category, cohort: "", year: "" }); setErrors({}); }}><option value="">선택해주세요</option><option value="regular">정규 세션</option><option value="special">특별 활동</option></select>{fieldError("category")}</div>
+        <div className="activity-form-grid"><div><label htmlFor="activity-category">카테고리 <small>필수</small></label><select id="activity-category" required value={fields.category} aria-invalid={!!errors.category} aria-describedby={errors.category ? "activity-category-error" : undefined} onChange={(e) => { setFields({ ...fields, category: e.target.value as typeof fields.category, cohort: "", year: "" }); setErrors({}); }}><option value="">선택해주세요</option><option value="regular" disabled={connected}>정규 세션{connected ? " · 연결 준비 중" : ""}</option><option value="special">특별 활동</option></select>{fieldError("category")}</div>
         {fields.category === "regular" && <div><label htmlFor="activity-cohort">기수 <small>필수</small></label><select id="activity-cohort" required value={fields.cohort} aria-invalid={!!errors.cohort} aria-describedby={errors.cohort ? "activity-cohort-error" : undefined} onChange={(e) => setFields({ ...fields, cohort: e.target.value })}><option value="">기수 선택</option>{cohorts.map((n) => <option key={n} value={n}>{n}기</option>)}</select>{fieldError("cohort")}</div>}
         {fields.category === "special" && <div><label htmlFor="activity-year">연도 <small>필수</small></label><select id="activity-year" required value={fields.year} aria-invalid={!!errors.year} aria-describedby={errors.year ? "activity-year-error" : undefined} onChange={(e) => setFields({ ...fields, year: e.target.value })}><option value="">연도 선택</option>{years.map((n) => <option key={n} value={n}>{n}</option>)}</select>{fieldError("year")}</div>}</div>
         <label htmlFor="activity-title">활동 제목 <small>필수</small></label><input id="activity-title" required maxLength={120} value={fields.title} aria-invalid={!!errors.title} aria-describedby={`activity-title-count${errors.title ? " activity-title-error" : ""}`} onChange={(e) => setFields({ ...fields, title: e.target.value })} />{fieldError("title")}<p id="activity-title-count" className="activity-count">{fields.title.length} / 120자</p>
@@ -78,7 +78,7 @@ export function ActivityForm({ activity, close, save, makeAsset, release }: { ac
         <label htmlFor="activity-additional">추가 사진 <small>선택</small></label><input id="activity-additional" type="file" multiple accept="image/jpeg,image/png,image/webp" aria-describedby="activity-photo-policy" onChange={(e) => { const files = Array.from(e.target.files ?? []); e.target.value = ""; void addPhotos(files, false); }} />
         {!!additional.length && <div className="activity-attachments">{additional.map((asset, i) => assetCard(asset, () => { release([asset]); setAdditional(additional.filter((p) => p.id !== asset.id)); }, `추가 사진 ${i + 1}`))}</div>}
         <p className="activity-count">사진 {(cover ? 1 : 0) + additional.length} / 10장</p>
-        <div className="activity-actions"><button type="submit" className="activity-primary">{activity ? "데모 수정 반영" : "데모 목록에 추가"}</button><button type="button" onClick={requestClose}>취소</button></div>
+        <div className="activity-actions"><button type="submit" className="activity-primary" disabled={storageUnavailable} aria-describedby={storageUnavailable ? "activity-storage-status" : undefined}>{storageUnavailable ? "활동 저장 · 준비 중" : connected ? "활동·사진 저장" : activity ? "데모 수정 반영" : "데모 목록에 추가"}</button><button type="button" onClick={requestClose}>취소</button></div>
       </fieldset>
       <p role="status">{busy ? "사진 형식과 내용을 확인하고 있어요…" : ""}</p>
       {(Object.values(errors).some(Boolean) || fileError) && <p role="alert" className="activity-error">{fileError || "필수 입력 항목을 확인해주세요. 아직 목록에 반영하지 않았습니다."}</p>}
