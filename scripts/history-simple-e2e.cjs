@@ -7,7 +7,7 @@ async function run({chromium,endpoint='http://127.0.0.1:9322'}){
  if(endpoint!=='http://127.0.0.1:9322')throw Error('LOCAL_TEST_BROWSER_REQUIRED');
  const browser=await chromium.connectOverCDP(endpoint),context=browser.contexts()[0];
  let stage='administrator',albumId,publicContext;const passed=[];
- const page=context.pages().find(p=>p.url().startsWith(ORIGIN))??await context.newPage();
+ const page=await context.newPage();
  const check=async(request,method,path,body)=>{const r=await request.fetch(ORIGIN+path,{method,headers:body?{origin:ORIGIN,'content-type':'application/json'}:undefined,...(body?{data:body}:{})});return r;};
  async function catalog(){const r=await page.request.get(ORIGIN+'/api/admin/history-photos');assert.equal(r.status(),200);const d=await r.json();assert.equal(d.enabled,true);return d.albums;}
  async function poll(predicate,timeout=45000){const until=Date.now()+timeout;do{const result=await predicate();if(result)return result;await new Promise(resolve=>setTimeout(resolve,500));}while(Date.now()<until);throw Error('STEP_TIMEOUT');}
@@ -27,7 +27,7 @@ async function run({chromium,endpoint='http://127.0.0.1:9322'}){
   stage='publish';const card=page.locator('article').filter({has:page.getByRole('heading',{name:title,exact:true})});await card.getByRole('button',{name:'완료 사진 공개 승인',exact:true}).click();await poll(async()=>(await listed()).some(a=>a.id===album.id));const visible=await anonymous.get(ORIGIN+path);assert.equal(visible.status(),200);assert(visible.headers()['content-type'].includes('image/webp'));assert(visible.headers()['cache-control'].includes('no-store'));
   await publicPage.goto(ORIGIN+'/history');await publicPage.getByRole('tab',{name:'특별 활동',exact:true}).click();const image=publicPage.locator(`img[src*="${photo.id}"]`).first();await image.waitFor({state:'visible'});await poll(()=>image.evaluate(img=>img.complete&&img.naturalWidth>0));await publicPage.getByRole('button',{name:title+' 사진 상세 보기',exact:true}).click();await publicPage.getByRole('dialog').waitFor();await publicPage.keyboard.press('Escape');passed.push('anonymous_history_image_and_slide_visible');
   stage='unpublish';await card.getByRole('button',{name:'비공개 전환',exact:true}).click();await poll(async()=>!(await listed()).some(a=>a.id===album.id));assert.equal((await anonymous.get(ORIGIN+path)).status(),404);await publicPage.reload();await publicPage.getByRole('tab',{name:'특별 활동',exact:true}).click();assert.equal(await publicPage.locator(`img[src*="${photo.id}"]`).count(),0);passed.push('unpublish_hides_new_requests');
-  stage='delete';page.once('dialog',d=>d.accept());await card.getByRole('button',{name:'활동 전체 삭제',exact:true}).click();await poll(async()=>!(await catalog()).some(a=>a.id===album.id));assert.equal((await page.request.get(ORIGIN+path+'&admin=1')).status(),404);passed.push('delete_metadata_and_storage_request_completed');albumId=undefined;
+  stage='delete';await page.evaluate(()=>{window.confirm=message=>message==='활동과 사진을 모두 삭제할까요?';});await card.getByRole('button',{name:'활동 전체 삭제',exact:true}).click();await poll(async()=>!(await catalog()).some(a=>a.id===album.id));assert.equal((await page.request.get(ORIGIN+path+'&admin=1')).status(),404);passed.push('delete_metadata_and_storage_acknowledgement_verified');albumId=undefined;
   return {status:'passed',checks:passed};
  }catch{
   // Only the newly created fixture is eligible for cleanup; never existing albums.
