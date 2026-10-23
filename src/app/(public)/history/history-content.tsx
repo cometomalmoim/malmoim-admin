@@ -31,7 +31,7 @@ function CategoryGallery({ category, photos }: { category: typeof categories[num
     </div>
     <div className="history-gallery">
       {visible.map((photo) => <article className="history-photo-card" key={photo.id}>
-        <button type="button" className="history-photo-open" aria-label={`${photo.title} 사진 상세 보기`} onClick={() => setDetail(photo)}><Image src={photo.src} alt={photo.alt} width={900} height={540} sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 800px) 46vw, 350px" /></button>
+        <button type="button" className="history-photo-open" aria-label={`${photo.title} 사진 상세 보기`} onClick={() => setDetail(photo)}><Image unoptimized={photo.unoptimized} src={photo.src} alt={photo.alt} width={900} height={540} sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 800px) 46vw, 350px" /></button>
         <h3>{photo.title}</h3><time dateTime={photo.date}>{displayDate(photo.date)}</time><p>{photo.description}</p>
       </article>)}
     </div>

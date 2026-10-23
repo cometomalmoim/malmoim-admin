@@ -4,7 +4,7 @@ import Image from "next/image";
 import heroPhoto01 from "../../../../public/history/history-hero-01.jpeg";
 import heroPhoto02 from "../../../../public/history/history-hero-02.jpeg";
 import heroPhoto03 from "../../../../public/history/history-hero-03.jpeg";
-import { HistoryGallery } from "./history-content";
+import { PublishedGallery as HistoryGallery } from "./published-gallery";
 import { HistoryReviews } from "./history-reviews";
 import { readReviews, reviewUser } from "./review-store";
 import { historyPhotos } from "./history-data";
