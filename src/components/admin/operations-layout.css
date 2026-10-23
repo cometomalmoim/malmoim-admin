@@ -73,6 +73,7 @@
   justify-content: center;
   box-sizing: border-box;
   min-height: 40px;
+  height: 40px;
   margin: 0;
   padding: 8px 16px;
   font-size: 13px;
@@ -125,4 +126,15 @@
   .ops-shell.ops-event-workspace .participation-people li { grid-template-columns: 1fr; }
   .ops-shell.ops-event-workspace .inbox-item summary { grid-template-columns: minmax(0,1fr); }
   .ops-shell.ops-event-workspace .inbox-item time { grid-column: auto; }
+}
+
+/* Compact applicant rules load with the page; retain the same outer alignment. */
+.ops-shell.ops-event-workspace.ops-compact-applicants .ops-main { padding:28px 32px; }
+.ops-shell.ops-event-workspace.ops-compact-applicants .ops-heading h1 { font-size:26px;line-height:1.4;margin:0; }
+.ops-shell.ops-event-workspace.ops-compact-applicants .ops-panel { padding:20px 24px;margin-bottom:20px; }
+.ops-shell.ops-event-workspace.ops-compact-applicants .ops-panel h2 { font-size:16px;line-height:1.5;margin:0 0 12px; }
+@media(max-width:700px){
+ .ops-shell.ops-event-workspace.ops-compact-applicants .ops-main { padding:20px 16px; }
+ .ops-shell.ops-event-workspace.ops-compact-applicants .ops-heading h1 { font-size:22px; }
+ .ops-shell.ops-event-workspace.ops-compact-applicants .ops-panel { padding:18px 16px;margin-bottom:16px; }
 }
