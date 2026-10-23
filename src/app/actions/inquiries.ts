@@ -38,3 +38,13 @@ export async function replyInquiry(_state: InquiryState, form: FormData): Promis
   return { code: result.data ?? 'error' };
  } catch { return { code: 'error' }; }
 }
+
+// Count only; no inquiry content or receipt links cross this boundary.
+export async function unansweredInquiryCount(): Promise<number | null> {
+ if ((await getAdminAccess()).status !== 'admin') return null;
+ try {
+  const client = await createClient();
+  const { count, error } = await client.from('event_inquiries').select('id', { count: 'exact', head: true }).eq('status', 'received');
+  return error ? null : count;
+ } catch { return null; }
+}

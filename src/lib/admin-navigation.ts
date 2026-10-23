@@ -17,22 +17,22 @@ export const adminGroups = [
       {
         "slug": "events",
         "title": "이벤트 관리",
-        "description": "이벤트 정보와 진행 상태를 관리합니다."
+        "description": "이벤트별 모집페이지·신청자·출석·문의를 관리합니다."
       },
       {
         "slug": "recruitment",
         "title": "전체 신청자관리",
-        "description": "전체 이벤트의 신청자와 유입경로를 조회합니다."
+        "description": "여러 이벤트의 신청·선발·입금 상태와 유입경로를 관리합니다."
+      },
+      {
+        "slug": "participants",
+        "title": "전체 참여 이력 관리",
+        "description": "사람별 누적 참여와 이벤트·회차별 실제 참석 기록을 조회합니다."
       },
       {
         "slug": "inquiries",
         "title": "전체 문의 보기",
         "description": "모든 이벤트의 문의를 확인하고 답변합니다."
-      },
-      {
-        "slug": "participants",
-        "title": "전체 참여 이력 관리",
-        "description": "개인별 실제 참석 횟수와 이벤트 참여 이력을 관리합니다."
       },
       {
         "slug": "messages",
