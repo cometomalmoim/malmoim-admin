@@ -6,7 +6,7 @@ import {AdminShell} from './admin-shell';import {ParticipationEditor} from './pa
 export async function ParticipationView({email,slug,source,id,query={}}:{email:string;slug?:string;source?:string;id?:string;query?:SessionOverviewQuery&{q?:string;person?:string}}){
  if(!slug&&query.view==='sessions')return <ParticipationSessionView email={email} query={query}/>;
  const data=await participationData(slug,source,id,query.q??'',query.person);if('missing'in data)notFound();
- return <AdminShell email={email} current="participants" title="전체 참여 이력 관리"><div className="ops-heading"><h1>전체 참여 이력 관리</h1><p>여러 이벤트의 사람별 참여 현황을 한곳에서 조회합니다. 출석 입력은 이벤트별 날짜 화면에서 진행하며 테스트는 실제 집계에서 제외합니다.</p></div>
+ return <AdminShell email={email} current="participants" title="전체 참여 이력 관리"><div className="ops-heading"><h1>전체 참여 이력 관리</h1><p>사람별 누적 참여와 이벤트·회차별 실제 참석 기록을 조회합니다. 신청·선발·입금 관리는 전체 신청자관리에서 진행합니다. 출석 입력은 이벤트별 날짜 화면에서 진행하며 테스트는 실제 집계에서 제외합니다.</p></div>
  {!slug&&<nav className="ops-tabs" aria-label="전체 참여 이력 보기"><Link href="/admin/participants" aria-current="page">사람별 참여 이력</Link><Link href="/admin/participants?view=sessions">회차별 출석 현황</Link></nav>}
  {'error'in data?<section className="ops-panel" role="alert">참여 이력을 불러오지 못했습니다. DB 적용 및 조회 권한을 확인해주세요.</section>:<>
  <nav className="ops-shortcuts">{slug&&<Link href="/admin/participants">전체 참여 이력 열기</Link>}{slug?<Link href={`/admin/events/${encodeURIComponent(slug)}/attendance`}>이 이벤트 출석 체크 →</Link>:<Link href="/admin/events">이벤트별 출석 관리 →</Link>}{slug&&<Link href={`/admin/events/${encodeURIComponent(slug)}/applicants`}>이 이벤트 신청자 목록</Link>}</nav>
