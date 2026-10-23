@@ -1,0 +1,4 @@
+import {connection} from 'next/server';
+import {simplePhotosEnabled} from '@/lib/history-simple/policy';
+import {albums} from '@/lib/history-simple/server';
+export async function GET(){await connection();const headers={'Cache-Control':'no-store'};if(!simplePhotosEnabled())return Response.json({status:'disabled',activities:[]},{status:503,headers});try{const rows=await albums();return Response.json({status:'recorded',activities:rows.map(a=>{const photos=a.history_photo_items.filter(p=>p.ready&&p.approved).sort((x,y)=>x.position-y.position).map(p=>({id:p.id,src:`/api/history-photo-file?id=${p.id}`}));return {id:a.id,title:a.title,date:a.date,description:a.description,coverId:photos[0]?.id,photos};}).filter(a=>a.photos.length)},{headers});}catch{return Response.json({status:'unavailable',activities:[]},{status:503,headers});}}

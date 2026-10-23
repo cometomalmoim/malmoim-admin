@@ -1,4 +1,6 @@
 "use client";
+import {Localized} from "@/components/public-translation";
+
 
 import Image from "next/image";
 import regularSessionPhoto from "../../../../public/about/about-regular-session.jpeg";
@@ -54,7 +56,7 @@ function FeatureIcon({ name }: { name: FeatureIconName }) {
     location: <><path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 1 1 16 0Z" /><circle cx="12" cy="10" r="2.5" /></>,
     screen: <><rect x="2" y="3" width="20" height="14" rx="2" /><path d="M8 21h8m-4-4v4" /><circle cx="12" cy="8" r="2" /><path d="M8 14a4 4 0 0 1 8 0" /></>,
   };
-  return <svg className="about-program-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">{paths[name]}</svg>;
+  return <Localized>{<svg className="about-program-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false">{paths[name]}</svg>}</Localized>;
 }
 
 export function ProgramTabs() {
@@ -75,7 +77,7 @@ export function ProgramTabs() {
     tabs.current[next]?.focus();
   }
 
-  return (
+  return <Localized>{(
     <div className="about-programs">
       <div className="about-program-header">
         <div className="about-section-heading"><p className="about-label">PROGRAM</p><h2 id="about-programs-title">프로그램 안내</h2><p>언어와 문화를 나누는 다양한 프로그램이 있어요.</p></div>
@@ -134,5 +136,5 @@ export function ProgramTabs() {
       </div></div>)}
       </div>
     </div>
-  );
+  )}</Localized>;
 }

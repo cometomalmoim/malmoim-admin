@@ -20,15 +20,15 @@
 .history-page .history-heading > p:last-child { margin-top: 16px; color: var(--history-muted); font-size: 18px; line-height: 1.6; }
 .history-page .history-hero { display: grid; grid-template-columns: minmax(0, .9fr) minmax(0, 1.3fr); align-items: center; gap: 24px; min-height: 280px; padding: 24px 0 40px; background: #f7fbfc; }
 .history-page .history-hero > *, .history-page .history-review-heading > * { min-width: 0; }
-.history-page .history-collage { position: relative; display: grid; grid-template-columns: minmax(0, 1fr); }
-.history-page .history-collage-frame { position: relative; grid-area: 1 / 1; align-self: start; width: 35%; aspect-ratio: 1.45; border: 6px solid #fff; border-radius: 12px; background: #eef2f3; overflow: hidden; }
-.history-page .history-collage-frame img { display: block; width: 100%; height: 100%; object-fit: cover; }
-.history-page .history-collage-1 { margin-top: 16px; transform: rotate(-8deg); }
-.history-page .history-collage-2 { margin-top: 100px; margin-left: 28%; z-index: 1; }
-.history-page .history-collage-3 { margin-left: 49%; transform: rotate(8deg); z-index: 2; }
+
+
+
+
+
+
 .history-page .history-upload-placeholder { display: flex; height: 100%; flex-direction: column; align-items: center; justify-content: center; gap: 6px; color: var(--history-muted); font-size: 14px; text-align: center; }
 .history-page .history-upload-placeholder small { font-size: 12px; }
-.history-page .history-collage-note { position: absolute; top: 12px; right: -14px; font-size: 12px; line-height: 1.6; color: #137d95; transform: rotate(-10deg); }
+
 .history-page .history-photos { padding: 16px 0 40px; }
 .history-page .history-tabs { display: flex; border: 1px solid #dcdde5; border-radius: 28px; }
 .history-page .history-tabs button { flex: 1; min-width: 0; min-height: 44px; padding: 10px 20px; border: 0; border-radius: 26px; color: var(--history-ink); background: transparent; font-size: 16px; font-weight: 700; }
@@ -61,9 +61,9 @@
 .history-page .history-bubble-blue::before, .history-page .history-bubble-blue::after { background: var(--history-blue); }
 .history-page .history-bubble-yellow { left: 30%; top: 58px; background: #fff3d2; transform: rotate(10deg); }
 .history-page .history-bubble-yellow::before, .history-page .history-bubble-yellow::after { background: var(--history-yellow); }
-.history-page .history-review-note { position: absolute; right: 0; top: 12px; color: #137d95; font-size: 14px; line-height: 1.6; transform: rotate(-10deg); }
+
 .history-page .history-review-card { display: flex; flex-direction: column; min-width: 0; padding: 20px; border: 1px solid #e6e6eb; border-radius: 12px; }
-.history-page .history-quote { height: 26px; color: var(--history-blue); font-size: 44px; line-height: 1; font-family: Georgia, serif; }
+.history-page .history-quote { height: 26px; color: var(--history-blue); font-size: 44px; line-height: 1; font-family: inherit; }
 .history-page .history-review-card blockquote { flex: 1; color: var(--history-muted); font-size: 14px; white-space: pre-line; }
 .history-page .history-review-card figcaption { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-top: 20px; font-size: 13px; }
 .history-page .history-review-card small { margin-left: 8px; font-size: 12px; }
@@ -72,7 +72,7 @@
 @media (max-width: 800px) {
   .history-page { padding: 0 24px 32px; }
   .history-page .history-hero { grid-template-columns: 1fr; gap: 16px; padding: 32px 0 40px; }
-  .history-page .history-collage { max-width: 560px; width: 100%; }
+
   .history-page .history-gallery, .history-page .history-review-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .history-page .history-review-heading { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .history-page .history-review-art { min-height: 135px; width: 340px; max-width: 100%; justify-self: end; }
@@ -81,10 +81,10 @@
   .history-page { padding-inline: 20px; }
   .history-page h1, .history-page h2 { font-size: 32px; }
   .history-page .history-heading > p:last-child { font-size: 16px; }
-  .history-page .history-collage-frame { width: 43%; }
-  .history-page .history-collage-2 { margin-top: 94px; margin-left: 24%; }
-  .history-page .history-collage-3 { margin-left: 48%; }
-  .history-page .history-collage-note { top: 154px; right: 4px; font-size: 11px; }
+
+
+
+
   .history-page .history-gallery, .history-page .history-review-grid { grid-template-columns: 1fr; }
   .history-page .history-empty { padding: 32px 16px; }
 }
@@ -246,11 +246,11 @@
 @media(max-width:540px) { .history-photo-dialog { width: calc(100vw - 24px); max-height: calc(100dvh - 24px); padding: 16px; } .history-photo-dialog-heading h2 { font-size: 20px; } .history-photo-stage > img { max-height: 42dvh; } }
 
 /* Real HERO photos retain the staggered, rounded collage frames. */
-.history-page .history-collage-1 img { object-position: center 70%; }
-.history-page .history-collage-2 { width: 38%; }
-.history-page .history-collage-2 img { object-position: center 35%; }
-.history-page .history-collage-3 { aspect-ratio: 1.65; }
-.history-page .history-collage-3 img { object-position: 45% center; }
+
+
+
+
+
 @media (max-width: 540px) {
-  .history-page .history-collage-2 { width: 46%; }
+
 }
