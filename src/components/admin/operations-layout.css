@@ -138,3 +138,6 @@
  .ops-shell.ops-event-workspace.ops-compact-applicants .ops-heading h1 { font-size:22px; }
  .ops-shell.ops-event-workspace.ops-compact-applicants .ops-panel { padding:18px 16px;margin-bottom:16px; }
 }
+
+/* Keep wide tables inside their own scrollport, not the page viewport. */
+.ops-shell.ops-event-workspace { overflow-x: clip; }
