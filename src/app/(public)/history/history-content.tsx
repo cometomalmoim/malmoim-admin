@@ -55,6 +55,7 @@ export function HistoryGallery({ photos }: { photos: HistoryPhoto[] }) {
     event.preventDefault(); setSelected(next); tabs.current[next]?.focus();
   }
   return <section className="history-photos" aria-label="말모임 활동 사진">
+    <div className="history-archive-heading"><div><p className="history-label" lang="en">THE PHOTO ARCHIVE</p><h2>함께 쌓아가는 기록</h2></div><p>정규 세션부터 특별한 하루까지</p></div>
     <div className="history-tabs" role="tablist" aria-label="사진 분류">
       {categories.map((category, index) => <button key={category.id} type="button" role="tab" id={`history-tab-${category.id}`} aria-controls={`history-panel-${category.id}`} aria-selected={selected === index} tabIndex={selected === index ? 0 : -1} ref={(element) => { tabs.current[index] = element; }} onClick={() => setSelected(index)} onKeyDown={(event) => handleKey(event, index)}>{category.label}</button>)}
     </div>

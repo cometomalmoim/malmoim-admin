@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Suspense } from "react";
 import Image from "next/image";
 import heroPhoto01 from "../../../../public/history/history-hero-01.jpeg";
@@ -9,6 +10,7 @@ import { HistoryReviews } from "./history-reviews";
 import { readReviews, reviewUser } from "./review-store";
 import { historyPhotos } from "./history-data";
 import "./history.css";
+import "./history-brand.css";
 
 const description = "함께 이야기하고 웃으며 만들어 온 말모임의 다양한 활동을 만나보세요.";
 export const metadata: Metadata = {
@@ -47,5 +49,9 @@ export default function HistoryPage() {
       </div>
       <Suspense fallback={<p role="status">참여 후기를 불러오는 중…</p>}><ReviewBoard /></Suspense>
     </section>
+    <aside className="history-closing" aria-labelledby="history-closing-title">
+      <div><p lang="en">YOUR NEXT CHAPTER</p><h2 id="history-closing-title">다음 순간은,<br />우리 함께 만들어요.</h2></div>
+      <Link href="/about#about-recruitment">말모임 참여 안내 <span aria-hidden="true">↗</span></Link>
+    </aside>
   </main>;
 }

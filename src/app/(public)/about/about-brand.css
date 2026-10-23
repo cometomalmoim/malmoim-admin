@@ -1,0 +1,74 @@
+/* Editorial layer: scoped to this route; existing content and interactions stay intact. */
+.about-page { --about-yellow:#FFBF20; --about-blue:#07838D; --about-ink:#193C3F; --about-muted:#566568; --about-section-space:100px; max-width:1320px; padding:0 64px 72px; background:#F5F6F4; }
+.public-site:has(> .about-page), .public-site:has(> .history-page) { background:#F5F6F4; }
+.public-site:has(> .about-page) > .public-header { max-width:1320px; padding-inline:64px; }
+.about-page .about-hero { grid-template-columns:1.02fr 1fr; gap:56px; padding:72px 0 84px; position:relative; }
+.about-page .about-hero-copy { padding-top:18px; position:relative; z-index:1; }
+.about-page .about-hero .about-label { font-size:12px; letter-spacing:.06em; margin-bottom:28px; }
+.about-page .about-hero h1 { font-size:clamp(44px,5.2vw,72px); line-height:1.15; letter-spacing:-.065em; }
+.about-page .about-hero h1 span { color:#07838D; }
+.about-page .about-hero-intro { margin-top:28px; max-width:410px; }
+.about-page .about-hero-intro p { font-size:16px; line-height:1.85; }
+.about-page .about-hero-intro p + p { margin-top:8px; }
+.about-page .about-hero .about-anchor { margin-top:30px; min-height:52px; padding:14px 28px; color:#173B3D; background:#FFBF20; border-radius:6px; box-shadow:0 8px 24px #193c3f0a; transition:transform .2s,box-shadow .2s; }
+.about-page .about-hero .about-anchor:hover { transform:translateY(-3px); box-shadow:0 12px 28px #193c3f18; text-decoration:none; }
+.about-page .about-hero-welcome { margin-top:25px; gap:18px; color:#566568; }
+.about-page .about-hero .about-photo { margin-top:0; min-height:460px; position:relative; }
+.about-page .about-hero-visual { width:100%; overflow:visible; border-radius:120px 16px 16px 16px; background:#e5eeea; }
+.about-page .about-hero .about-photo .about-image { border-radius:120px 16px 16px 16px; object-position:center; }
+.about-page .about-hero-overlay { left:auto; right:-18px; bottom:30px; top:auto; padding:24px; width:166px; height:166px; display:flex; align-items:center; justify-content:center; border-radius:50%; background:#FFBF20; color:#193C3F; font-size:18px; line-height:1.4; font-weight:700; transform:rotate(8deg); text-shadow:none; }
+.about-page .about-section { margin-top:0; padding-block:72px; border-top:1px solid #d8dfd9; }
+.about-page .about-section-heading { margin-bottom:30px; }
+.about-page .about-section-heading h2 { font-size:clamp(32px,3.3vw,46px); letter-spacing:-.05em; line-height:1.2; }
+.about-page .about-label { color:#07838D; font-size:12px; font-weight:700; letter-spacing:.12em; }
+.about-page .about-section-heading > p:last-child { color:#566568; margin-top:14px; }
+.about-page .about-program-header { align-items:end; gap:32px; margin-bottom:40px; }
+.about-page .about-program-header .about-section-heading { margin:0; }
+.about-page .about-tabs { border:0; border-bottom:1px solid #b6c9c8; border-radius:0; gap:0; background:transparent; }
+.about-page .about-tabs button { border-radius:0; background:transparent; padding:16px 14px; color:#566568; font-size:14px; border-bottom:3px solid transparent; }
+.about-page .about-tabs button[aria-selected=true] { background:transparent; color:#07838D; border-bottom-color:#07838D; }
+.about-page .about-program-layout { gap:48px; padding:32px; background:#FFFFFF; border-radius:16px; }
+.about-page .about-program-photo { border-radius:10px; overflow:hidden; }
+.about-page .about-program-copy h3 { color:#193C3F; font-size:30px; letter-spacing:-.04em; }
+.about-page .about-program-number { font-size:11px; color:#07838D; letter-spacing:.14em; margin-bottom:10px; }
+.about-page .about-session-stages { position:relative; gap:0; margin-top:24px; }
+.about-page .about-session-stages li { grid-template-columns:32px minmax(0,1fr); gap:12px; padding:15px 0; }
+.about-page .about-session-stages li + li { margin:0; border-top:1px solid #e6ebe7; }
+.about-page .about-session-stage-number { color:#07838D; font-size:16px; }
+.about-page .about-session-duration { color:#07838D; font-size:12px; }
+.about-page .about-session-stages p { color:#566568; font-size:14px; }
+.about-page .about-program-features { gap:16px; }
+.about-page .about-program-features li { background:#F5F6F4; padding:14px; border-radius:8px; }
+.about-page .about-location-layout { grid-template-columns:.85fr 1.15fr; gap:56px; align-items:center; }
+.about-page .about-location-photo { height:400px; width:100%; max-width:none; border-radius:100px 12px 12px 12px; overflow:hidden; }
+.about-page .about-location-photo img { width:100%; height:100%; object-fit:cover; }
+.about-page .about-location-card { border:0; padding:32px 0; background:transparent; box-shadow:none; }
+.about-page .about-location-block { border-color:#d8dfd9; }
+.about-page .about-map-actions .about-map-link { background:#FFF; color:#193C3F; border-color:#d8dfd9; border-radius:6px; min-height:48px; }
+.about-page .about-map-actions .about-map-link:hover { background:#e8efea; }
+.about-page .about-recruitment { border:0; padding-top:28px; }
+.about-page .about-recruitment-banner { background:#07838D; color:#FFFFFF; padding:54px; border-radius:16px; position:relative; overflow:hidden; }
+.about-page .about-recruitment-copy h2 { color:#FFFFFF; font-size:clamp(32px,3.5vw,48px); letter-spacing:-.04em; }
+.about-page .about-recruitment-copy > p, .about-page .about-recruitment-label { color:#FFFFFF; }
+.about-page .about-recruitment-label { letter-spacing:.15em; font-size:11px; }
+.about-page .about-recruitment-info > div { background:#ffffff10; border:1px solid #ffffff35; border-radius:8px; }
+.about-page .about-recruitment-info dt, .about-page .about-recruitment-info dd { color:#FFFFFF; }
+.about-page .about-recruitment-info svg { color:#FFBF20; }
+.about-page .about-recruitment-apply:disabled { background:#dce9e6; color:#355a5c; opacity:1; border:0; border-radius:6px; }
+.about-page .about-recruitment-status { color:#FFFFFF; opacity:1; }
+.about-page .about-faq { display:grid; grid-template-columns:.8fr 1.2fr; gap:64px; }
+.about-page .about-faq-grid { grid-template-columns:1fr; gap:0; }
+.about-page .about-faq details { border-bottom-color:#cfdad5; }
+.about-page .about-faq summary { min-height:76px; font-size:16px; gap:24px; padding-block:20px; }
+.about-page .about-faq details[open] { background:#FFFFFF; padding-inline:20px; border-radius:8px; }
+.about-page .about-faq details > p { padding-bottom:24px; line-height:1.85; color:#566568; }
+.about-page .about-contact { display:flex; align-items:center; justify-content:space-between; gap:24px; padding:32px; background:#e6eeea; border-radius:12px; }
+.about-page .about-contact > p { margin:0; font-size:17px; font-weight:700; }
+.about-page .about-contact button { border-radius:6px; background:#FFF; color:#566568; border-color:#c0d0c8; }
+@media(max-width:1000px) { .about-page { padding-inline:32px; } .public-site:has(> .about-page) > .public-header { padding-inline:32px; } .about-page .about-hero { gap:30px; } .about-page .about-hero-overlay { right:-8px; width:134px; height:134px; font-size:15px; } .about-page .about-faq { gap:32px; } }
+@media(max-width:800px) { .about-page .about-hero { grid-template-columns:1fr; padding-block:42px 56px; gap:32px; } .about-page .about-hero h1 { font-size:56px; } .about-page .about-hero .about-photo { min-height:0; max-width:none; } .about-page .about-hero .about-photo .about-image { position:relative; aspect-ratio:1.7; height:auto; border-radius:70px 12px 12px 12px; } .about-page .about-hero-visual { border-radius:70px 12px 12px 12px; } .about-page .about-section { padding-block:48px; } .about-page .about-program-layout { padding:24px; gap:26px; } .about-page .about-location-layout { grid-template-columns:1fr 1fr; gap:30px; } .about-page .about-location-photo { height:350px; } .about-page .about-location-card { padding:0; } .about-page .about-faq { grid-template-columns:1fr; gap:4px; } .about-page .about-recruitment-banner { padding:32px; } }
+@media(max-width:540px) { .about-page { padding:0 20px 40px; } .public-site:has(> .about-page) > .public-header { padding-inline:20px; } .about-page .about-hero h1 { font-size:43px; } .about-page .about-hero .about-label { font-size:11px; margin-bottom:20px; } .about-page .about-hero-intro p { font-size:15px; } .about-page .about-hero-overlay { width:112px; height:112px; right:-4px; bottom:-16px; padding:16px; font-size:13px; } .about-page .about-hero-welcome { gap:12px; font-size:12px; } .about-page .about-program-layout { padding:20px; } .about-page .about-program-copy h3 { font-size:25px; } .about-page .about-program-header { gap:22px; } .about-page .about-tabs button { padding-inline:7px; font-size:12px; } .about-page .about-location-layout { grid-template-columns:1fr; gap:24px; } .about-page .about-location-photo { height:310px; max-width:none; border-radius:64px 12px 12px 12px; } .about-page .about-recruitment-banner { padding:28px 20px; } .about-page .about-contact { align-items:stretch; flex-direction:column; padding:24px; gap:20px; } .about-page .about-faq summary { font-size:15px; } }
+@media(prefers-reduced-motion:no-preference) { .about-page .about-hero-copy, .about-page .about-photo { animation:brand-enter .65s ease-out both; } .about-page .about-photo { animation-delay:.1s; } }
+@keyframes brand-enter { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+@media(min-width:801px) { .about-page .about-program-header { flex-direction:row; justify-content:space-between; align-items:end; } }
+@media(max-width:800px) { .about-page .about-program-header { flex-direction:column; align-items:stretch; } }

@@ -1,0 +1,62 @@
+.history-page { --history-yellow:#FFBF20; --history-blue:#07838D; --history-ink:#193C3F; --history-muted:#566568; max-width:1320px; padding:0 64px 72px; background:#F5F6F4; }
+.history-page .history-hero { grid-template-columns:1fr 1.1fr; gap:64px; padding:80px 0 92px; align-items:center; }
+.history-page .history-label { color:#07838D; font-size:11px; letter-spacing:.18em; margin-bottom:22px; }
+.history-page h1 { font-size:clamp(44px,5.3vw,74px); line-height:1.13; letter-spacing:-.065em; }
+.history-page h2 { font-size:clamp(30px,3.3vw,44px); letter-spacing:-.05em; }
+.history-page .history-heading > p:last-child { font-size:16px; line-height:1.85; color:#566568; max-width:34ch; margin-top:24px; }
+.history-page .history-collage { min-height:380px; }
+.history-page .history-collage-frame { width:48%; height:auto; aspect-ratio:4/5; border:8px solid #FFFFFF; border-bottom-width:26px; border-radius:3px; box-shadow:0 12px 28px #193c3f1a; }
+.history-page .history-collage-1 { margin-top:6px; transform:rotate(-9deg); }
+.history-page .history-collage-2 { margin-top:92px; margin-left:26%; transform:rotate(1deg); }
+.history-page .history-collage-3 { margin-top:22px; margin-left:50%; transform:rotate(10deg); }
+.history-page .history-collage-note { top:auto; bottom:0; right:0; color:#193C3F; background:#FFBF20; padding:15px 19px; border-radius:50%; width:118px; height:118px; display:flex; align-items:center; font-size:13px; font-weight:700; transform:rotate(-7deg); z-index:3; }
+.history-page .history-photos { padding:54px 0 72px; border-top:1px solid #d8dfd9; }
+.history-page .history-archive-heading { display:flex; align-items:end; justify-content:space-between; gap:24px; margin-bottom:36px; }
+.history-page .history-archive-heading .history-label { margin-bottom:12px; }
+.history-page .history-archive-heading > p { font-size:12px; color:#566568; letter-spacing:.08em; }
+.history-page .history-tabs { width:fit-content; max-width:100%; gap:32px; border:0; border-radius:0; border-bottom:1px solid #c5d2cc; margin-bottom:32px; }
+.history-page .history-tabs button { border-radius:0; padding:12px 0 16px; min-width:115px; color:#566568; border-bottom:3px solid transparent; font-size:18px; }
+.history-page .history-tabs button[aria-selected=true] { background:transparent; color:#07838D; border-bottom-color:#07838D; }
+.history-page .history-filters { gap:0; margin:0 0 32px; padding-block:8px; align-items:start; }
+.history-page .history-photos .history-filters button { position:relative; min-width:58px; padding:14px 12px 10px; border:0; border-radius:0; background:transparent; color:#566568; }
+.history-page .history-photos .history-filters button::before { content:""; display:block; width:8px; height:8px; border-radius:50%; background:#bccdc5; margin:0 auto 12px; }
+.history-page .history-photos .history-filters button::after { content:""; position:absolute; top:17px; left:calc(50% + 4px); width:calc(100% - 8px); height:1px; background:#d0dcd5; }
+.history-page .history-photos .history-filters button:last-child::after { display:none; }
+.history-page .history-photos .history-filters button[aria-pressed=true] { color:#07838D; font-weight:800; }
+.history-page .history-photos .history-filters button[aria-pressed=true]::before { background:#07838D; box-shadow:0 0 0 5px #07838d12; }
+.history-page .history-empty { background:#FFFFFF; border:1px dashed #bdcec5; border-radius:12px; padding:64px 28px; }
+.history-page .history-empty h3 { font-size:20px; font-weight:600; color:#193C3F; }
+.history-page .history-result-count { margin-bottom:22px; font-size:12px; letter-spacing:.03em; }
+.history-page .history-gallery { grid-template-columns:repeat(3,minmax(0,1fr)); gap:36px 24px; }
+.history-page .history-photo-card:first-child { grid-column:span 2; }
+.history-page .history-photo-card img { border-radius:12px; aspect-ratio:1.5; transition:transform .35s ease; }
+.history-page .history-photo-card:first-child img { aspect-ratio:2.15; }
+.history-page .history-photo-open { display:block; width:100%; padding:0; border:0; border-radius:12px; overflow:hidden; background:#e2e9e4; cursor:pointer; }
+.history-page .history-photo-open:hover img { transform:scale(1.035); }
+.history-page .history-photo-card h3 { margin-top:20px; font-size:23px; letter-spacing:-.03em; }
+.history-page .history-photo-card time { display:block; color:#07838D; font-size:12px; letter-spacing:.08em; margin-block:8px; }
+.history-page .history-photo-card > p { color:#566568; line-height:1.8; font-size:14px; }
+.history-page .history-more { background:#FFFFFF; border-color:#c5d2cc; border-radius:6px; min-height:48px; }
+.history-page .history-reviews { border-top:1px solid #d8dfd9; padding-block:64px; }
+.history-page .history-review-heading { margin-bottom:40px; }
+.history-page .history-review-heading .history-heading > p:last-child { max-width:none; }
+.history-page .history-bubble-blue { background:#dcebe5; }
+.history-page .history-bubble-yellow { background:#FFBF20; }
+.history-page .history-review-note { color:#07838D; font-size:13px; }
+.history-page .history-review-card { border:0; border-radius:12px; box-shadow:0 6px 22px #193c3f05; }
+.history-page .review-card-open { padding:28px; gap:18px; }
+.history-page .review-category { color:#07838D; font-size:11px; letter-spacing:.07em; }
+.history-page .review-quote, .history-page .history-quote { color:#07838D; }
+.history-page .review-create { background:#FFBF20; color:#193C3F; border-radius:6px; padding:12px 24px; }
+.history-page .history-closing { padding:44px 48px; background:#07838D; color:#FFFFFF; border-radius:14px; display:flex; justify-content:space-between; align-items:center; gap:32px; }
+.history-page .history-closing p { color:#FFFFFF; margin-bottom:10px; font-size:11px; letter-spacing:.15em; }
+.history-page .history-closing h2 { color:#FFFFFF; font-size:32px; line-height:1.4; }
+.history-page .history-closing a { display:inline-flex; align-items:center; justify-content:center; min-height:52px; padding:14px 25px; background:#FFBF20; color:#193C3F; font-weight:700; border-radius:6px; text-decoration:none; white-space:nowrap; }
+.history-page .history-closing a:hover { background:#ffcd50; }
+@media(max-width:1100px) { .history-page { padding-inline:32px; } .history-page .history-hero { gap:30px; } .history-page .history-collage { min-height:330px; } }
+@media(max-width:800px) { .history-page .history-hero { grid-template-columns:1fr; padding-block:48px 64px; gap:40px; } .history-page h1 { font-size:58px; } .history-page .history-collage { max-width:560px; justify-self:center; min-height:380px; } .history-page .history-photos { padding-block:40px 54px; } .history-page .history-gallery { grid-template-columns:repeat(2,minmax(0,1fr)); } .history-page .history-photo-card:first-child { grid-column:span 2; } .history-page .history-closing { padding:32px; } }
+@media(max-width:540px) { .history-page { padding:0 20px 40px; } .history-page h1 { font-size:46px; } .history-page h2 { font-size:30px; } .history-page .history-collage { min-height:300px; } .history-page .history-collage-frame { width:47%; border-width:5px; border-bottom-width:18px; } .history-page .history-collage-2 { margin-top:75px; margin-left:26%; } .history-page .history-collage-3 { margin-left:49%; margin-top:15px; } .history-page .history-collage-note { bottom:8px; width:94px; height:94px; font-size:11px; padding:12px; } .history-page .history-archive-heading { display:block; margin-bottom:26px; } .history-page .history-archive-heading > p { margin-top:16px; } .history-page .history-tabs { gap:28px; } .history-page .history-tabs button { font-size:17px; } .history-page .history-photos .history-filters button { min-width:54px; } .history-page .history-gallery { grid-template-columns:1fr; } .history-page .history-photo-card:first-child { grid-column:auto; } .history-page .history-photo-card:first-child img { aspect-ratio:1.5; } .history-page .history-empty { padding:40px 20px; } .history-page .history-reviews { padding-block:44px; } .history-page .history-closing { flex-direction:column; align-items:start; padding:28px 24px; gap:24px; } .history-page .history-closing h2 { font-size:26px; } }
+@media(prefers-reduced-motion:no-preference) { .history-page .history-hero .history-heading { animation:history-enter .65s ease-out both; } .history-page .history-collage { animation:history-enter .8s ease-out both; } }
+@media(prefers-reduced-motion:reduce) { .history-page .history-photo-card img, .about-page .about-anchor { transition:none; } }
+@keyframes history-enter { from { opacity:0; transform:translateY(14px); } to { opacity:1; transform:none; } }
+.history-page .history-hero { background:transparent; }

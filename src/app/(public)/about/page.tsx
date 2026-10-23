@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import { ProgramTabs } from "./program-tabs";
 import "./about.css";
+import "./about-brand.css";
 
 const description = "영어를 잘 못해도, 한국어를 잘 못해도 괜찮아요. 말모임의 프로그램과 참여 안내를 만나보세요.";
 
