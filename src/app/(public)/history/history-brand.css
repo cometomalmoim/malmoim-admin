@@ -1,4 +1,4 @@
-.history-page { --history-yellow:#FFBF20; --history-blue:#07838D; --history-ink:#193C3F; --history-muted:#566568; max-width:1320px; padding:0 64px 72px; background:#F5F6F4; }
+.history-page { --history-yellow:#FFBF20; --history-blue:#07838D; --history-ink:#193C3F; --history-muted:#566568; max-width:1320px; padding:0 64px 72px; background:#FFFFFF; }
 .history-page .history-hero { grid-template-columns:1fr 1.1fr; gap:64px; padding:80px 0 92px; align-items:center; }
 .history-page .history-label { color:#07838D; font-size:11px; letter-spacing:.18em; margin-bottom:22px; }
 .history-page h1 { font-size:clamp(44px,5.3vw,74px); line-height:1.13; letter-spacing:-.065em; }
@@ -43,7 +43,7 @@
 .history-page .history-bubble-blue { background:#dcebe5; }
 .history-page .history-bubble-yellow { background:#FFBF20; }
 
-.history-page .history-review-card { border:0; border-radius:12px; box-shadow:0 6px 22px #193c3f05; }
+.history-page .history-review-card { border:0; border-radius:12px; box-shadow:inset 0 0 0 1px #e1e8e4,0 6px 22px #193c3f05; }
 .history-page .review-card-open { padding:28px; gap:18px; }
 .history-page .review-category { color:#07838D; font-size:11px; letter-spacing:.07em; }
 .history-page .review-quote, .history-page .history-quote { color:#07838D; }
@@ -71,3 +71,8 @@
 .history-page .history-collage-3 { margin-left:-1%; margin-top:12px; transform:rotate(-2deg); z-index:3; }
 @media(max-width:800px) { .history-page .history-collage { padding:16px 14px 28px; } .history-page .history-collage-frame { padding:8px 8px 26px; } .history-page .history-collage-2 { margin-top:32px; } }
 @media(max-width:540px) { .history-page .history-hero { padding-block:40px 48px; gap:30px; } .history-page .history-collage { flex-direction:column; align-items:flex-start; padding:14px 16px 20px; } .history-page .history-collage-frame { flex:none; width:86%; padding:10px 10px 32px; } .history-page .history-collage-1 { transform:rotate(-3deg); } .history-page .history-collage-2 { align-self:flex-end; margin-left:0; margin-top:-10px; transform:rotate(3deg); } .history-page .history-collage-3 { margin-left:4px; margin-top:-10px; transform:rotate(-2deg); } }
+
+/* Route-scoped shell: shared header/footer and unrelated pages keep their styles. */
+.public-site:has(> .history-page) { background:#FFFFFF; }
+
+.public-site:has(> .history-page) > .public-footer { background:#FFFFFF; box-shadow:inset 0 1px 0 #e1e8e4; }

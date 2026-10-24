@@ -11,7 +11,8 @@ export function validateSupabaseConfig(url: string | undefined, key: string | un
   try { parsed = new URL(url); } catch { throw new SupabaseConfigError(); }
   // Compare raw URLs too: URL normalization must not admit host aliases or extra paths.
   const allowedUrl = localTest
-    ? url === "http://127.0.0.1:54321" || url === "http://127.0.0.1:54321/"
+    ? ["http://127.0.0.1:54321", "http://127.0.0.1:54321/",
+      "http://127.0.0.1:61521", "http://127.0.0.1:61521/"].includes(url)
     : parsed.protocol === "https:";
   if (!allowedUrl || parsed.username || parsed.password || parsed.search || parsed.hash || parsed.pathname !== "/" || !/^sb_publishable_[A-Za-z0-9_-]+$/.test(key)) throw new SupabaseConfigError();
   return { url, key };
