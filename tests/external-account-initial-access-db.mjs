@@ -1,0 +1,55 @@
+// Synthetic sessions in disposable PostgreSQL. Never connects to a live Supabase project.
+import {readFile} from 'node:fs/promises';
+import assert from 'node:assert/strict';
+const {PGlite}=await import('../work/sql/node_modules/@electric-sql/pglite/dist/index.js');
+const db=new PGlite();
+const master='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',staff='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb',admin='cccccccc-cccc-4ccc-8ccc-cccccccccccc',ordinary='dddddddd-dddd-4ddd-8ddd-dddddddddddd';
+await db.exec(`create role anon;create role authenticated;create schema auth;
+create function auth.uid() returns uuid language sql stable as $$select nullif(current_setting('test.uid',true),'')::uuid$$;
+create function auth.jwt() returns jsonb language sql stable as $$select '{}'::jsonb$$;
+create table admin_users(user_id uuid primary key);create table admin_profiles(user_id uuid primary key,display_name text);
+insert into admin_users values('${master}'),('${staff}'),('${admin}');
+insert into admin_profiles values('${master}','Master'),('${staff}','Staff'),('${admin}','Admin');
+grant usage on schema auth to anon,authenticated;grant select on admin_users to authenticated;`);
+for(const file of ['022_external_accounts.sql','043_external_account_creation.sql','044_external_account_initial_access.sql'])await db.exec(await readFile('supabase/'+file,'utf8'));
+await db.query("insert into external_account_members values($1,'master','임원'),($2,'staff','디자인')",[master,staff]);
+async function as(id){await db.exec('reset role');await db.query("select set_config('test.uid',$1,false)",[id]);await db.exec('set role authenticated');}
+const input={service_name:'Figma',service_url:'https://figma.com',login_id:'synthetic@example.com',category:'design',department:'제한 부서',primary_manager:master,sub_manager:'',billing_cycle:'none',payment_method:'',amount:0,currency:'KRW',next_billing_date:'',renewal_notice_days:7,notes:''};
+const save=(id=null,version=null,patch={},secret='encrypted-original-password-placeholder',remove=false)=>db.query('select manage_external_account($1,$2,$3::jsonb,$4,$5) id',[id,version,JSON.stringify({...input,...patch}),secret,remove]);
+const row=async id=>(await db.query('select *,updated_at::text version from external_accounts where id=$1',[id])).rows[0];
+await as(master);const id=(await save()).rows[0].id;
+for(const actor of [staff,admin]){
+  await as(actor);
+  assert.equal((await db.query('select * from external_accounts')).rows.length,1,'all departments/creators visible');
+  assert.equal((await db.query('select * from external_account_members')).rows.length,2,'all manager choices available');
+  for(const action of ['view','copy','view'])assert.equal((await db.query('select reveal_external_account($1,$2) secret',[id,action])).rows[0].secret,(actor===staff?'encrypted-original-password-placeholder':'encrypted-new-password-placeholder'));
+  const access=(await db.query("select * from account_access_logs where account_id=$1 and actor_id=$2 and action in ('view','copy')",[id,actor])).rows;
+  assert.equal(access.length,3,'every no-MFA request logged, including repeated viewing');
+  const before=await row(id);
+  await save(id,before.version,{notes:'Edited by '+actor,created_by:actor},'encrypted-new-password-placeholder');
+  assert.equal((await row(id)).created_by,master,'creator remains immutable');
+  await assert.rejects(()=>save(id,before.version),'stale edits remain blocked');
+  const audit=(await db.query("select changes from account_access_logs where account_id=$1 and actor_id=$2 and action='update'",[id,actor])).rows[0].changes;
+  assert.equal(audit.password,'changed');assert.ok(audit.notes);assert.ok(!JSON.stringify(audit).includes('encrypted-new'));
+  await assert.rejects(async()=>save(id,(await row(id)).version,{},null,true),'Staff/Admin still cannot delete');
+  await assert.rejects(()=>db.query('select * from external_account_secrets'));
+  await assert.rejects(()=>db.query("update external_accounts set notes='audit bypass'"));
+  await assert.rejects(()=>db.query('delete from account_access_logs'));
+}
+await as(ordinary);
+assert.equal((await db.query('select * from external_accounts')).rows.length,0);
+await assert.rejects(()=>db.query("select reveal_external_account($1,'view')",[id]));await assert.rejects(()=>save());
+await db.exec('reset role;set role anon');
+await assert.rejects(()=>db.query("select reveal_external_account($1,'copy')",[id]));
+await db.exec('reset role');
+await db.exec(await readFile('supabase/rollback/044_external_account_initial_access.sql','utf8'));
+await as(staff);assert.equal((await db.query('select * from external_accounts')).rows.length,0,'rollback restores department scope');
+await assert.rejects(()=>db.query("select reveal_external_account($1,'view')",[id]));
+await assert.rejects(()=>save(id,null));
+await as(master);await assert.rejects(()=>db.query("select reveal_external_account($1,'view')",[id]),'rollback restores MFA requirement for Master too');
+await db.exec('reset role');await db.exec(await readFile('supabase/044_external_account_initial_access.sql','utf8'));
+await as(staff);assert.equal((await db.query("select reveal_external_account($1,'copy') secret",[id])).rows[0].secret,'encrypted-new-password-placeholder');
+await as(master);await save(id,(await row(id)).version,{},null,true);
+assert.ok((await db.query('select * from account_access_logs where account_id=$1',[id])).rows.length>=10,'audit survives deletion');
+await db.close();
+console.log('PASS no-MFA Staff/Admin read/edit/view/copy and audit; non-admin/direct writes denied; delete restriction, stale writes, creator retention and rollback verified');

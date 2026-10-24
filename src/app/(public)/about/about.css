@@ -193,10 +193,10 @@
 .about-page .about-hero-welcome > span { display: inline-flex; align-items: center; gap: 6px; white-space: nowrap; }
 .about-page .about-hero-welcome svg { width: 16px; height: 16px; flex: 0 0 16px; color: var(--about-blue); }
 .about-page .about-hero-visual { position: relative; }
-.about-page .about-hero-overlay { position: absolute; top: 16px; right: 16px; padding: 8px 12px; border-radius: 8px; background: rgb(35 24 21 / 82%); color: #fff; font-family: "Comic Sans MS", "Bradley Hand", cursive; font-size: 15px; line-height: 1.45; letter-spacing: .04em; transform: rotate(-7deg); }
+
 @media (max-width: 480px) {
   .about-page .about-hero .about-label { font-size: 13px; }
-  .about-page .about-hero-overlay { top: 12px; right: 12px; font-size: 13px; padding: 6px 10px; }
+
 }
 
 

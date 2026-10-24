@@ -1,4 +1,6 @@
 "use client";
+import {Localized} from "@/components/public-translation";
+
 
 import Image from "next/image";
 import { HistoryPhotoDialog } from "./history-photo-dialog";
@@ -22,7 +24,7 @@ function CategoryGallery({ category, photos }: { category: typeof categories[num
   const filtered = items.filter((photo) => filter === "all" || filterValue(photo) === filter);
   const visible = filtered.slice(0, limit);
 
-  return <>
+  return <Localized>{<>
     <div className="history-filters" role="group" aria-label={`${category.label} ${category.filter} 필터`}>
       {["all", ...options].map((option) => <button key={option} type="button" aria-pressed={filter === option} onClick={() => { setFilter(option); setLimit(PAGE_SIZE); }}>{option === "all" ? "전체" : `${option}${category.id === "regular" ? "기" : ""}`}</button>)}
     </div>
@@ -31,13 +33,13 @@ function CategoryGallery({ category, photos }: { category: typeof categories[num
     </div>
     <div className="history-gallery">
       {visible.map((photo) => <article className="history-photo-card" key={photo.id}>
-        <button type="button" className="history-photo-open" aria-label={`${photo.title} 사진 상세 보기`} onClick={() => setDetail(photo)}><Image src={photo.src} alt={photo.alt} width={900} height={540} sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 800px) 46vw, 350px" /></button>
-        <h3>{photo.title}</h3><time dateTime={photo.date}>{displayDate(photo.date)}</time><p>{photo.description}</p>
+        <button type="button" className="history-photo-open" aria-label={`${photo.title} 사진 상세 보기`} onClick={() => setDetail(photo)}><Image unoptimized={photo.unoptimized} src={photo.src} alt={photo.alt} width={900} height={540} sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 800px) 46vw, 350px" /></button>
+        <h3 data-i18n-skip>{photo.title}</h3><time dateTime={photo.date}>{displayDate(photo.date)}</time><p data-i18n-skip>{photo.description}</p>
       </article>)}
     </div>
     {detail && <HistoryPhotoDialog key={detail.id} photo={detail} close={() => setDetail(null)} />}
     {filtered.length > limit && <button className="history-more" type="button" onClick={() => setLimit((current) => current + PAGE_SIZE)}>더 많은 사진 보기 <span aria-hidden="true">＋</span></button>}
-  </>;
+  </>}</Localized>;
 }
 
 export function HistoryGallery({ photos }: { photos: HistoryPhoto[] }) {
@@ -54,10 +56,11 @@ export function HistoryGallery({ photos }: { photos: HistoryPhoto[] }) {
     }
     event.preventDefault(); setSelected(next); tabs.current[next]?.focus();
   }
-  return <section className="history-photos" aria-label="말모임 활동 사진">
+  return <Localized>{<section className="history-photos" aria-label="말모임 활동 사진">
+    <div className="history-archive-heading"><div><p className="history-label" lang="en">THE PHOTO ARCHIVE</p><h2>함께 쌓아가는 기록</h2></div><p>정규 세션부터 특별한 하루까지</p></div>
     <div className="history-tabs" role="tablist" aria-label="사진 분류">
       {categories.map((category, index) => <button key={category.id} type="button" role="tab" id={`history-tab-${category.id}`} aria-controls={`history-panel-${category.id}`} aria-selected={selected === index} tabIndex={selected === index ? 0 : -1} ref={(element) => { tabs.current[index] = element; }} onClick={() => setSelected(index)} onKeyDown={(event) => handleKey(event, index)}>{category.label}</button>)}
     </div>
     {categories.map((category, index) => <div key={category.id} id={`history-panel-${category.id}`} role="tabpanel" aria-labelledby={`history-tab-${category.id}`} hidden={selected !== index} tabIndex={0} className="history-tab-panel"><CategoryGallery key={selected} category={category} photos={photos} /></div>)}
-  </section>;
+  </section>}</Localized>;
 }

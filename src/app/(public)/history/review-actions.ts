@@ -4,6 +4,9 @@ import { createClient } from "@/lib/supabase/server";
 import { readReviews, REVIEW_BUCKET } from "./review-store";
 import { MAX_PHOTOS, PHOTO_LIMIT, reviewCategories, type ReviewFilter, type ReviewResult } from "./review-types";
 import { reviewPhotoExtension } from "./review-photo-format";
+import { checkReviewApproval, getReviewAccess } from "./review-permission";
+import { reviewApprovalNotice, reviewApprovalError } from "./review-types";
+export async function loadReviewAccess() { return getReviewAccess(); }
 const uuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export async function loadReviews(filter: ReviewFilter, offset: number) {
   if (!(filter === "all" || Object.hasOwn(reviewCategories, filter)) || !Number.isSafeInteger(offset) || offset < 0) return { reviews: [], more: false, error: "잘못된 조회 요청입니다." };
@@ -22,6 +25,10 @@ export async function saveReview(form: FormData): Promise<ReviewResult> {
     const db = await createClient();
     const { data: { user }, error: authError } = await db.auth.getUser();
     if (authError || !user) return { ok: false, message: "로그인이 필요해요. 로그인한 뒤 다시 시도해주세요." };
+    if (!existingId) {
+      const permission = await checkReviewApproval(db);
+      if (permission !== "approved") return { ok: false, message: permission === "unapproved" ? reviewApprovalNotice : reviewApprovalError };
+    }
     let previous: string[] = [];
     if (existingId) {
       const { data, error } = await db.from("history_reviews").select("photo_paths").eq("id", existingId).eq("author_id", user.id).single();

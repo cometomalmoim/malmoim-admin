@@ -1,0 +1,145 @@
+/* Shared spacing for recruitment operations only; certificates/internal menus stay unchanged. */
+.ops-shell.ops-event-workspace .ops-main {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 28px 32px;
+  line-height: 1.65;
+}
+.ops-shell.ops-event-workspace .ops-main :is(h1,h2,h3,p,dt,dd) {
+  word-break: keep-all;
+  overflow-wrap: anywhere;
+}
+.ops-shell.ops-event-workspace .ops-heading {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin: 0 0 24px;
+}
+.ops-shell.ops-event-workspace .ops-heading h1 {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.4;
+  letter-spacing: -.025em;
+}
+.ops-shell.ops-event-workspace .ops-heading > p {
+  flex-basis: 100%;
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.8;
+}
+.ops-shell.ops-event-workspace .ops-breadcrumb { margin: 0 0 16px; line-height: 1.6; }
+.ops-shell.ops-event-workspace .ops-panel {
+  box-sizing: border-box;
+  min-width: 0;
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+.ops-shell.ops-event-workspace .ops-panel h2 { margin: 0 0 12px; font-size: 16px; line-height: 1.5; }
+.ops-shell.ops-event-workspace .ops-panel > p { margin: 8px 0 16px; }
+.ops-shell.ops-event-workspace .ops-panel > :last-child { margin-bottom: 0; }
+.ops-shell.ops-event-workspace .ops-shortcuts { gap: 8px 12px; align-items: center; }
+.ops-shell.ops-event-workspace :is(.ops-tabs,.applicant-list-tabs,.applicant-class-tabs) { gap: 8px; align-items: center; }
+.ops-shell.ops-event-workspace .ops-tabs { flex-wrap: wrap; overflow: visible; }
+.ops-shell.ops-event-workspace :is(.ops-tabs,.applicant-class-tabs) a { line-height: 1.5; }
+.ops-shell.ops-event-workspace .ops-sidebar a { border-left: 3px solid transparent; line-height: 1.6; }
+.ops-shell.ops-event-workspace .ops-sidebar a[aria-current] { border-left-color: #fbbc18; }
+
+/* Filter controls share a baseline without enlarging selection checkboxes. */
+.ops-shell.ops-event-workspace :is(.applicant-filters,.inbox-filters,.session-overview-filters,.event-attendance-header,.participation-search) {
+  gap: 12px 16px;
+  align-items: end;
+}
+.ops-shell.ops-event-workspace :is(.applicant-filters,.inbox-filters,.session-overview-filters,.event-attendance-header,.participation-search) label {
+  margin: 0;
+  min-width: 0;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.ops-shell.ops-event-workspace :is(.applicant-filters,.inbox-filters,.session-overview-filters,.event-attendance-header,.participation-search) :is(input:not([type=checkbox]):not([type=hidden]),select) {
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  height: 40px;
+  min-height: 40px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 22px;
+}
+.ops-shell.ops-event-workspace :is(.applicant-filter-actions,.inbox-filters,.session-overview-filters,.event-attendance-header,.participation-search) > :is(button,a) {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  min-height: 40px;
+  height: 40px;
+  margin: 0;
+  padding: 8px 16px;
+  font-size: 13px;
+  line-height: 22px;
+}
+.ops-shell.ops-event-workspace .applicant-heading { gap: 12px; align-items: start; }
+.ops-shell.ops-event-workspace .applicant-heading p { font-size: 12px; line-height: 1.8; }
+.ops-shell.ops-event-workspace .applicant-table :is(th,td) { padding: 12px 10px; line-height: 1.65; vertical-align: middle; }
+.ops-shell.ops-event-workspace .applicant-table th { font-size: 12px; }
+.ops-shell.ops-event-workspace .applicant-table td { font-size: 12px; }
+.ops-shell.ops-event-workspace .applicant-table :is(td:nth-child(2),td:nth-child(3)) { min-width: 125px; max-width: 220px; white-space: normal; word-break: keep-all; overflow-wrap: anywhere; }
+.ops-shell.ops-event-workspace .applicant-identity { align-items: flex-start; gap: 8px; }
+.ops-shell.ops-event-workspace .applicant-table small { line-height: 1.6; margin-top: 4px; }
+.ops-shell.ops-event-workspace .applicant-response-row > td { padding: 0; }
+.ops-shell.ops-event-workspace .applicant-response-panel { padding: 20px 24px; }
+.ops-shell.ops-event-workspace .applicant-response-panel dd { margin: 0; line-height: 1.8; }
+.ops-shell.ops-event-workspace .participation-people li { grid-template-columns: minmax(140px,1.2fr) minmax(140px,1fr) repeat(2,minmax(100px,.8fr)) minmax(140px,1fr); gap: 12px; align-items: center; }
+.ops-shell.ops-event-workspace .participation-people li > * { min-width: 0; overflow-wrap: anywhere; }
+.ops-shell.ops-event-workspace .participation-stats { grid-template-columns: repeat(3,minmax(0,1fr)); gap: 16px; }
+.ops-shell.ops-event-workspace .participation-stats p { margin: 0; padding: 16px; border: 1px solid #e2e9e5; border-radius: 8px; font-size: 13px; }
+.ops-shell.ops-event-workspace .participation-stats strong { margin-top: 8px; font-size: 23px; line-height: 1.5; }
+.ops-shell.ops-event-workspace .inbox-item summary { display: grid; grid-template-columns: auto minmax(0,1fr) minmax(100px,auto) auto; gap: 12px 16px; align-items: center; }
+.ops-shell.ops-event-workspace .inbox-item summary strong { min-width: 0; word-break: keep-all; overflow-wrap: anywhere; font-size: 14px; }
+.ops-shell.ops-event-workspace .inbox-item summary > span { min-width: 0; overflow-wrap: anywhere; }
+.ops-shell.ops-event-workspace .inbox-item time { line-height: 1.6; }
+.ops-shell.ops-event-workspace .messaging-title h1 { margin: 0; font-size: 26px; line-height: 1.4; }
+.ops-shell.ops-event-workspace .messaging-columns { gap: 20px; align-items: start; }
+.ops-shell.ops-event-workspace .messaging-card { box-sizing: border-box; min-width: 0; padding: 20px 24px; }
+.ops-shell.ops-event-workspace .messaging-card h2 { margin: 0; line-height: 1.5; }
+.ops-shell.ops-event-workspace .messaging-title p { margin: 8px 0 0; }
+.ops-shell.ops-event-workspace .messaging-event select { min-width: 0; max-width: 100%; }
+.ops-shell.ops-event-workspace .evt-home-more { flex-wrap: wrap; gap: 8px 16px; }
+@media (max-width: 1200px) {
+  .ops-shell.ops-event-workspace .participation-people li { grid-template-columns: repeat(3,minmax(0,1fr)); }
+  .ops-shell.ops-event-workspace .inbox-item summary { grid-template-columns: auto minmax(0,1fr); }
+  .ops-shell.ops-event-workspace .inbox-item time { grid-column: 2; }
+}
+@media (max-width: 700px) {
+  .ops-shell.ops-event-workspace .ops-main { padding: 20px 16px; }
+  .ops-shell.ops-event-workspace .ops-panel { padding: 18px 16px; margin-bottom: 16px; }
+  .ops-shell.ops-event-workspace .ops-heading { margin-bottom: 20px; }
+  .ops-shell.ops-event-workspace :is(.ops-heading h1,.messaging-title h1) { font-size: 22px; }
+  .ops-shell.ops-event-workspace :is(.applicant-advanced-fields,.participation-people li,.participation-stats) { grid-template-columns: repeat(2,minmax(0,1fr)); }
+  .ops-shell.ops-event-workspace .participation-people li > a { grid-column: 1 / -1; }
+  .ops-shell.ops-event-workspace .inbox-filters label { flex: 1 1 100%; }
+  .ops-shell.ops-event-workspace .applicant-response-panel { padding: 16px; }
+  .ops-shell.ops-event-workspace .messaging-card { padding: 18px 16px; }
+}
+@media (max-width: 400px) {
+  .ops-shell.ops-event-workspace .participation-people li { grid-template-columns: 1fr; }
+  .ops-shell.ops-event-workspace .inbox-item summary { grid-template-columns: minmax(0,1fr); }
+  .ops-shell.ops-event-workspace .inbox-item time { grid-column: auto; }
+}
+
+/* Compact applicant rules load with the page; retain the same outer alignment. */
+.ops-shell.ops-event-workspace.ops-compact-applicants .ops-main { padding:28px 32px; }
+.ops-shell.ops-event-workspace.ops-compact-applicants .ops-heading h1 { font-size:26px;line-height:1.4;margin:0; }
+.ops-shell.ops-event-workspace.ops-compact-applicants .ops-panel { padding:20px 24px;margin-bottom:20px; }
+.ops-shell.ops-event-workspace.ops-compact-applicants .ops-panel h2 { font-size:16px;line-height:1.5;margin:0 0 12px; }
+@media(max-width:700px){
+ .ops-shell.ops-event-workspace.ops-compact-applicants .ops-main { padding:20px 16px; }
+ .ops-shell.ops-event-workspace.ops-compact-applicants .ops-heading h1 { font-size:22px; }
+ .ops-shell.ops-event-workspace.ops-compact-applicants .ops-panel { padding:18px 16px;margin-bottom:16px; }
+}
+
+/* Keep wide tables inside their own scrollport, not the page viewport. */
+.ops-shell.ops-event-workspace { overflow-x: clip; }
+
+.ops-shell.ops-event-workspace .applicant-save-feedback{display:block;max-width:180px;white-space:normal;font-size:11px;line-height:1.7;color:#a33b24;margin-top:6px}.ops-shell.ops-event-workspace .applicant-save-feedback.is-saved{color:#11694f}.ops-shell.ops-event-workspace .attendance-feedback{display:block;white-space:normal;max-width:360px;line-height:1.7;margin-top:8px}

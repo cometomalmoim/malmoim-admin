@@ -1,7 +1,10 @@
+
+import {Localized} from "@/components/public-translation";
 import type { Metadata } from "next";
 import Image from "next/image";
 import { ProgramTabs } from "./program-tabs";
 import "./about.css";
+import "./about-brand.css";
 
 const description = "영어를 잘 못해도, 한국어를 잘 못해도 괜찮아요. 말모임의 프로그램과 참여 안내를 만나보세요.";
 
@@ -22,7 +25,7 @@ const questions = [
 ] as const;
 
 export default function AboutPage() {
-  return (
+  return <Localized>{(
     <main id="public-main" className="about-page" tabIndex={-1}>
       <section className="about-hero" aria-labelledby="about-title">
         <div className="about-hero-copy">
@@ -42,7 +45,6 @@ export default function AboutPage() {
         <figure className="about-photo">
           <div className="about-hero-visual">
           <Image className="about-image" src="/about/about-hero-real.jpeg" alt="말모임 현수막 앞에서 실내 단체사진을 촬영한 참가자들" width={2958} height={2142} sizes="(max-width: 480px) calc(100vw - 40px), (max-width: 800px) calc(100vw - 48px), (max-width: 1160px) 54vw, 646px" loading="eager" />
-          <span className="about-hero-overlay" lang="en">Different<br />Languages<br />Same Friends</span>
           </div>
         </figure>
       </section>
@@ -114,5 +116,5 @@ export default function AboutPage() {
         <div><button type="button" disabled aria-describedby="about-contact-status">신청 준비 중</button><button type="button" disabled aria-describedby="about-contact-status">문의 준비 중</button></div>
       </aside>
     </main>
-  );
+  )}</Localized>;
 }

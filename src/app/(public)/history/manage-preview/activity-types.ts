@@ -1,5 +1,6 @@
 import type { HistoryPhoto } from "../history-data";
-export const activityPhotoPolicy = { maxFiles: 6, maxBytes: 5 * 1024 * 1024, totalBytes: 20 * 1024 * 1024 };
+import { activityPhotoPolicy } from "@/lib/history-activities/photo-policy";
+export { activityPhotoPolicy };
 export const cohorts = [9, 8, 7, 6, 5, 4, 3, 2, 1] as const;
 export const years = [2026, 2025] as const;
 export type ActivityAsset = { id: string; url: string; name: string; alt: string; size: number };
@@ -29,9 +30,14 @@ export function validateFields(fields: ActivityFields) {
   else if (fields.category === "special" && fields.year && fields.date.slice(0, 4) !== fields.year) errors.date = "활동 날짜를 선택한 연도와 맞춰주세요.";
   return errors;
 }
+export function validatePhotoSelection(count: number, bytes: number) {
+  if (count > activityPhotoPolicy.maxFiles) return "대표 사진은 1장, 추가 사진은 최대 9장(전체 10장)까지 선택해주세요.";
+  if (bytes > activityPhotoPolicy.totalBytes) return "사진 전체 용량은 45MB 이하로 선택해주세요.";
+  return "";
+}
 export async function validatePhotoFiles(files: File[]) {
   for (const file of files) {
-    if (!file.size || file.size > activityPhotoPolicy.maxBytes) return "사진은 장당 5MB 이하로 선택해주세요. 빈 파일은 사용할 수 없어요.";
+    if (!file.size || file.size > activityPhotoPolicy.maxBytes) return "사진은 장당 4.5MB 이하로 선택해주세요. 빈 파일은 사용할 수 없어요.";
     const b = new Uint8Array(await file.slice(0, 12).arrayBuffer());
     const match = file.type === "image/jpeg" && b[0] === 255 && b[1] === 216 && b[2] === 255
       || file.type === "image/png" && [137,80,78,71,13,10,26,10].every((n, i) => b[i] === n)

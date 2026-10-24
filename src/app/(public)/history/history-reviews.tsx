@@ -1,12 +1,14 @@
 "use client";
+import {Localized} from "@/components/public-translation";
+
 import Image from "next/image";
 import Link from "next/link";
 import { useEffect, useRef, useState, useTransition, type ReactNode } from "react";
-import { deleteReview, loadReviews, saveReview } from "./review-actions";
-import { MAX_PHOTOS, ORIGINAL_PHOTO_LIMIT, reviewCategories, reviewDate, type Review, type ReviewFilter, type ReviewPage } from "./review-types";
+import { deleteReview, loadReviews, loadReviewAccess, saveReview } from "./review-actions";
+import { reviewApprovalNotice, reviewApprovalError, type ReviewPermission, MAX_PHOTOS, ORIGINAL_PHOTO_LIMIT, reviewCategories, reviewDate, type Review, type ReviewFilter, type ReviewPage } from "./review-types";
 import { prepareReviewPhoto } from "./review-photo-client";
 
-export function ReviewDialog({ title, children, close, busy = false, editor = false }: { title: string; children: ReactNode; close: () => void; busy?: boolean; editor?: boolean }) {
+export function ReviewDialog({ title, children, close, busy = false, editor = false, userTitle = false }: { userTitle?: boolean; title: string; children: ReactNode; close: () => void; busy?: boolean; editor?: boolean }) {
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     const node = dialog.current;
@@ -14,7 +16,7 @@ export function ReviewDialog({ title, children, close, busy = false, editor = fa
     node?.showModal();
     return () => { node?.close(); if (previous?.isConnected) previous.focus(); };
   }, []);
-  return <dialog ref={dialog} className={`review-dialog${editor ? " review-editor-dialog" : ""}`} aria-labelledby="review-dialog-title" tabIndex={-1} onKeyDown={(event) => {
+  return <Localized>{<dialog ref={dialog} className={`review-dialog${editor ? " review-editor-dialog" : ""}`} aria-labelledby="review-dialog-title" tabIndex={-1} onKeyDown={(event) => {
     if (event.key !== "Tab") return;
     const node = dialog.current;
     if (!node) return;
@@ -25,13 +27,13 @@ export function ReviewDialog({ title, children, close, busy = false, editor = fa
     if (event.shiftKey && (document.activeElement === first || document.activeElement === node)) { event.preventDefault(); last.focus(); }
     else if (!event.shiftKey && (document.activeElement === last || document.activeElement === node)) { event.preventDefault(); first.focus(); }
   }} onCancel={(event) => { event.preventDefault(); if (!busy) close(); }}>
-    <div className="review-dialog-heading"><h3 id="review-dialog-title">{title}</h3><button type="button" disabled={busy} onClick={close} aria-label="후기 창 닫기">닫기</button></div>{children}
-  </dialog>;
+    <div className="review-dialog-heading"><h3 id="review-dialog-title" data-i18n-skip={userTitle}>{title}</h3><button type="button" disabled={busy} onClick={close} aria-label="후기 창 닫기">닫기</button></div>{children}
+  </dialog>}</Localized>;
 }
 function ReviewPhotos({ review }: { review: Review }) {
-  return <div className="review-photos">{review.photos.map((url, index) => url ? <Image unoptimized key={review.photo_paths[index]} src={url} alt={`${review.title} 첨부 사진 ${index + 1}`} width={900} height={650} /> : null)}
+  return <Localized>{<div className="review-photos">{review.photos.map((url, index) => url ? <Image unoptimized key={review.photo_paths[index]} src={url} alt={`${review.title} 첨부 사진 ${index + 1}`} width={900} height={650} /> : null)}
     {review.photos.some((url) => !url) && <p className="review-notice">일부 사진을 불러오지 못했어요. 후기 내용은 확인할 수 있습니다.</p>}
-  </div>;
+  </div>}</Localized>;
 }
 function PhotoPreview({ file }: { file: File }) {
   const image = useRef<HTMLImageElement>(null);
@@ -40,7 +42,7 @@ function PhotoPreview({ file }: { file: File }) {
     if (image.current) image.current.src = url;
     return () => URL.revokeObjectURL(url);
   }, [file]);
-  return <Image ref={image} unoptimized src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt={`첨부 예정: ${file.name}`} width={180} height={120} />;
+  return <Localized>{<Image ref={image} unoptimized src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" alt={`첨부 예정: ${file.name}`} width={180} height={120} />}</Localized>;
 }
 
 export function ReviewEditor({ review, close, saved, preview = false }: { review?: Review; close: () => void; saved: (message: string) => Promise<void>; preview?: boolean }) {
@@ -79,7 +81,7 @@ export function ReviewEditor({ review, close, saved, preview = false }: { review
     setDiscard(false);
     requestAnimationFrame(() => { if (lastFocus.current?.isConnected && !lastFocus.current.closest("[hidden]")) lastFocus.current.focus(); else formRef.current?.querySelector<HTMLInputElement>("#review-title")?.focus(); });
   }
-  return <ReviewDialog editor title={review ? "참여 후기 수정" : "참여 후기 등록"} close={discard ? resume : requestClose} busy={busy || processingPhotos}>
+  return <Localized>{<ReviewDialog editor title={review ? "참여 후기 수정" : "참여 후기 등록"} close={discard ? resume : requestClose} busy={busy || processingPhotos}>
     {discard && <div className="review-confirm" role="group" aria-labelledby="review-discard-title">
       <h4 id="review-discard-title">작성 중인 내용을 버릴까요?</h4><p>아직 저장하지 않은 내용과 선택한 사진이 사라집니다.</p>
       <div className="review-actions"><button type="button" className="review-create" ref={keepEditing} onClick={resume}>계속 작성하기</button><button type="button" className="review-danger" onClick={close}>내용 버리고 닫기</button></div>
@@ -140,16 +142,16 @@ export function ReviewEditor({ review, close, saved, preview = false }: { review
       <p role="status" className="review-notice">{processingPhotos ? "사진 크기와 용량을 조정하고 있어요. 잠시만 기다려주세요." : busy ? "후기를 저장하고 있어요. 잠시만 기다려주세요." : ""}</p>
       {error && <p role="alert" className="review-error">{error}</p>}
     </form>
-  </ReviewDialog>;
+  </ReviewDialog>}</Localized>;
 }
 
 export function ReviewCard({ review, open }: { review: Review; open: () => void }) {
   const cover = review.photos.find((url) => !!url);
-  return <article className="history-review-card"><button type="button" className="review-card-open" onClick={open} aria-label={`${review.title} 후기 상세 보기`}>
-    <div className="review-card-body"><span className="review-category">{reviewCategories[review.category]}</span><h3>{review.title}</h3><p className="review-preview">{review.content}</p></div>
+  return <Localized>{<article className="history-review-card"><button type="button" className="review-card-open" onClick={open} aria-label={`${review.title} 후기 상세 보기`}>
+    <div className="review-card-body"><span className="review-category">{reviewCategories[review.category]}</span><h3 data-i18n-skip>{review.title}</h3><p className="review-preview" data-i18n-skip>{review.content}</p></div>
     {cover && <Image unoptimized className="review-card-photo" src={cover} alt={`${review.title} 대표 사진`} width={600} height={360} />}
-    <span className="review-byline"><span>{review.display_name?.trim() || "익명"}</span><time dateTime={review.created_at}>{reviewDate(review.created_at)}</time></span>
-  </button></article>;
+    <span className="review-byline"><span data-i18n-skip={!!review.display_name?.trim() && review.display_name.trim() !== "익명"}>{review.display_name?.trim() || "익명"}</span><time dateTime={review.created_at}>{reviewDate(review.created_at)}</time></span>
+  </button></article>}</Localized>;
 }
 
 export function ReviewDetail({ review, close, edit, remove, busy = false, error = "" }: { review: Review; close: () => void; edit?: () => void; remove?: () => void; busy?: boolean; error?: string }) {
@@ -157,15 +159,35 @@ export function ReviewDetail({ review, close, edit, remove, busy = false, error 
   const cancelDelete = useRef<HTMLButtonElement>(null);
   const deleteButton = useRef<HTMLButtonElement>(null);
   useEffect(() => { if (confirm) cancelDelete.current?.focus(); }, [confirm]);
-  return <ReviewDialog title={review.title} close={() => { if (confirm) { setConfirm(false); requestAnimationFrame(() => deleteButton.current?.focus()); } else close(); }} busy={busy}>
+  return <Localized>{<ReviewDialog userTitle title={review.title} close={() => { if (confirm) { setConfirm(false); requestAnimationFrame(() => deleteButton.current?.focus()); } else close(); }} busy={busy}>
     {confirm ? <div className="review-confirm" role="group" aria-labelledby="review-delete-title"><h4 id="review-delete-title">이 후기를 삭제할까요?</h4><p>삭제한 후기와 사진은 복구할 수 없어요. 계속하려면 삭제 확인을 눌러주세요.</p><div className="review-actions"><button ref={cancelDelete} type="button" disabled={busy} onClick={() => { setConfirm(false); requestAnimationFrame(() => deleteButton.current?.focus()); }}>취소</button><button type="button" className="review-danger" disabled={busy} onClick={remove}>{busy ? "삭제 중…" : "삭제 확인"}</button></div></div> : <>
-      <p className="review-detail-meta"><span className="review-category">{reviewCategories[review.category]}</span><span>{review.display_name?.trim() || "익명"}</span><time dateTime={review.created_at}>{reviewDate(review.created_at)}</time></p><p className="review-full-content">{review.content}</p><ReviewPhotos review={review} />
+      <p className="review-detail-meta"><span className="review-category">{reviewCategories[review.category]}</span><span data-i18n-skip={!!review.display_name?.trim() && review.display_name.trim() !== "익명"}>{review.display_name?.trim() || "익명"}</span><time dateTime={review.created_at}>{reviewDate(review.created_at)}</time></p><p className="review-full-content" data-i18n-skip>{review.content}</p><ReviewPhotos review={review} />
       {edit && remove && <div className="review-actions"><button type="button" onClick={edit}>수정</button><button ref={deleteButton} type="button" className="review-danger" onClick={() => setConfirm(true)}>삭제</button></div>}
     </>}
     {error && <p role="alert" className="review-error">{error}</p>}
-  </ReviewDialog>;
+  </ReviewDialog>}</Localized>;
 }
-export function HistoryReviews({ initial, userId }: { initial: ReviewPage; userId: string | null }) {
+export function HistoryReviews({ initial, userId, permission }: { initial: ReviewPage; userId: string | null; permission: ReviewPermission }) {
+  const [access, setAccess] = useState({ userId, permission });
+  const [checking, check] = useTransition();
+  const [permissionNotice, setPermissionNotice] = useState<string | null>(null);
+  function requestNewReview() {
+    setPermissionNotice(null);
+    setLogin(false);
+    setMessage("");
+    check(async () => {
+      try {
+        const next = await loadReviewAccess();
+        setAccess(next);
+        if (next.permission === "approved") setEditor("new");
+        else if (next.permission === "anonymous") setLogin(true);
+        else setPermissionNotice(next.permission === "unapproved" ? reviewApprovalNotice : reviewApprovalError);
+      } catch {
+        setAccess((current) => ({ ...current, permission: "error" }));
+        setPermissionNotice(reviewApprovalError);
+      }
+    });
+  }
   const cardTrigger = useRef<HTMLElement | null>(null);
   const [page, setPage] = useState(initial);
   const [filter, setFilter] = useState<ReviewFilter>("all");
@@ -175,6 +197,14 @@ export function HistoryReviews({ initial, userId }: { initial: ReviewPage; userI
   const [message, setMessage] = useState("");
   const [detailError, setDetailError] = useState("");
   const [busy, start] = useTransition();
+  const [serverAccess, setServerAccess] = useState({ userId, permission });
+  // Reconcile only when server authentication props change; local RPC results remain usable.
+  if (serverAccess.userId !== userId || serverAccess.permission !== permission) {
+    setServerAccess({ userId, permission });
+    setAccess({ userId, permission });
+    setLogin(false);
+    setPermissionNotice(null);
+  }
   async function reload(notice: string) {
     setEditor(null); setSelected(null); setMessage(notice);
     try { setPage(await loadReviews(filter, 0)); }
@@ -189,8 +219,9 @@ export function HistoryReviews({ initial, userId }: { initial: ReviewPage; userI
       } catch { setMessage("목록을 불러오지 못했습니다. 다시 시도해주세요."); }
     });
   }
-  return <>
-    <div className="review-toolbar"><div className="history-filters" role="group" aria-label="후기 카테고리 필터">{(["all", "regular", "special", "other"] as const).map((key) => <button type="button" key={key} aria-pressed={filter === key} disabled={busy} onClick={() => { setMessage(""); fetchPage(key); }}>{key === "all" ? "전체" : reviewCategories[key]}</button>)}</div><button className="review-create" type="button" onClick={() => { setMessage(""); if (userId) setEditor("new"); else setLogin(true); }}>후기 등록하기</button></div>
+  return <Localized>{<>
+    <div className="review-toolbar"><div className="history-filters" role="group" aria-label="후기 카테고리 필터">{(["all", "regular", "special", "other"] as const).map((key) => <button type="button" key={key} aria-pressed={filter === key} disabled={busy} onClick={() => { setMessage(""); fetchPage(key); }}>{key === "all" ? "전체" : reviewCategories[key]}</button>)}</div><button className="review-create" type="button" disabled={checking} onClick={requestNewReview}>{checking ? "작성 권한 확인 중…" : access.permission === "error" ? "작성 권한 다시 확인" : "후기 등록하기"}</button></div>
+    {(access.permission === "unapproved" || access.permission === "error") && <p className="review-notice" role="status">{access.permission === "unapproved" ? reviewApprovalNotice : reviewApprovalError}</p>}
     {process.env.NODE_ENV === "development" && <p className="review-demo-notice"><Link href="/history/preview">후기 UI 개발용 미리보기</Link> · 실제 데이터 저장 없이 폼과 카드를 확인합니다.</p>}
     <p className="review-notice" role="status">{busy ? "요청을 처리하고 있어요. 잠시만 기다려주세요." : message}</p>
     <div aria-busy={busy}>
@@ -199,14 +230,15 @@ export function HistoryReviews({ initial, userId }: { initial: ReviewPage; userI
       </>}
       {page.more && <button className="history-more" type="button" disabled={busy} onClick={() => fetchPage(filter, true)}>더 많은 후기 보기 <span aria-hidden="true">＋</span></button>}
     </div>
-    {login && <ReviewDialog title="로그인이 필요합니다" close={() => setLogin(false)}><p>후기를 작성하려면 로그인이 필요합니다. 로그인 후 후기 페이지로 돌아와 작성할 수 있습니다.</p><div className="review-actions"><Link className="review-create" href="/auth/login">로그인하기</Link><button type="button" onClick={() => setLogin(false)}>취소</button></div></ReviewDialog>}
-    {editor && <ReviewEditor review={editor === "new" ? undefined : editor} close={() => setEditor(null)} saved={reload} />}
+    {permissionNotice && <ReviewDialog title="후기 작성 권한 안내" close={() => setPermissionNotice(null)}><p role="alert">{permissionNotice}</p><div className="review-actions"><button type="button" onClick={() => setPermissionNotice(null)}>확인</button></div></ReviewDialog>}
+    {login && <ReviewDialog title="로그인이 필요합니다" close={() => setLogin(false)}><p>후기를 작성하려면 로그인이 필요합니다. 로그인 후 후기 페이지로 돌아와 작성할 수 있습니다.</p><div className="review-actions"><Link className="review-create" href="/auth/login?returnTo=history" onClick={() => setLogin(false)}>로그인하기</Link><button type="button" onClick={() => setLogin(false)}>취소</button></div></ReviewDialog>}
+    {editor && (editor !== "new" || access.permission === "approved") && <ReviewEditor review={editor === "new" ? undefined : editor} close={() => setEditor(null)} saved={reload} />}
     {selected && !editor && <ReviewDetail review={selected} close={() => { setSelected(null); requestAnimationFrame(() => cardTrigger.current?.isConnected && cardTrigger.current.focus()); }} busy={busy} error={detailError}
-      edit={userId === selected.author_id ? () => setEditor(selected) : undefined}
-      remove={userId === selected.author_id ? () => start(async () => {
+      edit={access.userId === selected.author_id ? () => setEditor(selected) : undefined}
+      remove={access.userId === selected.author_id ? () => start(async () => {
         setDetailError("");
         try { const result = await deleteReview(selected.id); if (result.ok) await reload(result.message); else setDetailError(result.message); }
         catch { setDetailError("삭제 결과를 확인하지 못했어요. 목록에서 삭제 여부를 확인한 뒤 다시 시도해주세요."); }
       }) : undefined} />}
-  </>;
+  </>}</Localized>;
 }

@@ -614,13 +614,13 @@ test("proxy persists language selection, redirects only supported GET routes and
   }
   const english = await proxy(request("/signup"));
   assert.equal(english.destination, "/en/signup");
-  assert.equal(english.cookies.values.get("malmoim_locale"), "en");
+  assert.equal(english.cookies.values.has("malmoim_locale"), false); // Implicit redirects do not reset explicit preferences.
   const korean = await proxy(request("/signup?lang=ko"));
   assert.equal(korean.destination, "/signup");
   assert.equal(korean.search, "");
   assert.equal(korean.cookies.values.get("malmoim_locale"), "ko");
   const regular = await proxy(request("/en/auth/login"));
-  assert.equal(regular.cookies.values.get("malmoim_locale"), "en");
+  assert.equal(regular.cookies.values.has("malmoim_locale"), false); // Background requests cannot race with the language picker.
   assert.equal(regular.cookies.values.get("sb-test-auth-token"), "test-only");
   const admin = await proxy(request("/login?lang=en"));
   assert.equal(admin.destination, undefined);

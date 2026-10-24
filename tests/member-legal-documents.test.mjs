@@ -1,5 +1,5 @@
 import assert from "node:assert/strict";
-import {readFileSync} from "node:fs";
+import {readFileSync,existsSync} from "node:fs";
 import {createHash} from "node:crypto";
 import {createRequire} from "node:module";
 import path from "node:path";
@@ -9,7 +9,7 @@ import ts from "typescript";
 const require=createRequire(import.meta.url),root=path.resolve(import.meta.dirname,"..");
 const React=require("react"),{renderToStaticMarkup}=require("react-dom/server");
 function load(name,mocks={}){
- const file=path.resolve(root,name),loaded={exports:{}};
+ const requested=path.resolve(root,name),file=existsSync(requested)?requested:requested.replace(/\.ts$/,".tsx"),loaded={exports:{}};
  const {outputText}=ts.transpileModule(readFileSync(file,"utf8"),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}});
  runInNewContext(outputText,{module:loaded,exports:loaded.exports,Date,require:id=>Object.hasOwn(mocks,id)?mocks[id]:id.startsWith("@/")?load("src/"+id.slice(2)+".ts",mocks):id.startsWith(".")?load(path.relative(root,path.resolve(path.dirname(file),id+".ts")),mocks):require(id)});return loaded.exports;
 }

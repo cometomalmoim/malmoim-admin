@@ -1,0 +1,37 @@
+import {test} from 'node:test';import assert from 'node:assert/strict';import {readFileSync} from 'node:fs';import {createRequire} from 'node:module';import {runInNewContext} from 'node:vm';import ts from 'typescript';
+const require=createRequire(import.meta.url),React=require('react'),{renderToStaticMarkup}=require('react-dom/server');
+function load(file){const m={exports:{}};const code=ts.transpileModule(readFileSync(new URL(file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText;runInNewContext(code,{module:m,exports:m.exports,require:n=>n==='@/lib/i18n/public-tree'?load('./public-tree.tsx'):n==='@/lib/i18n/about-history'?load('./about-history.ts'):n==='@/lib/public-locale'?load('../public-locale.ts'):n.startsWith('./')?load(n+'.ts'):require(n)});return m.exports;}
+const {englishPublicText:t}=load('./about-history.ts'),{aboutHistoryEnglish:dict}=load('./about-history-en.ts');
+test('all dictionary values are nonempty English, including facts and server failure states',()=>{assert(Object.keys(dict).length>200);for(const v of Object.values(dict)){assert(v.trim());assert(!/[가-힣]/.test(v));}assert.equal(t('50,000원 / 6주'),'KRW 50,000 / 6 weeks');assert(t('후기 저장소에 연결하지 못했어요. 잠시 후 다시 불러와 주세요. 문제가 계속되면 운영팀에 알려주세요.').startsWith("We couldn't"));});
+test('dynamic filters, slide labels and counts preserve numbers and user titles',()=>{assert.equal(t('9기'),'Season 9');assert.equal(t('정규 세션 · 9기'),'Regular sessions · Season 9');assert.equal(t('사진 2 / 10'),'Photo 2 / 10');assert.equal(t('사진 10개 중 6개 표시'),'Showing 6 of 10 photos');assert.equal(t('우리 여행 사진 상세 보기'),'View photos: 우리 여행');assert.equal(t('| 45분'),'| 45 min');});
+test('same tree returns unchanged Korean; English translates labels but preserves user data and links',()=>{const {PublicLanguageProvider:Provider,Localized}=load('../../components/public-translation.tsx');const tree=React.createElement('main',null,React.createElement('button',{'aria-label':'다음 사진'},'다음 →'),React.createElement('h3',{'data-i18n-skip':true},'특별 활동'),React.createElement('a',{href:'/about#about-recruitment'},'말모임 참여 안내'));const render=locale=>renderToStaticMarkup(React.createElement(Provider,{locale},React.createElement(Localized,null,tree)));assert.equal(render('ko'),renderToStaticMarkup(tree));const en=render('en');assert.match(en,/Next →/);assert.match(en,/aria-label="Next photo"/);assert.match(en,/특별 활동/);assert.match(en,/href="\/en\/about#about-recruitment"/);});
+test('source UI and known review errors cannot add an untranslated Korean literal silently',()=>{const paths=['../../app/(public)/about/page.tsx','../../app/(public)/about/program-tabs.tsx','../../app/(public)/history/page.tsx','../../app/(public)/history/history-content.tsx','../../app/(public)/history/history-photo-dialog.tsx','../../app/(public)/history/history-reviews.tsx','../../app/(public)/history/review-actions.ts','../../app/(public)/history/review-store.ts','../../app/(public)/history/review-photo-client.ts'];const missing=new Set();for(const path of paths){const source=ts.createSourceFile(path,readFileSync(new URL(path,import.meta.url),'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TSX);function visit(n){if((ts.isStringLiteral(n)||ts.isJsxText(n))&&/[가-힣]/.test(n.text)){const text=n.text.trim().replace(/\s+/g,' ');if(text!=='서울청년센터 은평 서울 은평구 통일로67길 9'&&/[가-힣]/.test(t(text)))missing.add(text);}ts.forEachChild(n,visit);}visit(source);}assert.deepEqual([...missing],[]);});
+
+test('season terminology covers recruitment, filters and every numbered group without changing sessions',()=>{
+ for(const n of [1,7,8,9,10,25]){
+  assert.equal(t(`${n}기`),`Season ${n}`);
+  assert.equal(t(`정규 세션 · ${n}기`),`Regular sessions · Season ${n}`);
+  assert.equal(t(`${n}기 정규 세션 사진이 아직 없습니다.`),`No regular session photos for Season ${n} yet.`);
+ }
+ assert.equal(t('말모임 9기 모집'),'Join MALMOIM Season 9');
+ assert.equal(t('9기 신청하기 →'),'Join Season 9 →');
+ assert.equal(t('9기 신청하기 — 모집 안내로 이동'),'Join Season 9 — go to recruitment information');
+ assert.equal(t('정규 세션 기수 필터'),'Filter Regular sessions by season');
+ assert.equal(t('영어 세션'),'English session');
+ assert.equal(t('한국어 세션'),'Korean session');
+ assert.equal(t('기수'),'Season');
+ assert(!Object.values(dict).some(value=>/\b(cohort|batch)\b/i.test(value)));
+});
+test('English route translates shared server JSX before RSC transport, without a client provider',()=>{
+ const {translatePublicTree}=load('./public-tree.tsx');
+ for(const route of ['about','history']){
+  const shared=React.createElement('main',null,React.createElement('h1',null,'말모임 9기 모집'),React.createElement('a',{href:'/auth/login?returnTo=history'},'로그인하기'),React.createElement('p',{'data-i18n-skip':true},'사용자가 작성한 원문'));
+  const m={exports:{}};
+  const code=ts.transpileModule(readFileSync(new URL(`../../app/(english)/en/${route}/page.tsx`,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022,jsx:ts.JsxEmit.ReactJSX}}).outputText;
+  runInNewContext(code,{module:m,exports:m.exports,require:key=>key==='@/lib/i18n/public-tree'?{translatePublicTree}:key===`@/app/(public)/${route}/page`?{default:()=>shared}:require(key)});
+  const tree=m.exports.default();const html=renderToStaticMarkup(tree);
+  assert.match(html,/Join MALMOIM Season 9/);assert.match(html,/href="\/en\/auth\/login\?returnTo=history"/);assert.match(html,/사용자가 작성한 원문/);
+  assert.equal(renderToStaticMarkup(translatePublicTree(tree)),html);
+  assert.match(renderToStaticMarkup(shared),/말모임 9기 모집/);
+ }
+});

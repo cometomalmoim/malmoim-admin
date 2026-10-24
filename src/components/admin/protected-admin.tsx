@@ -1,6 +1,8 @@
+import {EsignAdminDemo} from '@/components/document-admin/esign-admin-demo';
 import {EventReviewsView} from './event-reviews-view';
 import {InquiriesView} from './inquiries-view';
 import { ScheduleView } from './schedule-view';
+import { ExternalAccountsView } from './external-accounts-view';
 import { PeopleView } from './people-view';
 import { BoardView } from './board-view';
 import {CertificateView} from './certificate-view';
@@ -29,6 +31,7 @@ export async function ProtectedAdmin({ segments = [], page, query }: { segments?
   const access = await getAdminAccess();
   if (access.status === "anonymous") redirect("/login");
   if (access.status !== "admin") return <main className="login-page"><section className="login-card"><span className="eyebrow">접근 제한</span><h1>관리자 접근 거부</h1><p className="notice">{access.status === "error" ? "관리자 권한을 확인할 수 없습니다. 잠시 후 다시 시도해주세요." : "이 계정은 관리자로 등록되어 있지 않습니다."}</p><div className="account"><LogoutForm /></div></section></main>;
+  if(segments.length===1&&segments[0]==='esign-demo')return <EsignAdminDemo email={access.email}/>;
   if(segments.length===3&&segments[0]==='events'&&segments[2]==='intake-test')return <main className="login-page"><section className="login-card"><h1>관리자 신청 저장 테스트</h1><p>테스트 표시된 이벤트만 허용합니다. 가상 데이터만 입력하세요.</p><EventRegistrationForm slug={segments[1]} test/></section></main>;
   if ((segments.length === 1 && segments[0] === 'certificates') || (segments.length === 3 && segments[0] === 'events' && segments[2] === 'certificates')) return <CertificateView email={access.email} enabled={certificatesEnabled()} slug={segments[1]}/>;
   if(segments.length===1&&segments[0]==='participants')return <ParticipationView email={access.email} query={query}/>;
@@ -39,6 +42,7 @@ export async function ProtectedAdmin({ segments = [], page, query }: { segments?
   if(segments.length===3&&segments[0]==='events'&&segments[2]==='inquiries')return <InquiriesView email={access.email} slug={segments[1]} query={query} page={page}/>;
   if(segments.length===1&&segments[0]==='messages')return <MessageView email={access.email}/>;
   if(segments.length===1&&segments[0]==='schedule')return <ScheduleView email={access.email}/>;
+  if(segments.length===1&&segments[0]==='external-accounts')return <ExternalAccountsView email={access.email}/>;
   if(segments.length===1&&segments[0]==='people')return <PeopleView email={access.email}/>;
   if(segments.length===1&&segments[0]==='internal-board')return <BoardView email={access.email}/>;
   if (segments[0] === "member-board" && segments.length <= 3) {

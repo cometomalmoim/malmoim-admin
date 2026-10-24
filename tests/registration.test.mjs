@@ -8,4 +8,18 @@ test('첫 참가 응답의 과거 활동 내용은 저장하지 않음',()=>{ass
 test('출생연도 선택 입력: 미입력·유효한 연도·경계',()=>{const year=new Date(Date.now()+9*3600000).getUTCFullYear();assert.equal(registrationInput(form()).birth_year,null);assert.equal(registrationInput(form({birth_year:'1998'})).birth_year,1998);assert.equal(registrationInput(form({birth_year:'1900'})).birth_year,1900);assert.equal(registrationInput(form({birth_year:String(year)})).birth_year,year);});
 test('나이·미래·소수·짧은 출생연도는 거부',()=>{for(const value of ['28','98','1899',String(new Date().getUTCFullYear()+1),'1998.5','1e03','abcd','19980'])assert.throws(()=>registrationInput(form({birth_year:value})),/birth_year/);});
 
-test('할로윈 공개 접수는 출생연도 필수 및 1990~2007 경계 적용',()=>{for(const birth_year of ['', '1989','2008'])assert.throws(()=>registrationInput(form({birth_year}),true),/birth_year/);for(const birth_year of ['1990','1998','2007'])assert.equal(registrationInput(form({birth_year}),true).birth_year,Number(birth_year));});
+test('할로윈 공개 접수는 출생연도 필수 및 1990~2007 경계 적용',()=>{for(const birth_year of ['', '1989','2008'])assert.throws(()=>registrationInput(form({birth_year,nationality:'Canada',gender:'female'}),true),/birth_year/);for(const birth_year of ['1990','1998','2007'])assert.equal(registrationInput(form({birth_year,nationality:'Canada',gender:'female'}),true).birth_year,Number(birth_year));});
+
+test('국적 선택 입력: 미입력은 null, 공백 제거, 복수 국적 허용, 100자 제한',()=>{
+ assert.equal(registrationInput(form()).nationality,null);
+ assert.equal(registrationInput(form({nationality:'   '})).nationality,null);
+ assert.equal(registrationInput(form({nationality:' 대한민국 / Canada '})).nationality,'대한민국 / Canada');
+ assert.equal(registrationInput(form({nationality:'x'.repeat(100)})).nationality.length,100);
+ assert.throws(()=>registrationInput(form({nationality:'x'.repeat(101)})),/nationality/);
+});
+
+test('할로윈 국적·성별 필수: 누락·공백·잘못된 성별 차단, 모든 선택 저장',()=>{
+ const valid={birth_year:'1998',nationality:' Canada ',gender:'female'};
+ for(const bad of [{nationality:''},{nationality:'   '},{gender:''},{gender:'unexpected'}])assert.throws(()=>registrationInput(form({...valid,...bad}),true));
+ for(const gender of ['male','female','other']){const result=registrationInput(form({...valid,gender}),true);assert.equal(result.gender,gender);assert.equal(result.nationality,'Canada');}
+});

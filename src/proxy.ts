@@ -15,6 +15,8 @@ export async function proxy(request: NextRequest) {
     }
   }
   const selection = request.method === "GET" ? request.nextUrl.searchParams.get("lang") : null;
+  // Background route prefetches must never overwrite an explicit language choice.
+  const rememberLocale = selection === "en" || selection === "ko";
   const localeDecision = request.method === "GET" ? publicLocaleDecision(
     request.nextUrl.pathname, request.cookies.get(PUBLIC_LOCALE_COOKIE)?.value, selection,
   ) : null;
@@ -25,7 +27,7 @@ export async function proxy(request: NextRequest) {
     destination.pathname = localeDecision.pathname;
     destination.searchParams.delete("lang");
     const response = NextResponse.redirect(destination);
-    response.cookies.set(PUBLIC_LOCALE_COOKIE, localeDecision.locale, localeCookieOptions);
+    if (rememberLocale) response.cookies.set(PUBLIC_LOCALE_COOKIE, localeDecision.locale, localeCookieOptions);
     response.headers.set("Cache-Control", "private, no-store");
     return response;
   }
@@ -45,7 +47,7 @@ export async function proxy(request: NextRequest) {
     });
     try { await supabase.auth.getClaims(); } catch { /* Page checks fail closed. */ }
   } catch { /* Invalid configuration never grants access; page checks fail closed. */ }
-  if (localeDecision) response.cookies.set(PUBLIC_LOCALE_COOKIE, localeDecision.locale, localeCookieOptions);
+  if (localeDecision && rememberLocale) response.cookies.set(PUBLIC_LOCALE_COOKIE, localeDecision.locale, localeCookieOptions);
   response.headers.set("Cache-Control", "private, no-store, max-age=0");
   response.headers.set("Pragma", "no-cache");
   response.headers.set("Expires", "0");

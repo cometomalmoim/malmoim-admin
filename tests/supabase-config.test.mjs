@@ -54,3 +54,11 @@ test('environment adapter forwards runtime mode and local flag', () => {
     names.forEach((name, index) => old[index] === undefined ? delete process.env[name] : process.env[name] = old[index]);
   }
 });
+
+test('isolated review port is development opt-in only and rejects near matches', () => {
+  const lab = 'http://127.0.0.1:61521';
+  for (const url of [lab, lab + '/']) assert.equal(validateSupabaseConfig(url, key, dev).url, url);
+  for (const nodeEnv of ['production', 'test', undefined]) reject(lab,key,{nodeEnv,localTest:'true'});
+  for (const localTest of [undefined,'false','TRUE']) reject(lab,key,{nodeEnv:'development',localTest});
+  for (const url of ['http://localhost:61521','http://127.1:61521','http://127.0.0.1:061521',lab+'/x',lab+'?x=1','http://127.0.0.1:61522']) reject(url);
+ });
