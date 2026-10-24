@@ -247,6 +247,7 @@ test("administrator detail exposes moderation, but only notices get edit/delete 
 test("report workspace streams a selected panel, preserves filters, and renders honest empty/error states",async()=>{
  const React=require("react"),{renderToPipeableStream}=require("react-dom/server");
  const shell=load("src/components/admin/admin-shell.tsx",{
+  "next/navigation":{useRouter:()=>({push:()=>{}}),usePathname:()=>"/admin/board",useSearchParams:()=>new URLSearchParams()},
   "../brand-logo":{BrandLogo:()=>React.createElement("strong",null,"MALMOIM")},
   "../logout-form":{LogoutForm:()=>React.createElement("button",null,"로그아웃")},
  });

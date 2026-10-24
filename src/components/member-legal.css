@@ -6,6 +6,12 @@
 .member-legal-content nav ol{margin:0;padding-left:24px}
 .member-legal-content a{color:#08717c;text-decoration:underline;text-underline-offset:3px}
 .member-legal-content section[id]{scroll-margin-top:20px}
+.member-legal-content h3{font-size:17px;margin:24px 0 10px;line-height:1.6}
+.member-legal-content li{margin:8px 0;font-size:15px}
+.member-legal-table-scroll{overflow-x:auto;margin:20px 0;max-width:100%;border:1px solid #dce5e7;border-radius:6px}
+.member-legal-content table{border-collapse:collapse;width:100%;font-size:14px;line-height:1.7;min-width:420px}
+.member-legal-content th,.member-legal-content td{padding:12px 16px;border-bottom:1px solid #dce5e7;text-align:left;vertical-align:top}
+.member-legal-content th{background:#f5f8f7;font-weight:700}.member-legal-content tbody tr:last-child td{border-bottom:0}
 .member-legal-pending h2{margin-top:0;font-size:18px}
 .member-legal-pending p{color:#606b65;margin-bottom:0}
 .member-legal-dialog{width:min(720px,calc(100% - 40px));max-width:none;max-height:calc(100dvh - 48px);padding:0;border:1px solid #dce3df;border-radius:16px;background:#fff;color:#243039;box-shadow:0 20px 80px #102d3433;overflow:hidden;margin:auto}

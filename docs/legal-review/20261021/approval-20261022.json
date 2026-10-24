@@ -1,0 +1,33 @@
+{
+  "status": "approved",
+  "effectiveDate": "2026-10-22",
+  "versions": {
+    "privacy": "privacy-2026-10-22-v1",
+    "terms": "terms-2026-10-22-v1"
+  },
+  "sourceRevision": "review-20261021-01",
+  "approval": "Operator approved both documents in this conversation and explicitly set 2026.10.22 as their effective date.",
+  "publicTransformations": [
+    "Replace the two effective-date placeholders with 2026-10-22.",
+    "Separate explicitly marked internal verification annotations from public content; no article, policy, list, or table is removed or resolved by this separation."
+  ],
+  "internalAnnotations": [
+    {
+      "kind": "privacy",
+      "locale": "ko",
+      "text": "**운영 확인 필요:** Supabase·Vercel의 실제 계약 법인명, 이전 국가별 처리 범위, 처리위탁·보관의 법적 근거, 보유기간 및 거부 절차는 최종 공개 전에 확인해야 합니다."
+    },
+    {
+      "kind": "privacy",
+      "locale": "en",
+      "text": "**Operational verification required:** The actual contracting legal entities for Supabase and Vercel, the scope of processing in each destination country, the legal bases for outsourced processing and storage, retention periods, and refusal procedures must be verified before final publication."
+    }
+  ],
+  "outstanding": [
+    "International transfer details and processor legal entities",
+    "Specific purposes/basis for optional personal fields",
+    "Production Meta Pixel disablement verification",
+    "Withdrawal, destruction, and retention implementation",
+    "Live Auth and registration DB readiness; no remote changes performed"
+  ]
+}
