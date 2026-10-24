@@ -1,7 +1,7 @@
 import type { PublicLocale } from "./public-content";
 
 export const PUBLIC_LOCALE_COOKIE = "malmoim_locale";
-const publicPaths = new Set(["/", "/about", "/events", "/exchange", "/board", "/history", "/auth/login", "/signup", "/privacy"]);
+const publicPaths = new Set(["/", "/about", "/events", "/exchange", "/board", "/history", "/auth/login", "/signup", "/privacy", "/terms"]);
 export function parsePublicLocale(value: unknown): PublicLocale { return value === "en" ? "en" : "ko"; }
 export function publicBasePath(pathname: string): string {
   return pathname.replace(/^\/en(?=\/|$)/, "") || "/";

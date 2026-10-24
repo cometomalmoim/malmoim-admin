@@ -1,0 +1,24 @@
+{
+  "status": "draft",
+  "revision": "review-20261021-01",
+  "effectiveDate": null,
+  "approvedVersion": null,
+  "files": [
+    {
+      "sha256": "47165c47f89382161d1afb90df81154beb58499eaa02fdf3596fba94826df8f5",
+      "name": "privacy.ko.md"
+    },
+    {
+      "sha256": "ea5c13a98b4d205f1b2bcb51a8afe930b10762efcac6cf6dad8a2798813d073b",
+      "name": "privacy.en.md"
+    },
+    {
+      "sha256": "1b63e0697f2c2a753e8f3da3665b8894c34eea1ca7f63f9dabea3f0d8374af67",
+      "name": "terms.ko.md"
+    },
+    {
+      "sha256": "88aba091536a016304c4cbb89a6d8f17aadb8a9e99a1b797aed24b0d62f343f2",
+      "name": "terms.en.md"
+    }
+  ]
+}

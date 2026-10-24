@@ -17,7 +17,7 @@ assert.equal((await db.query("select member_nickname_available('언어친구') a
 await assert.rejects(()=>db.query("select * from member_registration_policies"));
 await db.exec(`reset role;
  insert into member_registration_policies(collection_version,terms_version,privacy_version,collection_basis,terms_snapshot,privacy_snapshot,collection_snapshot,enabled)
- values('synthetic-v1','synthetic-terms','synthetic-privacy','consent','{}','{}','{}',true);
+ values('synthetic-v1','synthetic-terms','synthetic-privacy','consent','{\"version\":\"synthetic-terms\"}','{\"version\":\"synthetic-privacy\"}','{\"version\":\"synthetic-v1\"}',true);
  create or replace function public.member_registration_ready() returns text language sql stable as $$select 'synthetic-v1'::text$$;`);
 const profile={name:null,phone_country_code:null,phone_number:null,nationality_code:null,gender:null,birth_date:"1980-01-01",korean_proficiency:"basic",english_proficiency:"native"};
 const save=async(nickname,p=profile,terms=true,collection=true)=>db.query("select save_member_registration_v2($1,$2::jsonb,'[]'::jsonb,'synthetic-v1','synthetic-terms','synthetic-privacy',$3,$4) id",[nickname,JSON.stringify(p),terms,collection]);
