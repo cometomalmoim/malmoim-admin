@@ -9,7 +9,7 @@ export function createSimpleAdminApi(ports:{enabled():boolean;access():Promise<{
   const origin=request.headers.get('origin'),urlOrigin=new URL(request.url).origin;
   // Next dev canonicalizes the URL to localhost even when bound to 127.0.0.1.
   // Accept only this fixed loopback test origin with its matching Host header.
-  const localTestOrigin=process.env.NODE_ENV!=='production'&&urlOrigin==='http://localhost:3022'&&origin==='http://127.0.0.1:3022'&&request.headers.get('host')==='127.0.0.1:3022';
+  const localTestOrigin=process.env.NODE_ENV!=='production'&&['3022','3030'].some(port=>urlOrigin===`http://localhost:${port}`&&origin===`http://127.0.0.1:${port}`&&request.headers.get('host')===`127.0.0.1:${port}`);
   if((origin!==urlOrigin&&!localTestOrigin)||request.headers.get('sec-fetch-site')==='cross-site')return reply(403,{code:'ORIGIN_DENIED'});
   const type=request.headers.get('content-type')??'';
   if(type.startsWith('multipart/form-data')){
