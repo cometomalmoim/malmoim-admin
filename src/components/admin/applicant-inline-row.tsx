@@ -9,10 +9,12 @@ import {saveApplicant} from '@/app/actions/applicants';
 import {applicationStatuses,paymentStatuses} from '@/lib/applicant-validation';
 import {trafficSources} from '@/lib/attribution';
 import {ApplicantResponse} from './applicant-response';
+import {EventSmsLogs} from './event-sms-logs';
+import {ApplicantSms} from './applicant-sms';
 import {ApplicantEditor} from './applicant-editor';
 
 export function ApplicantInlineRow({row,eventMode=false,selection,busy=false,readOnly=false}:{row:ApplicationRow;eventMode?:boolean;selection?:React.ReactNode;busy?:boolean;readOnly?:boolean}){
- const [message,setMessage]=useState('');const [feedbackField,setFeedbackField]=useState<'status'|'payment_status'|null>(null);const [saved,setSaved]=useState(false);const [responseOpen,setResponseOpen]=useState(false);const responseId=`response-${row.source}-${row.id}`;
+ const [detailOpen,setDetailOpen]=useState(false);const [message,setMessage]=useState('');const [feedbackField,setFeedbackField]=useState<'status'|'payment_status'|null>(null);const [saved,setSaved]=useState(false);const [responseOpen,setResponseOpen]=useState(false);const responseId=`response-${row.source}-${row.id}`;
  const [pending,startTransition]=useTransition();
  const detail=useRef<HTMLDialogElement>(null);
  const router=useRouter();
@@ -37,7 +39,7 @@ export function ApplicantInlineRow({row,eventMode=false,selection,busy=false,rea
  <td>{statusControl('status','선발 상태',applicationStatuses)}</td>
  <td>{statusControl('payment_status','입금 확인',paymentStatuses)}<small>운영진 수동 기록</small></td>
  <td>{new Intl.DateTimeFormat('ko-KR',{timeZone:'Asia/Seoul',dateStyle:'short'}).format(new Date(row.created_at))}</td>
- <td><button type="button" className="applicant-cell-button" disabled={pending||busy||readOnly||!row.event_slug} onClick={()=>detail.current?.showModal()}>상세·수정</button><small>{row.internal_note}</small>
- <dialog ref={detail} className="applicant-detail-dialog" aria-label={`${row.name} 상세·수정`}><button type="button" onClick={()=>detail.current?.close()}>닫기</button>{row.event_slug&&<><p>유입경로: {row.utm_source||'미확인'} · 매체: {row.utm_medium||'—'} · 캠페인: {row.utm_campaign||'—'}</p><ApplicantEditor slug={row.event_slug} row={row}/></>}</dialog></td>
- </tr>{responseOpen&&<ApplicantResponse eventId={row.event_id} source={row.source} id={row.id} name={row.name} colSpan={eventMode?11:14} regionId={responseId}/>}</>;
+ <td><button type="button" className="applicant-cell-button" disabled={pending||busy||readOnly||!row.event_slug} onClick={()=>{setDetailOpen(true);detail.current?.showModal();}}>상세·수정</button><small>{row.internal_note}</small>
+ <dialog ref={detail} className="applicant-detail-dialog" aria-label={`${row.name} 상세·수정`}><button type="button" onClick={()=>{setDetailOpen(false);detail.current?.close();}}>닫기</button>{row.event_slug&&<><p>유입경로: {row.utm_source||'미확인'} · 매체: {row.utm_medium||'—'} · 캠페인: {row.utm_campaign||'—'}</p><ApplicantEditor slug={row.event_slug} row={row}/>{detailOpen&&<EventSmsLogs event={row.event_id} source={row.source} id={row.id}/>}</>}</dialog></td><td><ApplicantSms row={row} disabled={pending||busy||readOnly}/></td>
+ </tr>{responseOpen&&<ApplicantResponse eventId={row.event_id} source={row.source} id={row.id} name={row.name} colSpan={eventMode?12:15} regionId={responseId}/>}</>;
 }

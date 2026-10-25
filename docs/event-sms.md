@@ -1,0 +1,59 @@
+# 행사별 참가 안내 문자
+
+## 사용 방법
+- 관리자 → 메시징 상단: 행사별 템플릿, 행사 문자 정보, 전체 발송 로그.
+- 신청자 관리 → 각 행 오른쪽 `문자 발송`: 언어 필수 선택, 해당 행사 활성 템플릿 선택, 개인별 금액 확인 → 발송 전 확인 → 저장된 본문·수신번호·단가 확인 → 최종 전송.
+- 입금 완료(paid) + 선발 승인(accepted)인 경우만 최종 확정이 기본. 나머지는 입금 요청이 기본. 준비/승인/worker 단계에서 확정 조건 재검증.
+- 기존 선호 언어 기록이 있으면 재사용. 최초 발송은 국적이나 언어 실력으로 언어를 추정하지 않고 운영자가 선택.
+- 개별 저장 금액/이번 입력 → 행사 문자 설정 참가비 → 기존 참가비 안내의 단일 금액 순서. 요금이 여러 개거나 미정인 안내는 개인 금액 입력 전 발송 불가. 임의로 얼리버드 가격을 적용하지 않음.
+- 한국 시간으로 날짜·시작·종료를 자동 치환. 해외 전화번호 미지원. +82/0082 국내 번호만 정규화.
+- 문자는 UTF-8 90바이트 이하면 SMS, 초과 LMS. 2,000바이트까지. SOLAPI 계정 조회 단가로 예상 비용 표시. 업체 최종 과금이 기준.
+- 발송 완료 표시는 `delivered`만. 업체 접수는 `accepted`. 해당 행/이력의 도달 결과 조회로 갱신.
+- 실패는 새 미리보기와 승인으로 재전송. 전달 성공 후 재전송에는 별도 체크 필요. accepted/unknown/queued/dispatching은 새 요청 차단. unknown은 업체 내역을 먼저 확인하며 자동 재시도 없음.
+- 초안은 취소 가능하며, 10분 지난 초안은 다음 준비 때 취소. 브라우저를 새로고침했으면 발송 이력에서 `내 미발송 초안 취소`로 해제. 승인에 실패하면 미리보기를 유지하여 취소할 수 있음.
+- 신청자 상세·수정과 발송 창에서 전체 개인 이력 확인. 메시징의 전체 로그는 행사/기간/이름/유형/상태/언어별 필터·페이지 이동 지원.
+- 템플릿 수정은 새 버전. 기본 지정 시 같은 행사·유형·언어의 이전 기본도 새 버전으로 해제. 다른 행사 복제는 비활성 새 템플릿으로 저장.
+
+## DB 변경
+`supabase/051_event_sms.sql`은 기존 036 및 신청자 관리 schema 이후 적용.
+- event_sms_templates: 행사별 불변 템플릿 버전. event_sms_current: 최신 버전 뷰.
+- event_sms_details: 계좌·영문 표기·단일 참가비, optimistic revision.
+- applicant_sms_details: 문자에서 선택한 선호 언어 및 개별 참가비. 기존 신청 원본 중복 생성 없음.
+- sms_jobs 추가: template_id(해당 버전), applicant_name, language, resend, failure_reason, message_type.
+- sms_job_history: 모든 신규 작업과 상태 변화 append-only. 기존 작업은 migration 당시 상태 한 건만 이관. 과거 상태를 추정해 만들지 않음.
+- event_sms_applicant_status: 최신 상태를 목록 한 번의 추가 조회로 불러옴.
+- 발송 요청은 기존 sms_batches/jobs 재사용. 관리자 ID, 본문, 전화번호, 템플릿 버전, 언어, 업체 그룹과 시각 저장. 실패 사유는 상태 이력에 업체 거절/전달 실패 또는 불명 분류로 기록. 상세 사유는 SOLAPI 내역 대조.
+- authenticated는 admin_users 확인 후 SELECT/RPC만 가능. 테이블 직접 수정·삭제 권한 없음. 버전과 이력은 관리자 UI로 수정/삭제 불가.
+- 신청/행사 ID와 revision 검증, 신청자 단위 advisory lock 및 활성 작업 unique index, batch idempotency로 동시 중복 방지. 기존 일일 200건 제한과 승인자·10분 만료 유지.
+- 기존 실제 발송/자동 알림 스위치를 바꾸지 않음. 템플릿 등록으로 자동 발송하지 않음.
+- 할로윈 한영 입금 요청/확정 4종과 요청서의 계좌 초기 등록. 개별 참가비 강제 25,000원 저장 없음. 사용자가 확인한 2026-10-31 23:30 KST 종료를 기존 행사에 반영. 공개 한영 랜딩 텍스트도 23:30 종료로 수정, 기존 자정 자율 뒤풀이는 유지.
+
+## 설정·활성화
+기존 서버 환경변수 재사용: `SOLAPI_API_KEY`, `SOLAPI_API_SECRET`, `SOLAPI_SENDER_NUMBER`, `SOLAPI_ADMIN_NOTIFY_NUMBER`. 새 비밀값·service_role 불필요. NEXT_PUBLIC 변수 금지.
+1. migration 적용 후 관리자 메시징에서 설정 등록 여부 확인.
+2. SOLAPI에 등록된 발신번호와 충전 잔액 확인.
+3. 기존 연결 설정이 없거나 변경됐다면 서버 연결 설정 → 설정된 본인 알림번호 테스트 준비 → 관리자가 본문·비용을 확인해 직접 테스트 발송 → 도달 결과 조회.
+4. 테스트 전달 성공 후 실제 발송 켜기. 이미 켜진 스위치는 migration으로 변경하지 않음.
+5. 행사 정보와 참가비·계좌, 한국어/영어 템플릿을 확인하고 신청자 한 명부터 최종 승인.
+에이전트는 실 신청자 문자·본인 유료 테스트·발송 활성화를 실행하지 않음.
+
+## 개인정보
+발송 기록도 기존 행사 운영 개인정보 보관 대상. 요청에 따라 UI에서 영구 이력을 제공하며 임의 자동 폐기/삭제는 추가하지 않음. 행사 종료 후 기존 운영 보관 정책에 따른 정리 시 원본과 문자 본문/전화번호/이력도 함께 검토. 관리자 외 조회 금지. 민감한 본문/전화번호/키를 서버 로그에 출력하지 않음.
+
+## 검증
+- tests/event-sms.test.mjs: 금액 우선순위·모호 금액 차단, ko/en 치환, 23:30, SMS/LMS 경계.
+- tests/event-sms-db.test.mjs: PGlite 격리 DB, 관리자 RLS·직접 수정/삭제 거부, 기본 스위치 off, 준비 idempotency, 대기/업체 접수 중 중복 차단, 승인 시 입금 재검증, 상태 이력·불변 버전·동시 수정 검증. 운영 DB/외부 API 미접속.
+- 기존 sms·messaging-templates·applicant-inline·applicant-management 테스트 회귀 검증.
+- 실제 비용 청구·단말 도달은 관리자 승인 테스트 후 확인 필요. 업체 접수 ID는 그룹 ID이며 상세 메시지/실패 코드는 SOLAPI에서 확인.
+
+## 주요 수정 파일
+- 서버: src/app/actions/event-sms.ts, src/lib/event-sms.ts, src/lib/sms-worker.ts, src/lib/recruitment.ts
+- UI: applicant-sms.tsx, event-sms-manager.tsx, event-sms-logs.tsx, applicant-table.tsx, applicant-inline-row.tsx, message-view.tsx, messaging.css
+- 공개 안내: src/app/2026halloweenparty/{page.tsx,en/page.tsx}
+- DB/테스트: 051_event_sms.sql, tests/event-sms*.mjs
+
+## 이번 적용 상태 (2026-10-25)
+- 운영 DB051 적용 및 읽기 검증 완료: 예시 템플릿 4개, 신규 신청자 문자 작업 0건, 기존 발송/알림 true 값 유지, 종료시각 23:30 KST.
+- 신규·회귀 단위 테스트 25개와 격리 DB 신규/기존 SMS 통합 검증, ESLint/TypeScript/build 통과.
+- 기존 Next 16.4.0 보안 업그레이드 권고가 build에 출력됨. 범위 외 의존성 변경은 하지 않음.
+- 배포 시 Git 저장 계정의 저장소 쓰기 권한 확인 필요. 운영 DB 준비가 코드 배포 완료를 의미하지 않음.
