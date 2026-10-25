@@ -15,7 +15,7 @@ function load(name, mocks = {}) {
     compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX },
   });
   runInNewContext(outputText, { module: loaded, exports: loaded.exports, FormData, Date, Intl, console, ...mocks.__globals, process: { env: { NODE_ENV: "test" } },
-    require: id => Object.hasOwn(mocks, id) ? mocks[id] :
+    require: id => Object.hasOwn(mocks, id) ? mocks[id] : id==="next/navigation"?{useRouter:()=>({refresh:()=>{}})}:
       id.startsWith("@/") ? load("src/" + id.slice(2) + ".ts", mocks) : id.startsWith(".") ? load(path.relative(root, path.resolve(path.dirname(file), id + ".ts")), mocks) : require(id),
   });
   return loaded.exports;
@@ -30,8 +30,82 @@ const valid = () => ({
   foreignLanguages: [{ language: "ja", level: "basic" }], privacyConsent: true,
 });
 const policy = { minPasswordLength: 8, requiredFields: [], consentVersion: "test-policy-only",termsVersion:"test-terms",privacyVersion:"test-privacy",privacyConsentRequired:true };
-const readiness={terms_version:policy.termsVersion,privacy_version:policy.privacyVersion,collection_version:policy.consentVersion,requires_consent:true};
+const readiness={terms_version:policy.termsVersion,privacy_version:policy.privacyVersion,collection_version:policy.consentVersion,requires_consent:true,enabled:true};
 const nicknameTools=load("src/lib/member-nickname.ts");
+
+test("signup is enabled with undated documents; dates are metadata and DB versions must match",()=>{
+ const {registrationDocumentsReady,registrationDatabaseReady}=load("src/lib/member-registration-readiness.ts");
+ const legal=load("src/lib/member-legal.ts").publishedMemberLegal;
+ const configured=load("src/lib/member-registration-policy.ts",{"server-only":{}}).memberRegistrationPolicy;
+ assert.equal(registrationDocumentsReady(configured,legal,"2026-01-01"),true);
+ assert.equal(legal.terms.effectiveDate,null);assert.equal(legal.terms.version,"terms-v1");
+ const dated={...legal,terms:{...legal.terms,effectiveDate:"2099-06-01"},privacy:{...legal.privacy,effectiveDate:"2099-05-01"}};
+ assert.equal(registrationDocumentsReady(configured,dated,"2099-05-31"),true);
+ assert.equal(registrationDocumentsReady(configured,dated,"2099-06-01"),true);
+ assert.equal(registrationDocumentsReady({...configured,privacyVersion:"old"},legal),false);
+ assert.equal(registrationDocumentsReady(null,legal),false);
+ const ready={terms_version:configured.termsVersion,privacy_version:configured.privacyVersion,collection_version:configured.consentVersion,requires_consent:false,enabled:true};
+ assert.equal(registrationDatabaseReady(ready,configured),true);
+ for(const data of [null,[],{},"ready",{...ready,enabled:false},{...ready,terms_version:"old"},{...ready,privacy_version:"old"},{...ready,collection_version:"old"},{...ready,requires_consent:true}])assert.equal(registrationDatabaseReady(data,configured),false);
+});
+
+test("checked-in release enables signup immediately without approval flags or a date",()=>{
+ const release=load("src/lib/member-registration-release.ts").memberRegistrationRelease;
+ assert.equal(release.registrationEnabled,true);assert.equal("termsApproved" in release,false);assert.equal("privacyApproved" in release,false);
+ assert.equal(release.termsEffectiveDate,null);assert.equal(release.privacyEffectiveDate,null);
+ const mocks={"server-only":{}};
+ assert.ok(load("src/lib/member-legal.ts",mocks).publishedMemberLegal);
+ assert.ok(load("src/lib/member-registration-policy.ts",mocks).memberRegistrationPolicy);
+ const disabled={...release,registrationEnabled:false};
+ assert.equal(load("src/lib/member-registration-policy.ts",{...mocks,"./member-registration-release":{memberRegistrationRelease:disabled}}).memberRegistrationPolicy,null);
+});
+
+test("approved required-only registration saves the displayed document versions atomically",async()=>{
+ const configured=load("src/lib/member-registration-policy.ts",{"server-only":{}}).memberRegistrationPolicy;
+ const input={...valid(),name:"",phoneNumber:"",nationality:"",gender:"",foreignLanguages:[],privacyConsent:false,termsVersion:configured.termsVersion,privacyVersion:configured.privacyVersion,collectionVersion:configured.consentVersion};
+ const {api}=backend();let saved;
+ api.auth.getUser=async()=>({data:{user:{id:"user-a"}},error:null});
+ api.rpc=async(name,args)=>{
+  if(name==="save_member_registration_v2")saved=args;
+  return {data:name==="member_registration_v2_ready"?{enabled:true,terms_version:configured.termsVersion,privacy_version:configured.privacyVersion,collection_version:configured.consentVersion,requires_consent:false}:name==="member_nickname_available"?true:"user-a",error:null};
+ };
+ assert.equal((await registerMember(input,api,configured)).status,"complete");
+ assert.equal(saved.p_terms_accepted,true);assert.equal(saved.p_collection_accepted,false);
+ assert.equal(saved.p_terms_version,input.termsVersion);assert.equal(saved.p_privacy_version,input.privacyVersion);
+ assert.equal(saved.p_profile.name,null);assert.equal(saved.p_profile.phone_number,null);assert.equal(saved.p_languages.length,0);
+ for(const change of [{name:"forged"},{phoneNumber:"01000000000"},{nationality:"KR"},{gender:"undisclosed"},{foreignLanguages:[{language:"ja",level:"basic"}]}]){
+  const {api,calls}=backend();assert.equal((await registerMember({...input,...change},api,configured,"en")).status,"invalid");assert.equal(calls.length,0);
+ }
+});
+
+test("required-only form keeps nickname, age, languages and legal links while omitting unconfirmed optional collection",()=>{
+ const React=require("react"),{renderToStaticMarkup}=require("react-dom/server");
+ const {SignupForm}=load("src/components/signup-form.tsx",{"next/link":{__esModule:true,default:"a"},"@/app/actions/member-registration":{signup:()=>assert.fail("Render must not create an account")},"./signup-legal-notice":{SignupLegalNotice:()=>null}});
+ const html=renderToStaticMarkup(React.createElement(SignupForm,{countries:[],today:"2026-10-22",locale:"en",registrationEnabled:true,collectOptionalProfile:false}));
+ for(const field of ["nickname","email","birthDate","koreanLevel","englishLevel"])assert.ok(html.includes(`name="${field}"`));
+ for(const field of ["name","phoneNumber","nationality","gender","foreignLanguage"])assert.ok(!html.includes(`name="${field}"`));
+ assert.match(html,/>Sign up<\/button>/);assert.doesNotMatch(html,/운영 정책|기본 정보의 수집/);
+});
+
+test("released signup form is enabled without a preparation banner or redundant render-time database probe",async()=>{
+ const legal=load("src/lib/member-legal.ts").publishedMemberLegal;
+ const configured=load("src/lib/member-registration-policy.ts",{"server-only":{}}).memberRegistrationPolicy;
+ const tools=load("src/lib/member-registration-readiness.ts");
+ for(const ready of [null,{enabled:true,terms_version:configured.termsVersion,privacy_version:configured.privacyVersion,collection_version:configured.consentVersion,requires_consent:false}]){
+  const {MemberSignupPage}=load("src/components/member-signup-page.tsx",{
+   "next/server":{connection:async()=>{}},"next/link":{__esModule:true,default:"a"},
+   "@/lib/member-registration-policy":{memberRegistrationPolicy:configured},
+   "@/lib/member-registration-readiness":{...tools,registrationDocumentsReady:(policy,publication)=>tools.registrationDocumentsReady(policy,publication,"2026-10-22")},
+   "@/lib/supabase/server":{createClient:async()=>({auth:{getUser:async()=>({data:{user:null},error:null})},rpc:()=>assert.fail("DB readiness is checked by submission, not by rendering")})},
+   "./signup-form":{SignupForm:"TestSignupForm"},"@/app/(public)/signup/signup.css":{},
+  });
+  const page=MemberSignupPage({locale:"en"}),child=page.props.children.at(-1).props.children;
+  const form=await child.type(child.props);
+  assert.equal(form.props.registrationEnabled,true);assert.equal(form.props.collectOptionalProfile,false);
+  assert.equal(form.props.legal.terms.version,legal.terms.version);
+  assert.equal(form.type,"TestSignupForm");assert.ok(ready===null||ready.collection_version===configured.consentVersion);
+ }
+});
 test("nicknames normalize before validation and reject invalid/reserved names in both languages",()=>{
  assert.equal(nicknameTools.normalizeNickname("  Ｎａｍｅ_한글  "),"Name_한글");
  assert.equal(nicknameTools.nicknameKey("Name_한글"),nicknameTools.nicknameKey("ｎａｍｅ_한글"));
@@ -86,8 +160,8 @@ test("privacy route withholds internal drafts and only renders an approved effec
  const React=require("react"),{renderToStaticMarkup}=require("react-dom/server");
  const {MemberLegalContent}=load("src/components/member-legal-content.tsx",{"./member-legal.css":{}});
  const render=(publication,locale)=>{
-  const {MemberPrivacyPage}=load("src/components/member-privacy-page.tsx",{"next/link":{__esModule:true,default:"a"},"./member-privacy.css":{},"./member-legal-content":{MemberLegalContent},"@/lib/member-legal":{publishedMemberLegal:publication}});
-  return renderToStaticMarkup(React.createElement(MemberPrivacyPage,{locale}));
+  const {MemberLegalPage}=load("src/components/member-legal-page.tsx",{"next/link":{__esModule:true,default:"a"},"./member-privacy.css":{},"./member-legal-content":{MemberLegalContent},"@/lib/member-legal":{getPublishedMemberDocument:()=>publication?.privacy??null}});
+  return renderToStaticMarkup(React.createElement(MemberLegalPage,{locale,kind:"privacy"}));
  };
  const pending=render(null,"en");assert.match(pending,/Publication is being prepared/);assert.doesNotMatch(pending,/TODO|확인 필요|Effective date|시행일/);
  const policy={version:"synthetic",effectiveDate:"2026-10-20",sections:[{id:"purpose",title:{ko:"목적",en:"Purpose"},paragraphs:{ko:["승인 테스트"],en:["Approved fixture only"]}}]};
@@ -106,7 +180,7 @@ test("terms and collection consent remain separate, unchecked, versioned and una
  const pending=render(null,false);assert.match(pending,/disabled=""/);assert.doesNotMatch(pending,/checked=""|TODO|확정 대기/);
  const consent=render(legal,true);assert.match(consent,/name="termsConsent"/);assert.match(consent,/name="privacyConsent"/);assert.match(consent,/name="termsVersion"/);assert.doesNotMatch(consent,/checked=""/);
  const contract=render({...legal,collection:{...legal.collection,basis:"contract"}},true);assert.doesNotMatch(contract,/name="privacyConsent"/);assert.match(contract,/name="termsConsent"/);
- assert.match(consent,/aria-haspopup="dialog"/);assert.match(consent,/Read full Privacy Policy/);assert.match(consent,/Read full Terms of Use/);
+ assert.match(consent,/aria-haspopup="dialog"/);assert.match(consent,/Read full Privacy Policy/);assert.match(consent,/Read full Terms of Service/);
  assert.doesNotMatch(consent,/target="_blank"|<details|<a /);
 });
 test("legal modal locks scrolling, focuses its title and restores the trigger and prior overflow on close",()=>{
@@ -291,6 +365,38 @@ test("partial failure is explicitly pending and signed-in users can retry withou
   api.rpc = async name => ({ data: name === "member_registration_v2_ready" ? readiness : name==="member_nickname_available"?true:"user-a", error: null });
   assert.equal((await registerMember(input, api, policy)).status, "complete");
 });
+test("Auth invalid email identifies the field without exposing provider details", async () => {
+  for (const locale of ["ko", "en"]) {
+    const { api, calls } = backend();
+    const diagnostics = [];
+    api.auth.signUp = async () => ({ data: { user: null, session: null }, error: {
+      code: "email_address_invalid", status: 400, message: "private-email@example.test rejected; internal provider details",
+    } });
+    const result = await registerMember(valid(), api, policy, locale, entry => diagnostics.push(entry));
+    assert.equal(result.status, "invalid");
+    assert.equal(result.errors.email, result.message);
+    assert.match(result.message, locale === "ko" ? /다른 이메일 주소/ : /another email address/);
+    assert.equal(JSON.stringify(diagnostics), JSON.stringify([{ stage: "auth_signup", code: "email_address_invalid", status: 400 }]));
+    assert.doesNotMatch(JSON.stringify({result, diagnostics}), /private-email|internal provider/);
+    assert.ok(!calls.some(([name]) => name === "save_member_registration_v2"));
+  }
+});
+test("SMTP restriction is distinct from an invalid email and diagnostics exclude unknown provider data", async () => {
+  for (const code of ["email_address_not_authorized", "private-email@example.test"]) {
+    const { api } = backend(); const diagnostics = [];
+    api.auth.signUp = async () => ({ data: { user: null, session: null }, error: {code, status: 400, message: "private provider message"} });
+    const result = await registerMember(valid(), api, policy, "ko", entry => diagnostics.push(entry));
+    assert.equal(result.status, "error");
+    if (code === "email_address_not_authorized") assert.match(result.message, /발송 설정/);
+    assert.equal(diagnostics[0].code, code === "email_address_not_authorized" ? code : "unclassified");
+    assert.doesNotMatch(JSON.stringify({result, diagnostics}), /private/);
+  }
+});
+test("diagnostic logging failure cannot change the signup result", async () => {
+  const { api } = backend();
+  api.auth.signUp = async () => ({ data: { user: null, session: null }, error: {code: "email_address_invalid", status: 400} });
+  assert.equal((await registerMember(valid(), api, policy, "ko", () => { throw new Error("logger unavailable"); })).status, "invalid");
+});
 test("Auth rejection or uncertain identity cannot trigger profile writes", async () => {
   for (const failure of [{ code: "weak_password" }, { status: 429 }, { status: 500 }]) {
     const { api, calls } = backend();
@@ -301,6 +407,50 @@ test("Auth rejection or uncertain identity cannot trigger profile writes", async
   const { api, calls } = backend();
   assert.equal((await registerMember(valid(), api, policy)).status, "profile_pending");
   assert.ok(!calls.some(([name]) => name === "save_member_registration_v2"));
+});
+
+test("duplicate email errors and Auth's obfuscated duplicate response never save another profile",async()=>{
+ for(const response of [
+  {data:{user:null,session:null},error:{code:"user_already_exists",status:422}},
+  {data:{user:null,session:null},error:{code:"email_exists",status:422}},
+  {data:{user:{id:"obfuscated",identities:[]},session:null},error:null},
+ ]){
+  const {api,calls}=backend();api.auth.signUp=async()=>response;
+  const result=await registerMember(valid(),api,policy,"en");
+  assert.equal(result.status,"invalid");assert.match(result.errors.email,/already registered/);
+  assert.equal(calls.some(([name])=>name==="save_member_registration_v2"),false);
+ }
+});
+
+test("confirmation-enabled signup uses an opaque Auth reference and fails before Auth if preparation is unavailable",async()=>{
+ const configured=load("src/lib/member-registration-policy.ts",{"server-only":{}}).memberRegistrationPolicy;
+ const input={...valid(),name:"",phoneNumber:"",nationality:"",gender:"",foreignLanguages:[],privacyConsent:false,termsVersion:configured.termsVersion,privacyVersion:configured.privacyVersion,collectionVersion:configured.consentVersion};
+ for(const prepared of [{data:null,error:{code:"PGRST202"}},{data:"not-a-token",error:null}]){
+  const {api}=backend();let authCalled=false;
+  api.rpc=async name=>name==="member_registration_v2_ready"?{data:{enabled:true,terms_version:configured.termsVersion,privacy_version:configured.privacyVersion,collection_version:configured.consentVersion,requires_consent:false},error:null}:name==="member_nickname_available"?{data:true,error:null}:prepared;
+  api.auth.signUp=async()=>{authCalled=true;return {data:{user:null,session:null},error:null};};
+  assert.equal((await registerMember(input,api,configured)).status,"blocked");assert.equal(authCalled,false);
+ }
+ const {api}=backend();let authInput,preparedInput;
+ api.rpc=async(name,args)=>{
+  if(name==="prepare_member_registration")preparedInput=args;
+  return {data:name==="member_registration_v2_ready"?{enabled:true,terms_version:configured.termsVersion,privacy_version:configured.privacyVersion,collection_version:configured.consentVersion,requires_consent:false}:name==="member_nickname_available"?true:"aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",error:null};
+ };
+ api.auth.signUp=async data=>{authInput=data;return {data:{user:{id:"new-user",identities:[{}]},session:null},error:null};};
+ const result=await registerMember(input,api,configured,"en");assert.equal(result.status,"confirmation");assert.match(result.message,/do not need to enter/);
+ assert.deepEqual(Object.keys(authInput.options.data),["malmoim_registration_token"]);
+ assert.equal("password" in preparedInput,false);assert.equal("password" in preparedInput.p_profile,false);assert.equal("email" in preparedInput.p_profile,false);
+ assert.equal(preparedInput.p_terms_accepted,true);assert.equal(preparedInput.p_profile.birth_date,input.birthDate);
+});
+
+test("only a verified Auth session allows the UI to retry profile saving without another signup",async()=>{
+ const {api}=backend();
+ const uncertain=await registerMember(valid(),api,policy);assert.equal(uncertain.status,"profile_pending");assert.notEqual(uncertain.canRetryProfile,true);
+ api.auth.getUser=async()=>({data:{user:{id:"user-a"}},error:null});
+ api.rpc=async name=>({data:name==="member_registration_v2_ready"?readiness:name==="member_nickname_available"?true:null,error:null});
+ const pending=await registerMember(valid(),api,policy);assert.equal(pending.canRetryProfile,true);
+ api.rpc=async name=>({data:name==="member_registration_v2_ready"?readiness:null,error:null});
+ assert.equal((await registerMember(valid(),api,policy)).status,"blocked");
 });
 test("existing session network failure stops registration instead of creating an account", async () => {
   const { api, calls } = backend();
