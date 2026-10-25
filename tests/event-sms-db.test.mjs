@@ -15,6 +15,14 @@ try{
  await q('insert into auth.users values($1),($2)',[admin,other]);await q('insert into admin_users values($1)',[admin]);await q("insert into recruitment_events(id,slug,title) values($1,'halloween-2026','Synthetic event')",[event]);
  await q("insert into event_application_admin_list values($1,'registration',$2,0,false,'Synthetic applicant','+82 10-0000-0001','phone','received','unpaid')",[app,event]);
  await db.exec(await file('036_messaging.sql'));await db.exec(await file('051_event_sms.sql'));
+ await db.exec(await file('052_halloween_payment_cash_notice.sql'));
+ const paymentTemplates=(await q("select body,version,language from event_sms_current where category='payment'")).rows;
+ assert.equal(paymentTemplates.length,2);assert.ok(paymentTemplates.every(t=>t.version===2));
+ assert.match(paymentTemplates.find(t=>t.language==='ko').body,/현장에서 현금으로 결제하겠다고 문자로 알려주세요/);
+ assert.match(paymentTemplates.find(t=>t.language==='en').body,/pay in cash at the venue/);
+ await db.exec(await file('052_halloween_payment_cash_notice.sql'));
+ assert.equal((await q("select count(*)::int n from event_sms_templates where category='payment'")).rows[0].n,4);
+
  assert.equal((await q('select sending_enabled from sms_settings')).rows[0].sending_enabled,false);
  assert.equal((await q('select count(*)::int n from sms_jobs')).rows[0].n,0);
  await db.exec('set role anon');await denied('select * from event_sms_templates');await denied('select * from sms_job_history');
