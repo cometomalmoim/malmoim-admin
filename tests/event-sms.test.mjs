@@ -33,3 +33,10 @@ test('edited payment notice snapshots use current applicant data and reject unpa
  payment='unpaid';await assert.rejects(actions.prepareApplicantSms(input),/입금 완료/);assert.equal(calls,1);
  await assert.rejects(actions.prepareApplicantSms({...input,body:'가'.repeat(1000)}),/입력 오류/);assert.equal(calls,1);
 });
+
+test('입금 요청은 입금 확인 시 확정 및 한국 계좌 없는 참가자의 현금 결제 문자 회신을 안내',()=>{
+ const ko=m.halloweenSmsExamples.find(t=>t.category==='payment'&&t.language==='ko').body;
+ const en=m.halloweenSmsExamples.find(t=>t.category==='payment'&&t.language==='en').body;
+ assert.match(ko,/입금이 확인되면 참가가 확정/);assert.match(ko,/한국 계좌가 없어/);assert.match(ko,/현장에서 현금으로 결제하겠다고 문자로 알려주세요/);
+ assert.match(en,/confirmed once your payment is verified/);assert.match(en,/do not have a Korean bank account/);assert.match(en,/text message.*pay in cash at the venue/);
+});

@@ -67,3 +67,18 @@
 
 .ops-shell.ops-event-workspace .messaging-log-section>summary{font-size:15px;font-weight:700;color:#354f42;cursor:pointer;line-height:1.7}.ops-shell.ops-event-workspace .messaging-log-section>.messaging-card{margin-top:20px}
 .ops-shell.ops-event-workspace .messaging-send:disabled{background:#e8eeea;color:#798b80;border:1px solid #d5dfd8;cursor:not-allowed}
+
+/* Keep routine editing to a picker, message, and preview. */
+.ops-shell.ops-event-workspace .event-sms-picker{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) auto;gap:12px;align-items:end}
+.ops-shell.ops-event-workspace .event-sms-picker>label{margin:12px 0 0}
+.ops-shell.ops-event-workspace .event-sms-edit-columns{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;margin-top:16px;align-items:start}
+.ops-shell.ops-event-workspace .event-sms-edit-columns>label{margin:0}
+.ops-shell.ops-event-workspace .event-sms-preview{padding:14px 16px;background:#f5f8f6;border-radius:8px}
+.ops-shell.ops-event-workspace .event-sms-preview h3{margin:0;font-size:13px}
+.ops-shell.ops-event-workspace .event-sms-preview pre{padding:0;margin:10px 0;background:transparent}
+.ops-shell.ops-event-workspace .event-sms-preview p{margin:0;color:#606b65;font-size:12px}
+.ops-shell.ops-event-workspace .event-sms-save{display:flex;gap:12px;align-items:center;margin-top:16px;flex-wrap:wrap}
+.ops-shell.ops-event-workspace .event-sms-save>button{background:#087f8c;color:white;border-color:#087f8c}
+.ops-shell.ops-event-workspace .event-sms-save small{color:#606b65}
+.ops-shell.ops-event-workspace .event-sms-refresh{margin-top:16px}
+@media(max-width:700px){.ops-shell.ops-event-workspace :is(.event-sms-picker,.event-sms-edit-columns){grid-template-columns:1fr}}
