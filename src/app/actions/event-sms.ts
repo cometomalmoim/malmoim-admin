@@ -20,14 +20,16 @@ export async function saveEventSmsTemplate(eventId:string,key:string|null,versio
 }
 export async function saveEventSmsDetails(eventId:string,revision:number,values:Record<string,string>){const db=await client();const r=await db.rpc('save_event_sms_details',{p_event:eventId,p_revision:revision,p_values:values});if(r.error)throw new Error('저장 실패: 최신 정보를 불러온 뒤 다시 저장해주세요.');}
 export async function eventSmsVersions(key:string){const db=await client();const r=await db.from('event_sms_templates').select('*').eq('template_key',key).order('version',{ascending:false});checked(r.error);return r.data as EventSmsTemplate[];}
-export async function prepareApplicantSms(input:{batch:string;event:string;source:string;id:string;template:string;language:'ko'|'en';fee:string;resend:boolean}){
+export async function prepareApplicantSms(input:{batch:string;event:string;source:string;id:string;template:string;language:'ko'|'en';fee:string;resend:boolean;body?:string;purpose?:'payment_received'}){
  const db=await client();const config=smsConfig();if(!config)throw new Error('SOLAPI_API_KEY, SOLAPI_API_SECRET, SOLAPI_SENDER_NUMBER, SOLAPI_ADMIN_NOTIFY_NUMBER 설정이 필요합니다.');
- if(![input.batch,input.event,input.id,input.template].every(smsUuid)||!['season9','registration','manual'].includes(input.source)||input.fee.length>100)throw new Error('입력 오류');
+ if(![input.batch,input.event,input.id,input.template].every(smsUuid)||!['season9','registration','manual'].includes(input.source)||input.fee.length>100||(input.body!==undefined&&(typeof input.body!=='string'||new TextEncoder().encode(input.body).length>2000)))throw new Error('입력 오류');
  const data=await eventSmsData(input.event,input.source,input.id);
  const a=await db.from('event_application_admin_list').select('name,contact,contact_type,revision,status,payment_status').eq('event_id',input.event).eq('source',input.source).eq('id',input.id).eq('is_archived',false).single();checked(a.error);
  const template=data.templates.find(t=>t.id===input.template&&t.active&&t.language===input.language);if(!template)throw new Error('활성 템플릿을 다시 선택해주세요.');
  if(template.category==='confirmation'&&(a.data!.status!=='accepted'||a.data!.payment_status!=='paid'))throw new Error('입금 완료와 참가 승인이 모두 필요합니다.');
- const rendered=renderEventSms(template,data.event,a.data!.name,data.details,input.fee);
+ if(input.purpose!==undefined&&input.purpose!=='payment_received')throw new Error('문자 목적 오류');
+ if(input.purpose==='payment_received'&&(a.data!.payment_status!=='paid'||!['custom','confirmation'].includes(template.category)))throw new Error('입금 완료 상태와 안내 템플릿을 다시 확인해주세요.');
+ const rendered=renderEventSms({...template,body:input.body??template.body},data.event,a.data!.name,data.details,input.fee);
  if(rendered.missing.length||!validSmsText(rendered.text))throw new Error('미입력 변수 또는 잘못된 본문: '+rendered.missing.join(', '));
  const type=smsMessageType(rendered.text),rates=await smsPrice();
  const r=await db.rpc('prepare_applicant_sms',{p_batch:input.batch,p_event:input.event,p_source:input.source,p_app:input.id,p_revision:a.data!.revision,p_template:template.id,p_text:rendered.text,p_price:rates[type],p_type:type,p_resend:input.resend,p_language:input.language,p_fee:input.fee});

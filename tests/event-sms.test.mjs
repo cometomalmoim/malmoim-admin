@@ -16,3 +16,20 @@ test('신규 서버 액션은 비관리자를 DB/API 접근 전에 거부',async
  for(const name of ['eventSmsData','saveEventSmsTemplate','saveEventSmsDetails','eventSmsVersions','prepareApplicantSms','cancelApplicantSms','eventSmsLogs','eventSmsHistory'])await assert.rejects(actions[name]({}),/관리자 권한/);
  assert.equal(touched,false);
 });
+
+test('edited payment notice snapshots use current applicant data and reject unpaid state',async()=>{
+ const uid='11111111-1111-4111-8111-111111111111';
+ let payment='paid',snapshot='',calls=0;
+ const template={id:uid,event_id:uid,category:'custom',language:'ko',title:'입금 확인 안내',body:'원본',active:true};
+ const db={from(table){let result;
+  const rows={recruitment_events:{...event,id:uid,slug:'test'},event_sms_current:[template],event_sms_details:null,applicant_sms_details:null,event_application_admin_list:{name:'Synthetic',contact:'01000000000',contact_type:'phone',revision:1,status:'received',payment_status:payment},sms_jobs:{body:snapshot,message_type:'SMS',recipient:'01000000000'},sms_batches:{unit_price:10}};
+  result={data:rows[table],error:null};
+  const q={select(){return q;},eq(){return q;},single:async()=>result,maybeSingle:async()=>result,then(resolve,reject){return Promise.resolve(result).then(resolve,reject);}};return q;
+ },rpc:async(_name,args)=>{calls++;snapshot=args.p_text;return {data:uid,error:null};}};
+ const contract=load('../src/lib/sms-contract.ts');
+ const actions=load('../src/app/actions/event-sms.ts',{'@/lib/auth':{getAdminAccess:async()=>({status:'admin'})},'@/lib/supabase/server':{createClient:async()=>db},'@/lib/solapi':{smsConfig:()=>({sender:'01000000000'}),smsPrice:async()=>({SMS:10,LMS:30}),maskPhone:()=> 'masked'},'@/lib/sms-contract':contract,'@/lib/event-sms':m});
+ const input={batch:uid,event:uid,id:uid,source:'manual',template:uid,language:'ko',fee:'',resend:false,body:'{이름}: {행사명} 입금 확인',purpose:'payment_received'};
+ const preview=await actions.prepareApplicantSms(input);assert.match(preview.text,/Synthetic/);assert.match(preview.text,/입금 확인/);assert.equal(calls,1);
+ payment='unpaid';await assert.rejects(actions.prepareApplicantSms(input),/입금 완료/);assert.equal(calls,1);
+ await assert.rejects(actions.prepareApplicantSms({...input,body:'가'.repeat(1000)}),/입력 오류/);assert.equal(calls,1);
+});
