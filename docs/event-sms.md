@@ -51,3 +51,9 @@
 - UI: applicant-sms.tsx, event-sms-manager.tsx, event-sms-logs.tsx, applicant-table.tsx, applicant-inline-row.tsx, message-view.tsx, messaging.css
 - 공개 안내: src/app/2026halloweenparty/{page.tsx,en/page.tsx}
 - DB/테스트: 051_event_sms.sql, tests/event-sms*.mjs
+
+## 이번 적용 상태 (2026-10-25)
+- 운영 DB051 적용 및 읽기 검증 완료: 예시 템플릿 4개, 신규 신청자 문자 작업 0건, 기존 발송/알림 true 값 유지, 종료시각 23:30 KST.
+- 신규·회귀 단위 테스트 25개와 격리 DB 신규/기존 SMS 통합 검증, ESLint/TypeScript/build 통과.
+- 기존 Next 16.4.0 보안 업그레이드 권고가 build에 출력됨. 범위 외 의존성 변경은 하지 않음.
+- 배포 시 Git 저장 계정의 저장소 쓰기 권한 확인 필요. 운영 DB 준비가 코드 배포 완료를 의미하지 않음.
