@@ -66,3 +66,4 @@
 @media(max-width:500px){.ops-shell.ops-event-workspace .messaging-log-section .messaging-fields{grid-template-columns:1fr}.ops-shell.ops-event-workspace .messaging-log-section .messaging-fields>label:last-child{grid-column:auto}}
 
 .ops-shell.ops-event-workspace .messaging-log-section>summary{font-size:15px;font-weight:700;color:#354f42;cursor:pointer;line-height:1.7}.ops-shell.ops-event-workspace .messaging-log-section>.messaging-card{margin-top:20px}
+.ops-shell.ops-event-workspace .messaging-send:disabled{background:#e8eeea;color:#798b80;border:1px solid #d5dfd8;cursor:not-allowed}
