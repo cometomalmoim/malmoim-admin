@@ -1,0 +1,88 @@
+/* Messaging uses the same green/yellow controls and spacing as other operations pages. */
+.ops-shell.ops-event-workspace .messaging-jumps{display:flex;flex-wrap:wrap;gap:16px;margin:-8px 0 20px;font-size:13px}
+.ops-shell.ops-event-workspace .messaging-jumps a,.ops-shell.ops-event-workspace .messaging a{color:#087f8c}
+.ops-shell.ops-event-workspace .messaging-hero{margin-bottom:20px;border-radius:12px}
+.ops-shell.ops-event-workspace .messaging-tabs{border-top:0;padding:0 16px;gap:12px}
+.ops-shell.ops-event-workspace .messaging-tabs button{color:#606b65;font-size:13px;padding:14px 12px}
+.ops-shell.ops-event-workspace .messaging-tabs button[aria-pressed=true]{color:#087f8c;border-bottom-color:#087f8c}
+.ops-shell.ops-event-workspace .messaging-event{padding:20px 24px;gap:16px;align-items:end}
+.ops-shell.ops-event-workspace .messaging-event p{margin:0;font-size:13px}
+.ops-shell.ops-event-workspace .messaging-event label{margin:0;line-height:1.5;font-size:13px}
+.ops-shell.ops-event-workspace .messaging-event select{height:40px;min-height:40px;padding:8px 12px;font-size:13px}
+.ops-shell.ops-event-workspace .messaging-columns{grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+.ops-shell.ops-event-workspace .messaging-card-heading{align-items:center;min-height:24px;margin-bottom:12px}
+.ops-shell.ops-event-workspace .messaging-card h2{font-size:16px;line-height:1.5}
+.ops-shell.ops-event-workspace .messaging :is(input:not([type=checkbox]),select,textarea){font-size:13px;color:#171918;border-color:#c6d5cd;border-radius:8px;line-height:1.7}
+.ops-shell.ops-event-workspace .messaging :is(input:not([type=checkbox]),select){min-height:40px}
+.ops-shell.ops-event-workspace .messaging :is(label,.messaging-help){line-height:1.8}
+.ops-shell.ops-event-workspace .messaging-field{gap:8px;margin:0;font-size:13px}
+.ops-shell.ops-event-workspace .messaging :is(.messaging-notice,.messaging-preview,.messaging-empty){background:#f5f8f6;border-color:#dce3e0;color:#606b65}
+.ops-shell.ops-event-workspace .messaging-preview{padding:16px;border-radius:8px}
+.ops-shell.ops-event-workspace .messaging-templates{gap:8px;margin:12px 0 16px}
+.ops-shell.ops-event-workspace .messaging-templates button{min-height:36px;padding:8px 10px;color:#52615a;font-size:12px}
+.ops-shell.ops-event-workspace .messaging-templates button[aria-pressed=true]{background:#e7f5f1;color:#087f8c;border-color:#8bb7a0}
+.ops-shell.ops-event-workspace .messaging-recipients button{background:#f4f8f5;border-color:#dce3e0;color:#087f8c}
+.ops-shell.ops-event-workspace .messaging-counts{color:#087f8c}
+.ops-shell.ops-event-workspace .messaging :focus-visible{outline-color:#087f8c}
+.ops-shell.ops-event-workspace :is(#messaging-logs,#messaging-templates){scroll-margin-top:120px}
+.ops-shell.ops-event-workspace .messaging-settings-section>summary{font-size:15px;font-weight:700;color:#354f42;cursor:pointer;line-height:1.7}
+.ops-shell.ops-event-workspace .messaging-settings-section .sms-settings{border:0;padding:0;margin:16px 0 0;background:transparent}
+.ops-shell.ops-event-workspace .event-sms-manager{padding:20px 24px;border-radius:12px;margin:0 0 20px;border-color:#dce3e0;background:#fff}
+.ops-shell.ops-event-workspace .event-sms-manager>h2{margin:0 0 12px;font-size:16px}
+.ops-shell.ops-event-workspace .event-sms-manager p{margin:8px 0 16px;font-size:13px;line-height:1.8;word-break:keep-all;overflow-wrap:anywhere}
+.ops-shell.ops-event-workspace .event-sms-manager label{display:grid;gap:8px;min-width:0;margin:16px 0;font-size:13px}
+.ops-shell.ops-event-workspace .event-sms-manager :is(input:not([type=checkbox]),select,textarea){box-sizing:border-box;width:100%;max-width:100%;min-width:0;padding:8px 12px;background:#fff;border:1px solid #c6d5cd;border-radius:8px;font:inherit;font-size:13px}
+.ops-shell.ops-event-workspace .event-sms-manager fieldset{padding:0;border:0;min-width:0}
+.ops-shell.ops-event-workspace :is(.event-sms-details-grid,.event-sms-template-grid){display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:0 20px}
+.ops-shell.ops-event-workspace .event-sms-template-grid :is(label:has(textarea),label:has(input[maxLength="120"]),p){grid-column:1/-1}
+.ops-shell.ops-event-workspace .event-sms-template-grid label:has(input[type=checkbox]){display:flex;align-items:center;gap:8px}
+.ops-shell.ops-event-workspace .event-sms-manager button{min-height:40px;padding:8px 14px;border:1px solid #d0dcd5;border-radius:8px;background:#f7faf8;color:#245443;font-size:13px;line-height:1.6;cursor:pointer;max-width:100%;overflow-wrap:anywhere}
+.ops-shell.ops-event-workspace .event-sms-manager button:disabled{opacity:.5;cursor:default}
+.ops-shell.ops-event-workspace .event-sms-manager>ul{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px;list-style:none;margin:16px 0;padding:0}
+.ops-shell.ops-event-workspace .event-sms-manager>ul button{width:100%;height:100%;text-align:left}
+.ops-shell.ops-event-workspace .event-sms-manager pre{white-space:pre-wrap;overflow-wrap:anywhere;line-height:1.8;font-size:13px;background:#f5f8f6;border-radius:8px;padding:16px;margin:16px 0}
+.ops-shell.ops-event-workspace .event-sms-manager details{border-top:1px solid #e2e9e5;margin-top:20px;padding-top:16px}
+.ops-shell.ops-event-workspace .event-sms-manager summary{font-size:13px;cursor:pointer;font-weight:700}
+.ops-shell.ops-event-workspace .event-sms-manager details>button{margin:8px 8px 0 0}
+@media(max-width:1050px){.ops-shell.ops-event-workspace .messaging-columns{grid-template-columns:1fr}}
+@media(max-width:700px){
+ .ops-shell.ops-event-workspace .messaging-event,.ops-shell.ops-event-workspace .event-sms-manager{padding:18px 16px}
+ .ops-shell.ops-event-workspace :is(.event-sms-details-grid,.event-sms-template-grid,.event-sms-manager>ul){grid-template-columns:1fr}
+ .ops-shell.ops-event-workspace .event-sms-manager label{margin:12px 0}
+ .ops-shell.ops-event-workspace .messaging-tabs>span{margin-left:0;width:100%;padding:0 12px 12px}
+}
+
+.ops-shell.ops-event-workspace .messaging-log-section>.messaging-card{padding:0;border:0;background:transparent;margin:0}
+.ops-shell.ops-event-workspace .messaging-log-section h3{font-size:16px;margin:0 0 16px;line-height:1.5}
+.ops-shell.ops-event-workspace .messaging-log-section .messaging-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:16px;margin:16px 0}
+.ops-shell.ops-event-workspace .messaging-log-section .messaging-fields>label{display:grid;gap:8px;font-size:12px;margin:0;min-width:0}
+.ops-shell.ops-event-workspace .messaging-log-section .messaging-fields>label:last-child{grid-column:span 2}
+.ops-shell.ops-event-workspace .messaging-log-section :is(input,select){box-sizing:border-box;width:100%;min-width:0;max-width:100%;height:40px;padding:8px 12px;border:1px solid #c6d5cd;border-radius:8px;background:white;font-size:13px;color:#171918}
+.ops-shell.ops-event-workspace .messaging-log-section button{min-height:40px;padding:8px 14px;border:1px solid #d0dcd5;border-radius:8px;background:#f7faf8;color:#245443;font-size:13px;margin:0 8px 8px 0}
+.ops-shell.ops-event-workspace .messaging-log-section button:disabled{opacity:.5}
+.ops-shell.ops-event-workspace .messaging-log-section :is(p,small){font-size:12px;line-height:1.8;overflow-wrap:anywhere}
+.ops-shell.ops-event-workspace .messaging-log-section pre{white-space:pre-wrap;overflow-wrap:anywhere}
+@media(max-width:1050px){.ops-shell.ops-event-workspace .messaging-log-section .messaging-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:500px){.ops-shell.ops-event-workspace .messaging-log-section .messaging-fields{grid-template-columns:1fr}.ops-shell.ops-event-workspace .messaging-log-section .messaging-fields>label:last-child{grid-column:auto}}
+
+.ops-shell.ops-event-workspace .messaging-log-section>summary{font-size:15px;font-weight:700;color:#354f42;cursor:pointer;line-height:1.7}.ops-shell.ops-event-workspace .messaging-log-section>.messaging-card{margin-top:20px}
+.ops-shell.ops-event-workspace .messaging-send:disabled{background:#e8eeea;color:#798b80;border:1px solid #d5dfd8;cursor:not-allowed}
+
+.ops-shell.ops-event-workspace .messaging-setup{display:flex;flex-wrap:wrap;align-items:center;gap:16px;padding:16px 20px;margin-bottom:16px;background:#fff;border:1px solid #dce3e0;border-radius:12px}
+.ops-shell.ops-event-workspace .messaging-setup .messaging-tabs{padding:0;flex-shrink:0;gap:4px}
+.ops-shell.ops-event-workspace .messaging-setup .messaging-tabs button{padding:10px 12px}
+.ops-shell.ops-event-workspace .messaging-setup-event{display:flex;align-items:center;gap:12px;flex:1;min-width:240px;margin:0;font-size:13px;white-space:nowrap}
+.ops-shell.ops-event-workspace .messaging-setup-event select{flex:1;width:100%;min-width:0;height:40px;padding:8px 12px;background:#fff;border:1px solid #c6d5cd;border-radius:8px;font:inherit}
+.ops-shell.ops-event-workspace .messaging-setup-link{font-size:12px;white-space:nowrap}
+.ops-shell.ops-event-workspace .messaging-columns.is-compose-only{grid-template-columns:minmax(0,1fr)}
+.ops-shell.ops-event-workspace .messaging-quick-copy{margin-bottom:12px}
+.ops-shell.ops-event-workspace .messaging-quick-copy select{height:40px;padding:8px 12px;background:#fff;border:1px solid #c6d5cd;border-radius:8px;font:inherit}
+.ops-shell.ops-event-workspace .messaging-variables{margin:8px 0 16px;font-size:12px;color:#606b65}
+.ops-shell.ops-event-workspace .messaging-variables summary,.ops-shell.ops-event-workspace .messaging-preview summary{cursor:pointer;font-weight:700}
+.ops-shell.ops-event-workspace .messaging-preview{padding:12px 16px;margin:16px 0;font-size:13px}
+.ops-shell.ops-event-workspace .messaging-preview small{margin:10px 0}
+.ops-shell.ops-event-workspace .messaging-preview pre{margin-top:10px}
+.ops-shell.ops-event-workspace .messaging-target-card .messaging-help{margin-bottom:12px}
+.ops-shell.ops-event-workspace .messaging-start-hint{margin:0 0 16px}
+.ops-shell.ops-event-workspace .messaging-draft-note{margin:0 0 20px}
+@media(max-width:700px){.ops-shell.ops-event-workspace .messaging-setup{padding:12px 16px;gap:12px}.ops-shell.ops-event-workspace .messaging-setup-event{flex-basis:100%;min-width:0;white-space:normal;display:grid;gap:6px}.ops-shell.ops-event-workspace .messaging-setup .messaging-tabs{width:100%}}

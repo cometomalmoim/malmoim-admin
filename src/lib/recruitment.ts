@@ -4,7 +4,7 @@ import "server-only";
 import { getAdminAccess } from "./auth";
 import { createClient } from "./supabase/server";
 export type RecruitmentEvent = { image_url?: string | null; id: string; slug: string; title: string; status: string; applications_open: boolean; closes_at: string | null; starts_at:string|null;ends_at:string|null;is_archived:boolean;archive_revision:number; visual_theme: 'default' | 'halloween' };
-export type ApplicationRow = { gender?:string|null; korean_level?:string|null;english_level?:string|null; archive_revision:number;is_archived:boolean; id: string; name: string; contact: string; contact_type: string; preferred_class: string | null; participation_history: string | null; history_detail: string | null; status: string; created_at: string; source:string; birth_year:number|null; nationality:string|null; payment_status:string; internal_note:string; revision:number; source_note:string|null; event_id:string; event_slug?:string; event_title?:string; utm_source:string|null; utm_medium:string|null; utm_campaign:string|null };
+export type ApplicationRow = { sms_state?:string;sms_updated_at?:string; gender?:string|null; korean_level?:string|null;english_level?:string|null; archive_revision:number;is_archived:boolean; id: string; name: string; contact: string; contact_type: string; preferred_class: string | null; participation_history: string | null; history_detail: string | null; status: string; created_at: string; source:string; birth_year:number|null; nationality:string|null; payment_status:string; internal_note:string; revision:number; source_note:string|null; event_id:string; event_slug?:string; event_title?:string; utm_source:string|null; utm_medium:string|null; utm_campaign:string|null };
 export type RecruitmentResult =
   | { kind: "error" }
   | { kind: "missing" }
@@ -39,6 +39,7 @@ export async function getRecruitment(slug?: string, page = 1, query:ApplicantQue
     if(/^\d{4}$/.test(query.year??''))request=request.eq('birth_year',Number(query.year));
     const result=await request.order('created_at',{ascending:false}).order('source').order('id',{ascending:false}).range((safePage-1)*pageSize,safePage*pageSize-1);
     if (result.error) return { kind: "error" };
-    return { kind: "ready", events, event, rows: (result.data as ApplicationRow[]).map(row=>({...row,event_slug:events.find(e=>e.id===row.event_id)?.slug,event_title:events.find(e=>e.id===row.event_id)?.title})), count: result.count ?? 0, page: safePage };
+    const sms=result.data.length?await client.from("event_sms_applicant_status").select("event_id,application_source,application_id,state,updated_at").in("application_id",result.data.map(row=>row.id)):null;
+    return { kind: "ready", events, event, rows: (result.data as ApplicationRow[]).map(row=>({...row,sms_state:sms?.data?.find(j=>j.application_id===row.id&&j.application_source===row.source&&j.event_id===row.event_id)?.state,sms_updated_at:sms?.data?.find(j=>j.application_id===row.id&&j.application_source===row.source&&j.event_id===row.event_id)?.updated_at,event_slug:events.find(e=>e.id===row.event_id)?.slug,event_title:events.find(e=>e.id===row.event_id)?.title})), count: result.count ?? 0, page: safePage };
   } catch { return { kind: "error" }; }
 }
