@@ -3,16 +3,17 @@ import {ApplicantSmsComposer} from './applicant-bulk-sms';
 import {SmsSend} from './sms-controls';
 import {MessagingRecipients} from './messaging-recipients';
 import type {MessagingApplicant} from '@/app/actions/message-applicants';
-import {useState} from 'react';
+import {useEffect,useState} from 'react';
 import Link from 'next/link';
 import type {RegisteredMessageEvent} from './message-preview';
 import {messagingTemplates,composeMessaging} from '@/lib/messaging-templates';
 import {domesticPhone} from '@/lib/sms-contract';
 import './messaging.css';
 
-export function MessagingComposer({events}:{events:RegisteredMessageEvent[]}){
+export function MessagingComposer({events,onLock}:{events:RegisteredMessageEvent[];onLock?:(locked:boolean)=>void}){
  const [recipients,setRecipients]=useState<MessagingApplicant[]>([]);
  const [locked,setLocked]=useState(false);
+ useEffect(()=>{onLock?.(locked);},[locked,onLock]);
  const [mode,setMode]=useState<'event'|'direct'>('event');
  const [eventId,setEventId]=useState('');
  const [templateId,setTemplateId]=useState<string>('event');
@@ -32,10 +33,8 @@ export function MessagingComposer({events}:{events:RegisteredMessageEvent[]}){
  const duplicates=normalized.length-invalid-valid.length;
  const preview=composeMessaging(body,{'이름':mode==='event'?(recipients[0]?.name??''):name,'이벤트명':event?.title??'','일정':event?.starts_at?new Intl.DateTimeFormat('ko-KR',{dateStyle:'medium',timeStyle:'short',timeZone:'Asia/Seoul'}).format(new Date(event.starts_at))+' (한국 시간)':'','장소':event?.location??'','참가비안내':event?.fee_notice??'','납부기한':due,'문의처':contact,'답변링크':replyUrl});
  return <div className="messaging">
-  <div className="ops-heading"><h1>메시징</h1><p>이벤트와 대상을 선택하고 내용을 작성한 뒤, 수신자·비용을 확인해 발송하세요.</p></div>
-  <nav className="messaging-jumps" aria-label="메시징 관리 바로가기"><a href="#messaging-logs">발송 기록 ↓</a><a href="#messaging-templates">템플릿 관리 ↓</a></nav>
   <section className="messaging-setup" aria-label="발송 방식과 이벤트 선택"><nav className="messaging-tabs" aria-label="메시징 작성 방식"><button type="button" disabled={locked} aria-pressed={mode==='event'} onClick={()=>setMode('event')}>이벤트 대상</button><button type="button" disabled={locked} aria-pressed={mode==='direct'} onClick={()=>setMode('direct')}>번호 직접 입력</button></nav><label className="messaging-setup-event">연결 이벤트{mode==='direct'?' (선택)':''}<select disabled={locked} value={eventId} onChange={e=>{setEventId(e.target.value);setRecipients([]);}}><option value="">이벤트를 선택해주세요</option>{events.map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label>{event&&<Link className="messaging-setup-link" href={`/admin/events/${encodeURIComponent(event.slug)}/applicants`}>신청자 관리 ↗</Link>}</section>
-  {mode==='event'&&!event&&<p className="messaging-help messaging-start-hint">{events.length?'이벤트를 선택하면 신청자 목록을 불러옵니다. 안내 문구는 먼저 작성할 수 있습니다.':'등록된 이벤트가 없습니다.'}</p>}
+  {mode==='event'&&!event&&<p className="messaging-help messaging-start-hint">{events.length?'이벤트를 선택하면 신청자 목록을 불러옵니다. 선택한 이벤트의 신청자를 조건별로 모을 수 있습니다.':'등록된 이벤트가 없습니다.'}</p>}
   <div className={`messaging-columns ${showRecipients?'':'is-compose-only'}`}>
    {showRecipients&&<section className="messaging-card messaging-target-card"><div className="messaging-card-heading"><h2>{mode==='event'?'받는 대상':'받는 번호'}</h2><span>{mode==='direct'?`${valid.length}개`:`${recipients.length}명 선택`}</span></div>
     {mode==='event'?(event?<fieldset disabled={locked} style={{border:0,padding:0,margin:0,minWidth:0}}><MessagingRecipients key={event.id} eventId={event.id} onSelect={setRecipients}/></fieldset>:<p>이벤트를 먼저 선택해주세요.</p>):<><p className="messaging-help">국내 휴대폰 번호를 줄바꿈 또는 쉼표로 구분해주세요. 발송 전 대상과 비용을 확인합니다.</p><label className="messaging-field">수신번호 입력<textarea rows={6} value={numbers} onChange={e=>setNumbers(e.target.value)} placeholder={'010-0000-0001\n010-0000-0002, 010-0000-0003'}/></label><p className="messaging-counts">형식 유효 {valid.length} · 중복 제외 {duplicates} · 형식 오류 {invalid}</p><p className="messaging-help">형식 검사는 실제 사용·수신 가능한 번호임을 보장하지 않습니다.</p></>}
