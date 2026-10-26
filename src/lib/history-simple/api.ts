@@ -23,5 +23,5 @@ export function createSimpleAdminApi(ports:{enabled():boolean;access():Promise<{
   else if(op==='publish'){if(Object.keys(body).join()!=='published'||typeof body.published!=='boolean')throw Error('INVALID_INPUT');await ports.ops.publish(id,body.published);}
   else if(op==='delete_album'||op==='delete_photo'){if(Object.keys(body).length)throw Error('INVALID_INPUT');await (op==='delete_album'?ports.ops.deleteAlbum:ports.ops.deletePhoto)(id);}
   else throw Error('INVALID_INPUT');return reply(200,{ok:true});
- }catch(error){const known=error instanceof Error?error.message:'';return reply(known==='TOO_LARGE'?413:['INVALID_INPUT','INVALID_IMAGE'].includes(known)?400:503,{code:known==='TOO_LARGE'?'BODY_TOO_LARGE':['INVALID_INPUT','INVALID_IMAGE'].includes(known)?'INVALID_INPUT':'PHOTO_RESULT_UNCONFIRMED'});}
+ }catch(error){const known=error instanceof Error?error.message:'';return reply(known==='TOO_LARGE'?413:['INVALID_INPUT','INVALID_IMAGE'].includes(known)?400:503,{code:known==='TOO_LARGE'?'BODY_TOO_LARGE':known==='INVALID_INPUT'?'INVALID_INPUT':['INVALID_IMAGE','PHOTO_LIMIT','PHOTO_NOT_READY','PHOTO_PERMISSION_DENIED','PHOTO_SCHEMA_MISMATCH','PHOTO_STORAGE_FAILED','PHOTO_UNAVAILABLE','PHOTO_UNCERTAIN'].includes(known)?known:'PHOTO_RESULT_UNCONFIRMED'});}
 };}

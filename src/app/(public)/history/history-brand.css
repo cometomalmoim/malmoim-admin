@@ -88,3 +88,5 @@
 .history-page .history-photo-card time { font-size:11px; margin-block:4px; }
 .history-page .history-photo-card > p { font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
 @media(max-width:540px){.history-page .history-gallery{gap:16px 6px}.history-page .history-photo-card time{font-size:10px}}
+
+.history-page .history-photo-edit { padding:4px 10px; border:1px solid #dce5e5; border-radius:6px; background:#fff; color:#07838d; font:inherit; font-size:12px; cursor:pointer; }

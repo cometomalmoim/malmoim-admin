@@ -16,3 +16,5 @@ test('a successful but empty Storage deletion response cannot erase album metada
    assert.equal(deleted,acknowledged);
   }
  });
+
+test('create errors classify denied privileges and schema mismatch without raw DB messages',async()=>{for(const [code,expected] of [['42501','PHOTO_PERMISSION_DENIED'],['42703','PHOTO_SCHEMA_MISMATCH'],['PGRST204','PHOTO_SCHEMA_MISMATCH'],['unknown','PHOTO_UNAVAILABLE']]){const api={from:()=>({insert(){return this;},select(){return this;},single:async()=>({data:null,error:{code,message:'sensitive detail'}})})};await assert.rejects(server(api).createAlbum({title:'x',date:'2026-10-26',description:''}),e=>e.message===expected);}});

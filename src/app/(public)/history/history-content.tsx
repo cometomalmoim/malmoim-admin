@@ -16,7 +16,7 @@ const categories = [
 ] as const;
 const PAGE_SIZE = 9;
 
-function CategoryGallery({ category, photos }: { category: typeof categories[number]; photos: HistoryPhoto[] }) {
+function CategoryGallery({ category, photos,onEditAlbum,managedIds }: { category: typeof categories[number]; photos: HistoryPhoto[];onEditAlbum?:(id:string)=>void;managedIds:string[] }) {
   const [detail, setDetail] = useState<{photo:HistoryPhoto;index:number} | null>(null);
   const [filter, setFilter] = useState("all");
   const [limit, setLimit] = useState(PAGE_SIZE);
@@ -38,7 +38,7 @@ function CategoryGallery({ category, photos }: { category: typeof categories[num
     <div className="history-gallery">
       {visible.map(({photo,image,index}) => <article className="history-photo-card" key={`${photo.id}-${index}`}>
         <button type="button" className="history-photo-open" aria-label={`${photo.title} 사진 상세 보기`} onClick={() => setDetail({photo,index})}><Image unoptimized={photo.unoptimized} src={image.src} alt={image.alt} width={540} height={540} sizes="(max-width: 540px) 28vw, (max-width: 1100px) 29vw, 360px" /></button>
-        <h3 data-i18n-skip>{photo.title}</h3><time dateTime={photo.date}>{displayDate(photo.date)}</time><p data-i18n-skip>{photo.description}</p>
+        <h3 data-i18n-skip>{photo.title}</h3>{onEditAlbum&&managedIds.includes(photo.id)&&<button type="button" className="history-photo-edit" onClick={()=>onEditAlbum(photo.id)}>수정</button>}<time dateTime={photo.date}>{displayDate(photo.date)}</time><p data-i18n-skip>{photo.description}</p>
       </article>)}
     </div>
     {detail && <HistoryPhotoDialog key={detail.photo.id} photo={detail.photo} initialIndex={detail.index} close={() => setDetail(null)} />}
@@ -46,7 +46,7 @@ function CategoryGallery({ category, photos }: { category: typeof categories[num
   </>}</Localized>;
 }
 
-export function HistoryGallery({ photos }: { photos: HistoryPhoto[] }) {
+export function HistoryGallery({ photos,onEditAlbum,managedIds=[] }: { photos: HistoryPhoto[];onEditAlbum?:(id:string)=>void;managedIds?:string[] }) {
   const [selected, setSelected] = useState(0);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   function handleKey(event: KeyboardEvent<HTMLButtonElement>, index: number) {
@@ -65,6 +65,6 @@ export function HistoryGallery({ photos }: { photos: HistoryPhoto[] }) {
     <div className="history-tabs" role="tablist" aria-label="사진 분류">
       {categories.map((category, index) => <button key={category.id} type="button" role="tab" id={`history-tab-${category.id}`} aria-controls={`history-panel-${category.id}`} aria-selected={selected === index} tabIndex={selected === index ? 0 : -1} ref={(element) => { tabs.current[index] = element; }} onClick={() => setSelected(index)} onKeyDown={(event) => handleKey(event, index)}>{category.label}</button>)}
     </div>
-    {categories.map((category, index) => <div key={category.id} id={`history-panel-${category.id}`} role="tabpanel" aria-labelledby={`history-tab-${category.id}`} hidden={selected !== index} tabIndex={0} className="history-tab-panel"><CategoryGallery key={selected} category={category} photos={photos} /></div>)}
+    {categories.map((category, index) => <div key={category.id} id={`history-panel-${category.id}`} role="tabpanel" aria-labelledby={`history-tab-${category.id}`} hidden={selected !== index} tabIndex={0} className="history-tab-panel"><CategoryGallery key={selected} category={category} photos={photos} onEditAlbum={onEditAlbum} managedIds={managedIds} /></div>)}
   </section>}</Localized>;
 }
