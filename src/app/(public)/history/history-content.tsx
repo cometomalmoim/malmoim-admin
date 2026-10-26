@@ -5,7 +5,7 @@ import {Localized} from "@/components/public-translation";
 import Image from "next/image";
 import { HistoryPhotoDialog } from "./history-photo-dialog";
 import { useRef, useState, type KeyboardEvent } from "react";
-import { displayDate, type HistoryPhoto } from "./history-data";
+import { activityYear, displayDate, type HistoryPhoto } from "./history-data";
 
 import {HISTORY_COHORTS} from '@/lib/history-simple/categories';
 
@@ -21,8 +21,8 @@ function CategoryGallery({ category, photos,onEditAlbum,managedIds }: { category
   const [filter, setFilter] = useState("all");
   const [limit, setLimit] = useState(PAGE_SIZE);
   const items = photos.filter((photo) => photo.category === category.id);
-  const filterValue = (photo: HistoryPhoto) => photo.category === "regular" ? String(photo.cohort) : photo.date.slice(0, 4);
-  const options = category.id === "regular" ? Array.from(new Set([...HISTORY_COHORTS,...items.filter(p=>p.category==="regular").map(p=>p.cohort)])).sort((a,b)=>b-a).map(String) : Array.from(new Set(["2026","2025",...items.map(p=>p.date.slice(0,4))])).sort().reverse();
+  const filterValue = (photo: HistoryPhoto) => photo.category === "regular" ? String(photo.cohort) : activityYear(photo.date);
+  const options = category.id === "regular" ? Array.from(new Set([...HISTORY_COHORTS,...items.filter(p=>p.category==="regular").map(p=>p.cohort)])).sort((a,b)=>b-a).map(String) : Array.from(new Set(["2026","2025",...items.map(p=>activityYear(p.date))])).sort().reverse();
   const emptyMessage = filter === "all" ? category.empty : category.id === "regular" ? `${filter}기 정규 세션 사진이 아직 없습니다.` : `${filter}년 공개된 사진이 아직 없습니다.`;
   const filtered = items.filter((photo) => filter === "all" || filterValue(photo) === filter);
   const tiles = filtered.flatMap(photo=>(photo.slidePhotos??[{src:photo.src,alt:photo.alt},...(photo.additionalPhotos??[])]).map((image,index)=>({photo,image,index})));
