@@ -24,3 +24,15 @@ test('saved notice survives listener remount and dismissal prevents stale replay
  const remounted=store.subscribe(()=>updates++);
  assert.equal(store.snapshot().kind,'paid');store.dismiss();assert.equal(updates,2);assert.equal(store.snapshot(),null);remounted();
 });
+
+
+test('gathering keeps latest purpose per applicant and groups no silent overflow',async()=>{
+ const {paymentNoticeStore:store}=await import('../src/lib/payment-notice-store.ts');store.clearQueue();store.dismiss();
+ const item=(id,kind='paid')=>({row:{id,source:'manual',event_id:'event'},kind,token:id+kind});
+ store.gather(item('1'));assert.equal(store.gatheringSnapshot(),true);assert.equal(store.snapshot(),null);
+ store.offer(item('1','refunded'));assert.equal(store.queueSnapshot().length,1);assert.equal(store.queueSnapshot()[0].kind,'refunded');
+ for(let n=2;n<=50;n++)store.offer(item(String(n)));
+ store.offer(item('51'));assert.equal(store.queueSnapshot().length,50);assert.equal(store.snapshot().row.id,'51');
+ store.remove('1refunded');assert.equal(store.queueSnapshot().length,49);
+ store.clearQueue();store.dismiss();assert.equal(store.gatheringSnapshot(),false);
+});

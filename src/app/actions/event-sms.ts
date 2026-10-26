@@ -74,3 +74,18 @@ export async function eventSmsLogs(filters:{event?:string;source?:string;id?:str
  return {rows:r.data as (EventSmsLog&{event_sms_templates:{category:string;title:string;version:number}|null;sms_batches:{created_by:string}|null})[],count:r.count??0};
 }
 export async function eventSmsHistory(id:string){const db=await client();const r=await db.from('sms_job_history').select('*').eq('job_id',id).order('id');checked(r.error);return r.data as {id:number;state:string;happened_at:string;actor:string|null;provider_group:string|null;failure_reason:string|null}[];}
+
+export async function failedSmsApplicants(jobIds:string[]){
+ const db=await client();if(!Array.isArray(jobIds)||!jobIds.length||jobIds.length>30||!jobIds.every(smsUuid))throw new Error('실패 문자 선택을 확인해주세요.');
+ const jobs=await db.from('sms_jobs').select('id,state,event_id,application_source,application_id').in('id',jobIds).eq('state','failed');checked(jobs.error);
+ const targets=[];const seen=new Set<string>();
+ for(const job of jobs.data??[]){
+  if(!job.event_id||!job.application_id||!['season9','registration','manual'].includes(job.application_source??''))continue;
+  const key=job.event_id+':'+job.application_source+':'+job.application_id;if(seen.has(key))continue;seen.add(key);
+  const row=await db.from('event_application_admin_list').select('id,source,event_id,name,contact,contact_type,status,payment_status').eq('id',job.application_id).eq('source',job.application_source!).eq('event_id',job.event_id).eq('is_archived',false).maybeSingle();checked(row.error);
+  if(!row.data)continue;
+  const event=await db.from('recruitment_events').select('title').eq('id',job.event_id).eq('is_archived',false).maybeSingle();checked(event.error);
+  if(event.data)targets.push({...row.data,event_title:event.data.title});
+ }
+ return targets as {id:string;source:string;event_id:string;event_title:string;name:string;contact:string;contact_type:string;status:string;payment_status:string}[];
+}

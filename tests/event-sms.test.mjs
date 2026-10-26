@@ -14,7 +14,7 @@ test('한영 할로윈 4개 예시의 변수와 운영 일정 자동 치환',()=
 test('신규 서버 액션은 비관리자를 DB/API 접근 전에 거부',async()=>{
  let touched=false;
  const actions=load('../src/app/actions/event-sms.ts',{'@/lib/auth':{getAdminAccess:async()=>({status:'forbidden'})},'@/lib/supabase/server':{createClient:()=>{touched=true;throw Error('must not connect');}},'@/lib/solapi':{},'@/lib/sms-contract':{},'@/lib/payment-notice':paymentNotice,'@/lib/event-sms':m});
- for(const name of ['eventSmsData','saveEventSmsTemplate','saveEventSmsDetails','eventSmsVersions','prepareApplicantSms','cancelApplicantSms','eventSmsLogs','eventSmsHistory','prepareApplicantSmsBatch'])await assert.rejects(actions[name]({}),/관리자 권한/);
+ for(const name of ['eventSmsData','saveEventSmsTemplate','saveEventSmsDetails','eventSmsVersions','prepareApplicantSms','cancelApplicantSms','eventSmsLogs','eventSmsHistory','prepareApplicantSmsBatch','failedSmsApplicants'])await assert.rejects(actions[name]({}),/관리자 권한/);
  assert.equal(touched,false);
 });
 
@@ -57,4 +57,20 @@ test('bulk preparation shares one price lookup, preserves individual fees and do
  const result=await actions.prepareApplicantSmsBatch({event:eventId,template:templateId,language:'ko',body:template.body,fee:'',resend:false,items:ids.map(id=>({id,source:'manual',batch:id}))});
  assert.equal(prices,1);assert.equal(result.ready.length,2);assert.equal(result.errors.length,1);assert.match(result.ready[0].text,/25,000원/);assert.match(result.ready[1].text,/30,000원/);assert.ok(calls.every(call=>['prepare_applicant_sms','cancel_applicant_sms_preview'].includes(call.name)));assert.equal(calls.filter(call=>call.name==='prepare_applicant_sms').length,2);
  await assert.rejects(actions.prepareApplicantSmsBatch({items:[]}),/최대 50명/);
+});
+
+
+test('history grouping preserves event, template version and language boundaries',()=>{
+ const {smsHistoryGroups}=load('../src/lib/sms-history-groups.ts');
+ const base={event_id:'e',template_id:'v1',kind:'event',language:'ko',state:'delivered'};
+ const groups=smsHistoryGroups([base,{...base,state:'failed'},{...base,state:'unknown'},{...base,template_id:'v2'},{...base,event_id:'other'},{...base,language:'en'}]);
+ assert.equal(groups.length,4);assert.equal(groups[0].items.length,3);assert.equal(groups[0].delivered,1);assert.equal(groups[0].failed,1);assert.equal(groups[0].unresolved,1);
+});
+
+
+test('failed retry targets are reloaded from failed jobs and active applicants without sending',async()=>{
+ const uid='11111111-1111-4111-8111-111111111111';let failedFilter=false;let writes=0;
+ const db={from(table){const q={select(){return q;},in(){return q;},eq(key,value){if(table==='sms_jobs'&&key==='state'&&value==='failed')failedFilter=true;return q;},maybeSingle:async()=>({error:null,data:table==='recruitment_events'?{title:'TEST'}:{id:uid,source:'manual',event_id:uid,name:'TEST',contact:'01000000001',contact_type:'phone',status:'accepted',payment_status:'paid'}}),then(resolve){return Promise.resolve({error:null,data:[{event_id:uid,application_id:uid,application_source:'manual'}]}).then(resolve);}};return q;},rpc(){writes++;throw Error('must not write');}};
+ const actions=load('../src/app/actions/event-sms.ts',{'@/lib/auth':{getAdminAccess:async()=>({status:'admin'})},'@/lib/supabase/server':{createClient:async()=>db},'@/lib/solapi':{},'@/lib/sms-contract':contract,'@/lib/payment-notice':paymentNotice,'@/lib/event-sms':m});
+ const rows=await actions.failedSmsApplicants([uid]);assert.equal(failedFilter,true);assert.equal(writes,0);assert.equal(rows.length,1);assert.equal(rows[0].event_title,'TEST');await assert.rejects(actions.failedSmsApplicants([]),/실패 문자/);
 });
