@@ -31,3 +31,11 @@ After approved installation and catalogue verification, use consented real membe
 ## Local validation
 
 Nine review readiness/SQL boundary/compact-card tests passed. Changed-file ESLint, TypeScript, SQL parser and production webpack build passed using non-routable build-only Supabase placeholders. No live Production E2E or database inspection was executed. Photo code, SQL designs and recruitment review code are unchanged.
+
+## User-confirmed Production inventory / click-only UI (follow-up)
+
+User confirms event_people, event_participation, event_sessions, event_session_attendance and admin_users exist; all four history review/bridge names and the review bucket are absent. This explains missing review storage. Exact RPC installation/ACLs and remaining 24-column compatibility must still be checked, including recruitment_events and event_application_admin_list. Existing participation approval is reused; only the missing Auth/person verified identity link is added, not another event approval system.
+
+`01_production_install_candidate_DRAFT.sql` reuses the reviewed migration body unchanged, updates the intended target and retains an unconditional DRAFT_ONLY stop. It is a separate, non-executable candidate, not authorization to install. No original design, production DB or photo objects were modified. Finish the read-only preflight, review existing Storage restrictive policies and any current identity mapping, then prepare/approve the executable transaction. Run `02_verify_readonly.sql` after approved installation; administrator verifies a real member identity and legitimate attendance before linking. Start real voluntary review testing only then.
+
+The default UI now shows only the normal create button (besides list/filter content). Every click rechecks server access: anonymous opens login, unapproved opens the participation notice, approved opens the editor, errors open a distinct error dialog. Initial permission errors are not shown as unsolicited participation notices. Server save checks and SQL/RLS enforcement are unchanged.

@@ -20,5 +20,5 @@ export function reviewDate(value: string) {
 
 export type ReviewPermission = "anonymous" | "approved" | "unapproved" | "error";
 export type ReviewAccess = { userId: string | null; permission: ReviewPermission };
-export const reviewApprovalNotice = "말모임 참가 확인 후 후기를 작성할 수 있어요.";
+export const reviewApprovalNotice = "말모임에 참여한 회원만 후기를 작성할 수 있어요";
 export const reviewApprovalError = "후기 작성 권한을 확인하지 못했어요. 잠시 후 다시 확인해주세요.";

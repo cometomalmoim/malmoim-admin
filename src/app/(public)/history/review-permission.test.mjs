@@ -34,7 +34,7 @@ function setup({ data = true, rpcError = null, rpcThrows = false, user = { id },
     from: () => { calls.push("table"); return query; },
     storage: { from: () => { calls.push("storage"); return { upload: async () => ({ error: null }), remove: async () => ({ error: null }) }; } },
   };
-  const permission = load("./review-permission.ts", { "server-only": {}, "@/lib/supabase/server": { createClient: async () => client } });
+  const permission = load("./review-permission.ts", { "server-only": {}, "./review-diagnostics": { logReviewFailure() {} }, "@/lib/supabase/server": { createClient: async () => client } });
   const actions = load("./review-actions.ts", {
     "next/cache": { revalidatePath() {} }, "@/lib/supabase/server": { createClient: async () => client },
     "./review-permission": permission, "./review-types": types,
@@ -99,9 +99,10 @@ for (const permission of ["anonymous", "approved", "unapproved", "error"]) {
       initial: { reviews: [], more: false, error: "" }, userId: permission === "anonymous" ? null : id, permission,
     }));
     assert.ok(html.includes("아직 등록된 참여 후기가 없습니다."));
-    assert.equal(html.includes(types.reviewApprovalNotice), permission === "unapproved");
-    assert.equal(html.includes(types.reviewApprovalError), permission === "error");
-    if (permission === "error") assert.ok(html.includes("작성 권한 다시 확인"));
+    assert.equal(html.includes(types.reviewApprovalNotice), false);
+    assert.equal(html.includes(types.reviewApprovalError), false);
+    assert.ok(html.includes("후기 등록"));
+    assert.ok(!html.includes("작성 권한 다시 확인"));
     assert.ok(!html.includes("history_can_create_review") && !html.includes(id));
   });
 }
@@ -185,7 +186,7 @@ test("login return reconciles server props and closes old login dialog", async (
   assert.ok((await view.click()).some(node => node.type === view.ui.ReviewDialog && node.props.title === "로그인이 필요합니다"));
   const nodes = view.updateProps({ userId: id, permission: "unapproved" });
   assert.ok(!nodes.some(node => node.type === view.ui.ReviewDialog));
-  assert.ok(nodes.some(node => node.props?.children === types.reviewApprovalNotice));
+  assert.ok(!nodes.some(node => node.props?.children === types.reviewApprovalNotice));
 });
 test("login link dismisses old dialog before navigation", async () => {
   const view = screen("anonymous", async () => ({ userId: null, permission: "anonymous" }));

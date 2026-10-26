@@ -33,3 +33,11 @@ test('Production preflight covers 24 dependencies, all review objects and identi
  for(const name of ['history_reviews','history_participant_links','history_participant_audit','history_can_create_review','history-review-photos','identity_foreign_keys'])assert(sql.includes(name));
  assert.doesNotMatch(sql,/\b(?:CREATE|ALTER|DROP|INSERT|UPDATE|DELETE|GRANT|REVOKE)\s+(?:TABLE|POLICY|FUNCTION|INTO|ON|public\.)/i);
 });
+test('Production candidate preserves the reviewed security body and remains unconditionally blocked',()=>{
+ const draft=readFileSync('supabase/drafts/history-review-auth-bridge-v2.sql','utf8');
+ const candidate=readFileSync('supabase/review-release/01_production_install_candidate_DRAFT.sql','utf8');
+ const body=sql=>sql.slice(sql.indexOf('-- Future executable migration'));
+ assert.equal(body(candidate),body(draft));
+ assert(candidate.indexOf('DRAFT_ONLY:')<candidate.indexOf('CREATE TABLE'));
+ assert(candidate.includes('qkhlvdctdcpfyvohhikl'));
+});
