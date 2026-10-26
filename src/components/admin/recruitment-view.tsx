@@ -9,7 +9,7 @@ import { getRecruitment } from "@/lib/recruitment";
 import { AdminShell } from "./admin-shell";
 import './events.css';
 export async function RecruitmentView({ email, slug, page, query, recruitment = false }: { email: string; slug?: string; page?: number; query?:ApplicantQuery; recruitment?: boolean }) {
-  const result = await getRecruitment(slug, page, query,recruitment);
+  const result = await getRecruitment(slug, recruitment?1:page, query,recruitment);
   if (result.kind === "missing") notFound();
   const title = slug ? "이벤트 신청자·운영" : recruitment ? "전체 신청자관리" : "이벤트 관리";
   return <AdminShell email={email} current={recruitment ? "recruitment" : "events"} title={title}>
