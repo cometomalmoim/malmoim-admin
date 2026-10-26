@@ -3,6 +3,7 @@ export function englishPublicText(value:string):string {
  const key=value.trim().replace(/\s+/g,' '), exact=aboutHistoryEnglish[key];
  if(exact)return value.replace(value.trim(),exact);
  const rules:[RegExp,(...parts:string[])=>string][]=[
+  [/^게시물 (\d+)개 중 (\d+)개 표시$/,(total,shown)=>`Showing ${shown} of ${total} posts`],
   [/^\|\s*(\d+)분$/,n=>`| ${n} min`],
   [/^(\d+)년 공개된 사진이 아직 없습니다[.]$/,n=>`No published photos from ${n} yet.`],
   [/^(\d+)기$/,n=>`Season ${n}`],

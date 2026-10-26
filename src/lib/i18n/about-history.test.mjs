@@ -35,3 +35,5 @@ test('English route translates shared server JSX before RSC transport, without a
   assert.match(renderToStaticMarkup(shared),/말모임 9기 모집/);
  }
 });
+
+test('album grid counts posts independently of contained photos',()=>{assert.equal(t('게시물 12개 중 12개 표시'),'Showing 12 of 12 posts');});
