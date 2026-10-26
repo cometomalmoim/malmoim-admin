@@ -25,3 +25,4 @@
 @media(max-width:760px){.s9-autumn .s9-hero-with-form{display:flex;flex-direction:column;padding-top:20px;gap:28px}.s9-hero-with-form .s9-hero-copy{width:100%;min-width:0}.s9-hero-with-form .s9-compact{padding:16px 12px}.s9-hero-with-form .s9-compact-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.s9-hero-with-form .s9-compact-grid>label:first-child{grid-column:span 1}.s9-hero-with-form .s9-compact-contact{grid-column:1/-1}.s9-hero-with-form .s9-compact-birth{grid-column:1/-1}.s9-hero-with-form .s9-recruitment-poster{align-self:center}.s9-autumn[lang=en] .s9-hero-with-form h1{font-size:30px}.s9-hero-with-form .s9-lead{font-size:14px}}
 
 .s9-site:has(.s9-hero-with-form .s9-compact[data-visible=true]) :is(.s9-sticky,.s9-falling-leaves){display:none}
+.s9-hero-with-form .s9-compact input:is([type=checkbox],[type=radio]){min-height:18px;max-height:18px;height:18px;padding:0}.s9-hero-with-form .s9-compact-policy>label{align-items:center}
