@@ -8,10 +8,9 @@ export const aboutHistoryEnglish:Record<string,string> = {
   "공개된 사진이 아직 없습니다.": "No published photos yet.",
 
   "확인": "OK",
-  "말모임 참가 확인 후 후기를 작성할 수 있어요.": "You can share a review once your MALMOIM participation is confirmed.",
+  "말모임에 참여한 회원만 후기를 작성할 수 있어요": "Only members who have participated in MALMOIM can write a review.",
   "후기 작성 권한을 확인하지 못했어요. 잠시 후 다시 확인해주세요.": "We couldn’t check your review permissions. Please try again shortly.",
   "작성 권한 확인 중…": "Checking review permissions…",
-  "작성 권한 다시 확인": "Check review permissions again",
   "후기 작성 권한 안내": "Review permissions",
   "MT": "Group trips (MT)",
   "영어를 잘 못해도, 한국어를 잘 못해도 괜찮아요. 말모임의 프로그램과 참여 안내를 만나보세요.": "New to Korean or English? You're welcome here. Explore MALMOIM's programs and find out how to join.",
