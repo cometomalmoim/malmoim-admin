@@ -17,3 +17,15 @@ export async function manageReviewMember(input:{user:string;person:string;action
  return error||!Number.isInteger(data)?{error:'승인·철회 결과를 확인하지 못했습니다. 중복 실행하지 말고 정보를 다시 조회하세요. 참가 근거·기존 연결·현재 버전을 확인해주세요.'}:{revision:data as number};
  }catch{return {error:'연결 오류입니다. 결과를 다시 조회한 뒤 진행해주세요.'};}
 }
+
+export async function findReviewMemberByEmail(value:unknown){
+ if((await getAdminAccess()).status!=='admin')return {error:'관리자 권한이 필요합니다.'};
+ if(typeof value!=='string'||value.length>254||value!==value.trim()||!/^[^\s@,;]+@[^\s@,;]+\.[^\s@,;]+$/.test(value))return {error:'공백 없이 정확한 회원 이메일 한 개를 입력해주세요.'};
+ try {
+  const db=await createClient();const {data,error}=await db.rpc('history_admin_find_review_member',{p_email:value});
+  if(error)return {error:'회원 이메일 조회에 실패했습니다. 조회 RPC 설치·권한을 확인해주세요. 중복 계정은 임의로 선택하지 않습니다.'};
+  if(data===null)return {error:'정확히 일치하는 회원 이메일이 없습니다. 대소문자와 입력을 확인해주세요.'};
+  if(typeof data!=='object'||!uuid.test(data.id)||data.email!==value||typeof data.confirmed!=='boolean')return {error:'회원 조회 결과를 확인하지 못했습니다. 연결하거나 승인하지 않았습니다.'};
+  return {member:{id:data.id as string,email:data.email as string,confirmed:data.confirmed as boolean}};
+ }catch{return {error:'연결 오류로 회원을 조회하지 못했습니다.'};}
+}
