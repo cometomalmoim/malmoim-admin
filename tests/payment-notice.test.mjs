@@ -12,3 +12,15 @@ test('paid popup excludes payment requests and unapproved final confirmations',(
  for(const template of paymentReceivedExamples)assert.equal(paymentNoticeTemplate(template,'received'),true);
  assert.equal(paymentNoticeTemplate({category:'custom',title:'기타'},'accepted'),false);
 });
+
+
+test('saved notice survives listener remount and dismissal prevents stale replay',async()=>{
+ const {paymentNoticeStore:store}=await import('../src/lib/payment-notice-store.ts');
+ store.dismiss();let updates=0;
+ const stop=store.subscribe(()=>updates++);
+ const notice={row:{id:'synthetic'},kind:'paid',token:'test'};
+ store.offer(notice);assert.equal(updates,1);stop();
+ assert.equal(store.snapshot(),notice);assert.equal(store.serverSnapshot(),null);
+ const remounted=store.subscribe(()=>updates++);
+ assert.equal(store.snapshot().kind,'paid');store.dismiss();assert.equal(updates,2);assert.equal(store.snapshot(),null);remounted();
+});
