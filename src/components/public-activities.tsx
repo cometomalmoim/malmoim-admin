@@ -23,7 +23,8 @@ export function PublicActivities({ locale }: { locale: PublicLocale }) {
     <p className={styles.guidance}>{en ? "All times are in Korea Standard Time (KST). Check each detail page for current application availability." : "모든 일정은 한국시간 기준입니다. 현재 신청 가능 여부는 각 상세 페이지에서 확인해주세요."}</p>
     <ul className={styles.grid}>
       {activities.map(activity => <li key={activity.id}>
-        <Link href={activity.href} className={styles.card} aria-labelledby={`${activity.id}-title`}>
+        <Link href={activity.href} target="_blank" rel="noopener noreferrer" className={styles.card} aria-labelledby={`${activity.id}-title`} aria-describedby={`${activity.id}-new-tab`}>
+          <span id={`${activity.id}-new-tab`} className="sr-only">{en ? "Opens in a new tab" : "새 탭에서 열림"}</span>
           <div className={`${styles.visual} ${activity.category === "event" ? styles.eventVisual : ""}`}>
             {activity.image ? <Image src={activity.image} alt="" fill sizes="(max-width: 700px) 100vw, (max-width: 1280px) 50vw, 592px" /> : <span className={styles.placeholder} aria-hidden="true">MALMOIM<br />{activity.category === "study" ? "LEARN TOGETHER" : "MEET TOGETHER"}</span>}
             <span className={styles.visualCaption}>{activity.imageCaption[locale]}</span>
