@@ -1,6 +1,7 @@
 'use client';
 import {useEffect,useRef,useState,useTransition} from 'react';
 import {messagingStatus,initializeMessaging,toggleMessaging,prepareSms,approveSms,refreshSms,processPendingAlerts} from '@/app/actions/messaging';
+import {useSmsDelivery} from './use-sms-delivery';
 import {smsStates,type SmsPrepared} from '@/lib/sms-contract';
 type Request=Parameters<typeof prepareSms>[0];
 export function SmsSend({input,disabled=false}:{input:Request;disabled?:boolean}){
@@ -27,6 +28,7 @@ export function SmsSend({input,disabled=false}:{input:Request;disabled?:boolean}
 export function SmsSettings({showLogs=true}:{showLogs?:boolean}){
  const [status,setStatus]=useState<Awaited<ReturnType<typeof messagingStatus>>|null>(null),[message,setMessage]=useState(''),[busy,start]=useTransition();
  const reload=async()=>setStatus(await messagingStatus());
+ const deliveryErrors=useSmsDelivery(status?.jobs??[],reload);
  useEffect(()=>{let active=true;messagingStatus().then(value=>{if(active)setStatus(value);}).catch(()=>{if(active)setStatus({ready:false,configured:false});});return()=>{active=false;};},[]);
  const run=(fn:()=>Promise<{message:string}>)=>start(async()=>{try{setMessage((await fn()).message);await reload();}catch{setMessage('처리 결과를 확인하지 못했습니다. 새로고침해 기록을 확인해주세요.');}});
  return <section className="messaging-card sms-settings">
@@ -44,7 +46,7 @@ export function SmsSettings({showLogs=true}:{showLogs?:boolean}){
    <p>수동 문자는 국내 휴대폰 대상 장문(LMS), 신청 알림은 이벤트명·신청자명을 포함하며 길이에 따라 SMS 또는 LMS로 과금됩니다. 한 번에 최대 50명, 하루 전체 발송 시도 최대 200건입니다. 문자 실패로 신청 접수가 취소되지는 않습니다.</p>
    <SmsSend disabled={!status.ready||!status.configured} input={{eventId:'',mode:'test',recipients:[],numbers:'',body:'',name:'',due:'',contact:''}}/>
    {showLogs&&<><h3>최근 발송 기록</h3>
-   {status.jobs?.length?<ul className="sms-log">{status.jobs.map(job=><li key={job.id}><span>{new Intl.DateTimeFormat('ko-KR',{dateStyle:'short',timeStyle:'short',timeZone:'Asia/Seoul'}).format(new Date(job.created_at))} · {job.kind==='notification'?'신청 알림':job.kind==='test'?'본인 테스트':'안내 문자'} · {job.recipient}</span><strong>{smsStates[job.state]??job.state}</strong>{job.state==='accepted'&&<button type="button" disabled={busy} onClick={()=>run(()=>refreshSms(job.id))}>도달 결과 확인</button>}{job.state==='unknown'&&<small>중복 발송 방지를 위해 재발송하지 않습니다. SOLAPI 내역을 확인해주세요.</small>}</li>)}</ul>:<p>발송 기록이 없습니다.</p>}</>}
+   {status.jobs?.length?<ul className="sms-log">{status.jobs.map(job=><li key={job.id}><span>{new Intl.DateTimeFormat('ko-KR',{dateStyle:'short',timeStyle:'short',timeZone:'Asia/Seoul'}).format(new Date(job.created_at))} · {job.kind==='notification'?'신청 알림':job.kind==='test'?'본인 테스트':'안내 문자'} · {job.recipient}</span><strong>{smsStates[job.state]??job.state}</strong>{(['failed','unknown'].includes(job.state)||deliveryErrors.includes(job.id))&&<button type="button" disabled={busy} onClick={()=>run(()=>refreshSms(job.id))}>결과 다시 조회</button>}{job.state==='unknown'&&<small>중복 발송 방지를 위해 재발송하지 않습니다. SOLAPI 내역을 확인해주세요.</small>}</li>)}</ul>:<p>발송 기록이 없습니다.</p>}</>}
   </>}
   <p role="status">{message}</p>
  </section>;
