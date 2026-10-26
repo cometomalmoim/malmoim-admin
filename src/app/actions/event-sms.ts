@@ -1,4 +1,5 @@
 'use server';
+import {smsPurposes,smsTemplatePurpose} from '@/lib/sms-purpose';
 import {getAdminAccess} from '@/lib/auth';
 import {createClient} from '@/lib/supabase/server';
 import {smsConfig,smsPrice,maskPhone} from '@/lib/solapi';
@@ -78,8 +79,17 @@ export async function prepareApplicantSmsBatch(input:{event:string;template:stri
 }
 export async function cancelApplicantSms(batch:string){const db=await client();const r=await db.rpc('cancel_applicant_sms_preview',{p_batch:batch});checked(r.error);}
 export type EventSmsLog={id:string;kind:string;event_id:string|null;application_source:string|null;application_id:string|null;applicant_name:string|null;template_id:string|null;language:string|null;recipient:string|null;body:string;state:string;created_at:string;updated_at:string;provider_group:string|null;resend:boolean;failure_reason:string|null;message_type:string;batch_id:string|null};
-export async function eventSmsLogs(filters:{event?:string;source?:string;id?:string;name?:string;language?:string;state?:string;date?:string;until?:string;category?:string;page?:number;batches?:string[]}={}){
+export async function eventSmsLogs(filters:{event?:string;source?:string;id?:string;name?:string;language?:string;state?:string;date?:string;until?:string;category?:string;page?:number;batches?:string[];purpose?:string}={}){
  const db=await client();if(filters.batches&&(!Array.isArray(filters.batches)||!filters.batches.length||filters.batches.length>50||!filters.batches.every(smsUuid)))throw new Error('발송 기록 선택을 확인해주세요.');let q=db.from('sms_jobs').select('*,event_sms_templates(category,title,version),sms_batches(created_by)',{count:'exact'}).order('created_at',{ascending:false}).order('id');
+ if(filters.purpose){
+  if(!Object.hasOwn(smsPurposes,filters.purpose))throw new Error('문자 카테고리를 확인해주세요.');
+  const templates=await db.from('event_sms_templates').select('id,category,title');checked(templates.error);
+  const keys=(templates.data??[]).filter(template=>smsTemplatePurpose(template)===filters.purpose).map(template=>template.id).filter(smsUuid);
+  const parts=keys.length?['template_id.in.('+keys.join(',')+')']:[];
+  if(filters.purpose==='receipt')parts.push('kind.eq.notification');
+  if(filters.purpose==='direct')parts.push('and(template_id.is.null,kind.neq.notification)');
+  if(!parts.length)return {rows:[],count:0};q=q.or(parts.join(','));
+ }
  if(filters.batches)q=q.in('batch_id',filters.batches);
  if(filters.event)q=q.eq('event_id',filters.event);if(filters.source)q=q.eq('application_source',filters.source);if(filters.id)q=q.eq('application_id',filters.id);
  if(filters.name)q=q.ilike('applicant_name','%'+filters.name.replace(/[%_]/g,'').slice(0,100)+'%');if(filters.language)q=q.eq('language',filters.language);if(filters.state)q=q.eq('state',filters.state);
