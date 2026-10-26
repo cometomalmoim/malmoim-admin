@@ -14,10 +14,10 @@ const categories = [
   { id: "special", label: "특별 활동", empty: "특별 활동 사진을 준비하고 있습니다.", filter: "연도" },
   { id: "other", label: "기타", empty: "공개된 사진이 아직 없습니다.", filter: "연도" },
 ] as const;
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 9;
 
 function CategoryGallery({ category, photos }: { category: typeof categories[number]; photos: HistoryPhoto[] }) {
-  const [detail, setDetail] = useState<HistoryPhoto | null>(null);
+  const [detail, setDetail] = useState<{photo:HistoryPhoto;index:number} | null>(null);
   const [filter, setFilter] = useState("all");
   const [limit, setLimit] = useState(PAGE_SIZE);
   const items = photos.filter((photo) => photo.category === category.id);
@@ -25,23 +25,24 @@ function CategoryGallery({ category, photos }: { category: typeof categories[num
   const options = category.id === "regular" ? Array.from(new Set([...HISTORY_COHORTS,...items.filter(p=>p.category==="regular").map(p=>p.cohort)])).sort((a,b)=>b-a).map(String) : Array.from(new Set(["2026","2025",...items.map(p=>p.date.slice(0,4))])).sort().reverse();
   const emptyMessage = filter === "all" ? category.empty : category.id === "regular" ? `${filter}기 정규 세션 사진이 아직 없습니다.` : `${filter}년 공개된 사진이 아직 없습니다.`;
   const filtered = items.filter((photo) => filter === "all" || filterValue(photo) === filter);
-  const visible = filtered.slice(0, limit);
+  const tiles = filtered.flatMap(photo=>(photo.slidePhotos??[{src:photo.src,alt:photo.alt},...(photo.additionalPhotos??[])]).map((image,index)=>({photo,image,index})));
+  const visible = tiles.slice(0, limit);
 
   return <Localized>{<>
     <div className="history-filters" role="group" aria-label={`${category.label} ${category.filter} 필터`}>
       {["all", ...options].map((option) => <button key={option} type="button" aria-pressed={filter === option} onClick={() => { setFilter(option); setLimit(PAGE_SIZE); }}>{option === "all" ? "전체" : `${option}${category.id === "regular" ? "기" : ""}`}</button>)}
     </div>
     <div className="history-results" aria-live="polite" aria-atomic="true">
-      {filtered.length > 0 ? <p className="history-result-count">사진 {filtered.length}개 중 {visible.length}개 표시</p> : <div className="history-empty"><h3>{emptyMessage}</h3><p>공개할 활동 사진이 등록되면 이곳에서 만나보실 수 있습니다.</p></div>}
+      {filtered.length > 0 ? <p className="history-result-count">사진 {tiles.length}개 중 {visible.length}개 표시</p> : <div className="history-empty"><h3>{emptyMessage}</h3><p>공개할 활동 사진이 등록되면 이곳에서 만나보실 수 있습니다.</p></div>}
     </div>
     <div className="history-gallery">
-      {visible.map((photo) => <article className="history-photo-card" key={photo.id}>
-        <button type="button" className="history-photo-open" aria-label={`${photo.title} 사진 상세 보기`} onClick={() => setDetail(photo)}><Image unoptimized={photo.unoptimized} src={photo.src} alt={photo.alt} width={900} height={540} sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 800px) 46vw, 350px" /></button>
+      {visible.map(({photo,image,index}) => <article className="history-photo-card" key={`${photo.id}-${index}`}>
+        <button type="button" className="history-photo-open" aria-label={`${photo.title} 사진 상세 보기`} onClick={() => setDetail({photo,index})}><Image unoptimized={photo.unoptimized} src={image.src} alt={image.alt} width={540} height={540} sizes="(max-width: 540px) 28vw, (max-width: 1100px) 29vw, 360px" /></button>
         <h3 data-i18n-skip>{photo.title}</h3><time dateTime={photo.date}>{displayDate(photo.date)}</time><p data-i18n-skip>{photo.description}</p>
       </article>)}
     </div>
-    {detail && <HistoryPhotoDialog key={detail.id} photo={detail} close={() => setDetail(null)} />}
-    {filtered.length > limit && <button className="history-more" type="button" onClick={() => setLimit((current) => current + PAGE_SIZE)}>더 많은 사진 보기 <span aria-hidden="true">＋</span></button>}
+    {detail && <HistoryPhotoDialog key={detail.photo.id} photo={detail.photo} initialIndex={detail.index} close={() => setDetail(null)} />}
+    {tiles.length > limit && <button className="history-more" type="button" onClick={() => setLimit((current) => current + PAGE_SIZE)}>더 많은 사진 보기 <span aria-hidden="true">＋</span></button>}
   </>}</Localized>;
 }
 
