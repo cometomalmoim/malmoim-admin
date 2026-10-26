@@ -7,8 +7,11 @@ DO $$ BEGIN
  IF current_user<>'postgres' OR NOT EXISTS(SELECT FROM pg_roles WHERE rolname=current_user AND (rolsuper OR rolbypassrls)) THEN
  RAISE EXCEPTION 'STOP: aggregate reader must see complete existing RLS-protected records'; END IF;
 END $$;
-WITH evidence AS (
- SELECT t.person_id,t.source,t.confirmation,t.attendance,
+-- Populate ONLY independently verified cohort/event mappings. Do not infer cohort
+-- from year, title or preferred_class. Empty mapping keeps records unclassified.
+WITH cohort_map(cohort,event_id) AS (SELECT NULL::integer,NULL::uuid WHERE false),
+evidence AS (
+ SELECT t.event_id,t.person_id,t.source,t.confirmation,t.attendance,
  e.id IS NOT NULL AS event_exists,e.is_test,
  EXISTS(SELECT FROM public.event_application_admin_list a
  WHERE a.event_id=t.event_id AND a.source=t.source AND a.id=t.application_id) AS application_exists,
@@ -29,6 +32,13 @@ WITH evidence AS (
  SELECT person_id,bool_or(eligible) AS any_eligible FROM evaluated WHERE person_id IS NOT NULL GROUP BY person_id
 )
 SELECT jsonb_build_object(
+ 'cohort_counts',(SELECT jsonb_agg(to_jsonb(c)) FROM (
+ SELECT m.cohort,count(*) AS participation_records,count(*) FILTER(WHERE v.eligible) AS eligible_records,
+ count(DISTINCT v.person_id) AS recorded_people,count(DISTINCT v.person_id) FILTER(WHERE v.eligible) AS eligible_people,
+ count(*) FILTER(WHERE NOT v.eligible AND v.application_exists AND NOT v.active_application) AS excluded_archived_records,
+ count(*) FILTER(WHERE NOT v.eligible AND v.has_sessions AND v.attendance='attended' AND NOT v.past_session_attended) AS excluded_event_only_attendance
+ FROM evaluated v LEFT JOIN cohort_map m ON m.event_id=v.event_id GROUP BY m.cohort ORDER BY m.cohort NULLS LAST
+ ) c),
  'people_with_records',(SELECT count(*) FROM people),
  'people_with_any_eligible_evidence',(SELECT count(*) FROM people WHERE any_eligible),
  'people_without_eligible_evidence',(SELECT count(*) FROM people WHERE NOT any_eligible),
