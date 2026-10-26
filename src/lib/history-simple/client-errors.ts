@@ -1,4 +1,9 @@
 const messages:Record<string,[string,string]>={
+ PHOTO_SOURCE_TOO_LARGE:['원본 파일이 20MiB를 초과합니다. 더 작은 원본을 선택해주세요.','The original file exceeds the 20 MiB browser safety limit.'],
+ PHOTO_SOURCE_PIXEL_LIMIT:['원본이 6,000만 픽셀 또는 한 변 16384px 안전 제한을 초과합니다.','The source exceeds 60 megapixels or 16384 pixels on one side.'],
+ PHOTO_BROWSER_INVALID:['브라우저에서 원본 이미지를 해석하지 못했습니다. 손상 여부와 실제 형식을 확인해주세요. 원본은 전송하지 않았습니다.','The browser could not decode the source image. The original was not uploaded.'],
+ PHOTO_OPTIMIZE_FAILED:['브라우저 이미지 최적화에 실패했습니다. 원본을 대신 전송하지 않았습니다.','Browser image optimization failed. The original was not uploaded.'],
+ PHOTO_OPTIMIZE_TIMEOUT:['사진 최적화 시간이 초과되었습니다. 원본은 전송하지 않았습니다.','Image optimization timed out. The original was not uploaded.'],
  PHOTO_INPUT_TOO_LARGE:['원본 파일이 4MiB를 초과합니다. 파일 용량을 줄여주세요.','The original file exceeds 4 MiB. Reduce its file size.'],
  PHOTO_OUTPUT_TOO_LARGE:['변환된 사진이 4MiB를 초과합니다. 더 작은 사진을 선택해주세요.','The converted photo exceeds 4 MiB. Choose a smaller image.'],
  PHOTO_PIXEL_LIMIT:['사진이 2,400만 픽셀 제한을 초과합니다. 가로·세로 크기를 줄인 뒤 다시 선택해주세요.','The photo exceeds the 24-megapixel limit. Resize its pixel dimensions first.'],
