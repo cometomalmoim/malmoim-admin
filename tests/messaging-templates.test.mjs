@@ -2,8 +2,8 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {messagingTemplates,composeMessaging} from '../src/lib/messaging-templates.ts';
 
-test('8종 안내 템플릿은 고유하며 모든 변수가 치환된다',()=>{
- assert.equal(new Set(messagingTemplates.map(t=>t.id)).size,8);
+test('12종 안내 템플릿은 고유하며 모든 변수가 치환된다',()=>{
+ assert.equal(new Set(messagingTemplates.map(t=>t.id)).size,12);assert.equal(new Set(messagingTemplates.map(t=>t.body)).size,12);
  const values={'이름':'가상 A','이벤트명':'할로윈','일정':'한국 시간 일정','장소':'행사장','참가비안내':'운영진 안내','납부기한':'확인한 기한','문의처':'운영진','답변링크':'https://malmoim.com/inquiries/receipt#token='+ 'a'.repeat(64)};
  for(const template of messagingTemplates){const result=composeMessaging(template.body,values);assert.equal(result.empty,false);assert.deepEqual(result.missing,[]);assert.ok(result.text.includes('가상 A'));assert.ok(result.text.includes('할로윈'));assert.equal(result.text.includes('{'),false);}
 });
