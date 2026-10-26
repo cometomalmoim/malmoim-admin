@@ -7,9 +7,14 @@ import { HistoryPhotoDialog } from "./history-photo-dialog";
 import { useRef, useState, type KeyboardEvent } from "react";
 import { displayDate, type HistoryPhoto } from "./history-data";
 
+import {HISTORY_COHORTS} from '@/lib/history-simple/categories';
+
 const categories = [
   { id: "regular", label: "정규 세션", empty: "정규 세션 사진을 준비하고 있습니다.", filter: "기수" },
   { id: "special", label: "특별 활동", empty: "특별 활동 사진을 준비하고 있습니다.", filter: "연도" },
+  { id: "event", label: "행사·파티", empty: "공개된 사진이 아직 없습니다.", filter: "연도" },
+  { id: "study", label: "스터디", empty: "공개된 사진이 아직 없습니다.", filter: "연도" },
+  { id: "other", label: "기타", empty: "공개된 사진이 아직 없습니다.", filter: "연도" },
 ] as const;
 const PAGE_SIZE = 6;
 
@@ -19,8 +24,8 @@ function CategoryGallery({ category, photos }: { category: typeof categories[num
   const [limit, setLimit] = useState(PAGE_SIZE);
   const items = photos.filter((photo) => photo.category === category.id);
   const filterValue = (photo: HistoryPhoto) => photo.category === "regular" ? String(photo.cohort) : photo.date.slice(0, 4);
-  const options = category.id === "regular" ? ["9", "8", "7", "6", "5", "4", "3", "2", "1"] : ["2026", "2025"];
-  const emptyMessage = filter === "all" ? category.empty : category.id === "regular" ? `${filter}기 정규 세션 사진이 아직 없습니다.` : `${filter}년 특별 활동 사진이 아직 없습니다.`;
+  const options = category.id === "regular" ? Array.from(new Set([...HISTORY_COHORTS,...items.filter(p=>p.category==="regular").map(p=>p.cohort)])).sort((a,b)=>b-a).map(String) : Array.from(new Set(["2026","2025",...items.map(p=>p.date.slice(0,4))])).sort().reverse();
+  const emptyMessage = filter === "all" ? category.empty : category.id === "regular" ? `${filter}기 정규 세션 사진이 아직 없습니다.` : `${filter}년 공개된 사진이 아직 없습니다.`;
   const filtered = items.filter((photo) => filter === "all" || filterValue(photo) === filter);
   const visible = filtered.slice(0, limit);
 
