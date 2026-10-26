@@ -60,3 +60,9 @@ test('9기 사진 활용 동의 없이는 DB 호출·전환 없음, 명시 동�
  for(const value of [null,'','false','true']){const form=seasonForm();if(value===null)form.delete('photo_consent');else form.set('photo_consent',value);const result=await api.submitSeason9({},form);assert.equal(result.success,false);assert.match(result.message,/활동 사진/);assert.equal(result.conversion,undefined);}
  assert.equal(calls,0);const result=await api.submitSeason9({},seasonForm());assert.equal(result.success,true);assert.equal(payload.photo_consent,true);assert.equal(payload.notice_version,'season9-2026-10-22-photo-required-v2');assert.equal(payload.future_updates_consent,false);
 });
+
+test('inline season9 landing paths dispatch only after compact DB success',async()=>{
+ for(const path of ['/season9/ko','/season9/en']){const h=harness();h.ctx.path=path;assert.equal(await completeRegistration(h.w,registrationReceipt('season9',id,'ko'),h.ctx),true);}
+ const f=new FormData();for(const [key,value]of Object.entries({application_kind:'returning',name:'TEST',contact:'01000000001',contact_type:'phone',preferred_class:'saturday',privacy_consent:'on',fee_confirmed:'on',photo_consent:'on',submission_id:id,application_language:'en'}))f.set(key,value);
+ for(const response of [{data:{accepted:true}},{data:{accepted:false}},{error:{message:'duplicate_application'}}]){const api=load('src/app/actions/season9.ts',actionMocks(response));const result=await api.submitCompactSeason9({},f);assert.equal(!!result.conversion,response.data?.accepted===true);}
+});
