@@ -8,7 +8,7 @@ export type HistoryPhoto = {
   alt: string;
   slidePhotos?: { src: string; alt: string }[]; // Optional explicit order; legacy photos keep existing behavior.
   additionalPhotos?: { src: string; alt: string }[]; // 공개 동의가 확인된 동일 활동의 추가 사진
-} & ({ category: "regular"; cohort: number } | { category: "special" | "event" | "study" | "other" });
+} & ({ category: "regular"; cohort: number } | { category: "special" | "other" });
 
 // 확인된 실제 자료만 추가합니다. 시안의 예시 사진·기수·날짜·후기는 게시하지 않습니다.
 export const historyPhotos: HistoryPhoto[] = [];

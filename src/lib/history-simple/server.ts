@@ -1,4 +1,4 @@
-import type {PhotoCategory} from './categories';
+import type {PhotoCategory,StoredPhotoCategory} from './categories';
 import 'server-only';
 import {createClient as publicClient} from '@supabase/supabase-js';
 import {createClient} from '@/lib/supabase/server';
@@ -7,7 +7,7 @@ import {SIMPLE_BUCKET,SIMPLE_MAX_BYTES,validId} from './policy';
 export {createClient};
 export function anonymousClient(){const {url,key}=getSupabaseConfig();return publicClient(url,key,{auth:{persistSession:false,autoRefreshToken:false,detectSessionInUrl:false},global:{fetch:(input,init)=>fetch(input,{...init,cache:'no-store'})}});}
 export type PhotoItem={id:string;album_id:string;object_path:string;position:number;ready:boolean;approved:boolean};
-export type Album={id:string;title:string;date:string;description:string;category?:PhotoCategory;cohort?:number|null;published:boolean;deleting:boolean;history_photo_items:PhotoItem[]};
+export type Album={id:string;title:string;date:string;description:string;category?:StoredPhotoCategory;cohort?:number|null;published:boolean;deleting:boolean;history_photo_items:PhotoItem[]};
 export async function albums(admin=false){const api=admin?await createClient():anonymousClient();let q=api.from('history_photo_albums').select('id,title,date,description,category,cohort,published,deleting,history_photo_items(id,album_id,object_path,position,ready,approved)').order('date',{ascending:false}).order('id',{ascending:false}).limit(100);if(!admin)q=q.eq('published',true).eq('deleting',false);const r=await q;if(r.error)throw Error('PHOTO_UNAVAILABLE');return r.data as Album[];}
 export async function normalizePhoto(bytes:Uint8Array){try{if(!bytes.length||bytes.length>SIMPLE_MAX_BYTES)throw Error('INVALID_IMAGE');const {default:sharp}=await import('sharp');const image=sharp(bytes,{limitInputPixels:24000000,animated:false,failOn:'warning'}),meta=await image.metadata();if(!['jpeg','png','webp'].includes(meta.format??'')||(meta.pages??1)!==1)throw Error('INVALID_IMAGE');const result=await image.rotate().resize({width:2400,height:2400,fit:'inside',withoutEnlargement:true}).webp({quality:85}).toBuffer();if(!result.length||result.length>SIMPLE_MAX_BYTES)throw Error('INVALID_IMAGE');return result;}catch{throw Error('INVALID_IMAGE');}}
 export async function fileResponse(id:string,admin:boolean){if(!validId(id))return new Response(null,{status:404});const api=admin?await createClient():anonymousClient();

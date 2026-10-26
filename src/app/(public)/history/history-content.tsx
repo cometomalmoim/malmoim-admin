@@ -10,10 +10,8 @@ import { displayDate, type HistoryPhoto } from "./history-data";
 import {HISTORY_COHORTS} from '@/lib/history-simple/categories';
 
 const categories = [
-  { id: "regular", label: "정규 세션", empty: "정규 세션 사진을 준비하고 있습니다.", filter: "기수" },
+  { id: "regular", label: "정규 활동", empty: "정규 세션 사진을 준비하고 있습니다.", filter: "기수" },
   { id: "special", label: "특별 활동", empty: "특별 활동 사진을 준비하고 있습니다.", filter: "연도" },
-  { id: "event", label: "행사·파티", empty: "공개된 사진이 아직 없습니다.", filter: "연도" },
-  { id: "study", label: "스터디", empty: "공개된 사진이 아직 없습니다.", filter: "연도" },
   { id: "other", label: "기타", empty: "공개된 사진이 아직 없습니다.", filter: "연도" },
 ] as const;
 const PAGE_SIZE = 6;
