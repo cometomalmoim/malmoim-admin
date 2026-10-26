@@ -2,6 +2,7 @@
 import {Localized} from "@/components/public-translation";
 import type { Metadata } from "next";
 import Link from "next/link";
+import {connection} from "next/server";
 import { Suspense } from "react";
 import Image from "next/image";
 import heroPhoto01 from "../../../../public/history/history-hero-01.jpeg";
@@ -29,6 +30,7 @@ const heroPhotos = [
 ];
 
 async function ReviewBoard() {
+  await connection(); // Auth/Storage SDK clocks run only after a request, inside Suspense.
   const [reviews, access] = await Promise.all([readReviews(), getReviewAccess()]);
   return <Localized>{<HistoryReviews initial={reviews} userId={access.userId} permission={access.permission} />}</Localized>;
 }
