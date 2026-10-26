@@ -21,3 +21,8 @@ test('환불 기본 안내는 환불 완료·금액을 확정하지 않는다',(
  const body=messagingTemplates.find(t=>t.id==='refund').body;
  assert.ok(body.includes('요청이 접수'));assert.equal(body.includes('환불 완료'),false);assert.equal(body.includes('원'),false);
 });
+
+test('한국어 기본 문구는 운영진 인사로 시작하고 입금 확인 요청을 요구하지 않는다',()=>{
+ for(const template of messagingTemplates){assert.ok(template.body.startsWith('안녕하세요, 말모임 운영진입니다.'));assert.ok(!/운영진에게.*확인.*요청/.test(template.body));}
+ const payment=messagingTemplates.find(row=>row.id==='payment').body;assert.ok(payment.includes('아직 확인되지 않아'));assert.ok(payment.includes('이미 납부하셨다면'));assert.ok(!payment.includes('{납부기한}'));
+});
