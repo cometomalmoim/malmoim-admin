@@ -16,3 +16,6 @@ export const historyPhotos: HistoryPhoto[] = [];
 export function displayDate(date: string) {
   return date.replaceAll("-", ". ");
 }
+
+// Activity dates are calendar dates, independent of browser timezone.
+export function activityYear(date:string){return date.slice(0,4);}

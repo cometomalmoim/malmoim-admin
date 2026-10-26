@@ -11,7 +11,9 @@ export function createSimpleAdminApi(ports:{enabled():boolean;access():Promise<{
   const type=request.headers.get('content-type')??'';
   if(type.startsWith('multipart/form-data')){
    const bytes=await bounded(request,SIMPLE_MAX_BYTES+65536),form=await new Request(request.url,{method:'POST',headers:{'content-type':type},body:bytes}).formData();
-   const id=form.get('albumId'),file=form.get('file');if([...form.keys()].some(k=>!['albumId','file'].includes(k))||form.getAll('file').length!==1||form.getAll('albumId').length!==1||!validId(id)||!(file instanceof File)||!file.size||file.size>SIMPLE_MAX_BYTES||!['image/png','image/jpeg','image/webp'].includes(file.type))throw Error('INVALID_INPUT');
+   const id=form.get('albumId'),file=form.get('file');if([...form.keys()].some(k=>!['albumId','file'].includes(k))||form.getAll('file').length!==1||form.getAll('albumId').length!==1||!validId(id)||!(file instanceof File)||!file.size)throw Error('INVALID_INPUT');
+   if(!['image/png','image/jpeg','image/webp'].includes(file.type))throw Error('PHOTO_FORMAT_UNSUPPORTED');
+   if(file.size>SIMPLE_MAX_BYTES)throw Error('PHOTO_INPUT_TOO_LARGE');
    if((await ports.access()).status!=='admin')return reply(403,{code:'ADMIN_REQUIRED'});
    return reply(200,{value:await ports.ops.upload(id,new Uint8Array(await file.arrayBuffer()))});
   }
@@ -23,5 +25,5 @@ export function createSimpleAdminApi(ports:{enabled():boolean;access():Promise<{
   else if(op==='publish'){if(Object.keys(body).join()!=='published'||typeof body.published!=='boolean')throw Error('INVALID_INPUT');await ports.ops.publish(id,body.published);}
   else if(op==='delete_album'||op==='delete_photo'){if(Object.keys(body).length)throw Error('INVALID_INPUT');await (op==='delete_album'?ports.ops.deleteAlbum:ports.ops.deletePhoto)(id);}
   else throw Error('INVALID_INPUT');return reply(200,{ok:true});
- }catch(error){const known=error instanceof Error?error.message:'';return reply(known==='TOO_LARGE'?413:['INVALID_INPUT','INVALID_IMAGE'].includes(known)?400:503,{code:known==='TOO_LARGE'?'BODY_TOO_LARGE':known==='INVALID_INPUT'?'INVALID_INPUT':['INVALID_IMAGE','PHOTO_LIMIT','PHOTO_NOT_READY','PHOTO_PERMISSION_DENIED','PHOTO_SCHEMA_MISMATCH','PHOTO_STORAGE_FAILED','PHOTO_UNAVAILABLE','PHOTO_UNCERTAIN'].includes(known)?known:'PHOTO_RESULT_UNCONFIRMED'});}
+ }catch(error){const known=error instanceof Error?error.message:'';return reply(['TOO_LARGE','PHOTO_INPUT_TOO_LARGE','PHOTO_OUTPUT_TOO_LARGE'].includes(known)?413:['INVALID_INPUT','INVALID_IMAGE','PHOTO_PIXEL_LIMIT','PHOTO_FORMAT_UNSUPPORTED','PHOTO_ANIMATION_UNSUPPORTED'].includes(known)?400:503,{code:known==='TOO_LARGE'?'BODY_TOO_LARGE':known==='INVALID_INPUT'?'INVALID_INPUT':['INVALID_IMAGE','PHOTO_INPUT_TOO_LARGE','PHOTO_OUTPUT_TOO_LARGE','PHOTO_PIXEL_LIMIT','PHOTO_FORMAT_UNSUPPORTED','PHOTO_ANIMATION_UNSUPPORTED','PHOTO_DECODER_UNAVAILABLE','PHOTO_CONVERSION_FAILED','PHOTO_LIMIT','PHOTO_NOT_READY','PHOTO_PERMISSION_DENIED','PHOTO_SCHEMA_MISMATCH','PHOTO_STORAGE_FAILED','PHOTO_UNAVAILABLE','PHOTO_UNCERTAIN'].includes(known)?known:'PHOTO_RESULT_UNCONFIRMED'});}
 };}
