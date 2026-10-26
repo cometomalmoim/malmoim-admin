@@ -78,3 +78,13 @@
 .public-site:has(> .history-page) > .public-footer { background:#FFFFFF; box-shadow:inset 0 1px 0 #e1e8e4; }
 
 .history-page .history-tabs { flex-wrap: wrap; width: 100%; row-gap: 4px; }
+
+/* Photo archive only: three square columns at every viewport. */
+.history-page .history-gallery { grid-template-columns:repeat(3,minmax(0,1fr)); gap:20px 12px; }
+.history-page .history-photo-card:first-child { grid-column:auto; }
+.history-page .history-photo-card .history-photo-open { aspect-ratio:1/1; border-radius:6px; }
+.history-page .history-photo-card .history-photo-open img { display:block; width:100%; height:100%; aspect-ratio:1/1; object-fit:cover; border-radius:6px; }
+.history-page .history-photo-card h3 { margin-top:8px; font-size:clamp(12px,1.4vw,17px); overflow-wrap:anywhere; }
+.history-page .history-photo-card time { font-size:11px; margin-block:4px; }
+.history-page .history-photo-card > p { font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
+@media(max-width:540px){.history-page .history-gallery{gap:16px 6px}.history-page .history-photo-card time{font-size:10px}}

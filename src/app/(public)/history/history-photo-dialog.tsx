@@ -9,8 +9,8 @@ function DetailImage({ src, alt }: { src: string; alt: string }) {
   const [failed, setFailed] = useState(false);
   return <Localized>{failed ? <p className="history-photo-error" role="status">사진을 불러오지 못했어요. 창을 닫고 다시 열어주세요.</p> : <Image unoptimized src={src} alt={alt} width={1200} height={800} onError={() => setFailed(true)} />}</Localized>;
 }
-export function HistoryPhotoDialog({ photo, close }: { photo: HistoryPhoto; close: () => void }) {
-  const [index, setIndex] = useState(0);
+export function HistoryPhotoDialog({ photo, close, initialIndex=0 }: { photo: HistoryPhoto; close: () => void; initialIndex?:number }) {
+  const [index, setIndex] = useState(initialIndex);
   const dialog = useRef<HTMLDialogElement>(null);
   const gesture = useRef<{ id: number; x: number; y: number } | null>(null);
   const titleId = useId();
@@ -19,8 +19,11 @@ export function HistoryPhotoDialog({ photo, close }: { photo: HistoryPhoto; clos
   useEffect(() => {
     const node = dialog.current;
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    const scrollY=window.scrollY;
+    const overflow=document.body.style.overflow;
+    document.body.style.overflow="hidden";
     node?.showModal();
-    return () => { node?.close(); if (previous?.isConnected) previous.focus(); };
+    return () => { node?.close(); document.body.style.overflow=overflow; window.scrollTo({top:scrollY,behavior:"instant"}); if (previous?.isConnected) previous.focus({preventScroll:true}); };
   }, []);
   const move = (step: number) => setIndex((current) => (current + step + photos.length) % photos.length);
   return <Localized>{<dialog ref={dialog} className="history-photo-dialog" tabIndex={-1} aria-labelledby={titleId} aria-describedby={descriptionId} onCancel={(e) => { e.preventDefault(); close(); }} onKeyDown={(e) => {
@@ -33,7 +36,7 @@ export function HistoryPhotoDialog({ photo, close }: { photo: HistoryPhoto; clos
     if (e.shiftKey && (document.activeElement === first || document.activeElement === dialog.current)) { e.preventDefault(); last.focus(); }
     else if (!e.shiftKey && (document.activeElement === last || document.activeElement === dialog.current)) { e.preventDefault(); first.focus(); }
   }}>
-    <div className="history-photo-dialog-heading"><div><p>{photo.category === "regular" ? `정규 세션 · ${photo.cohort}기` : "특별 활동"}</p><h2 id={titleId} data-i18n-skip>{photo.title}</h2></div><button type="button" onClick={close}>닫기</button></div>
+    <div className="history-photo-dialog-heading"><div><p>{photo.category === "regular" ? `정규 세션 · ${photo.cohort}기` : photo.category === "other" ? "기타" : "특별 활동"}</p><h2 id={titleId} data-i18n-skip>{photo.title}</h2></div><button type="button" onClick={close}>닫기</button></div>
     <div className="history-photo-stage" onTouchStart={(event) => {
       const touch = event.touches.length === 1 ? event.touches[0] : null;
       gesture.current = touch ? { id: touch.identifier, x: touch.clientX, y: touch.clientY } : null;
