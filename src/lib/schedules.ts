@@ -2,6 +2,7 @@ import 'server-only';
 import { createClient } from './supabase/server';
 import { getAdminAccess } from './auth';
 import type { ScheduleData } from './schedule-types';
+import { visibleEventSchedules } from './schedule-visibility';
 export async function getSchedules():Promise<ScheduleData|null> {
   if((await getAdminAccess()).status!=='admin')return null;
   try {
@@ -16,8 +17,8 @@ export async function getSchedules():Promise<ScheduleData|null> {
       all((from,to)=>client.from('schedules').select('*').is('hidden_at',null).order('id').range(from,to)),
       all((from,to)=>client.from('schedule_tags').select('id,name,color,system_key,version').order('sort_order').order('name').order('id').range(from,to)),
       all((from,to)=>client.from('admin_profiles').select('user_id,display_name').order('display_name').order('user_id').range(from,to)),
-      all((from,to)=>client.from('recruitment_events').select('id,slug').eq('is_test',false).order('id').range(from,to)),
+      all((from,to)=>client.from('recruitment_events').select('id,slug').eq('is_test',false).eq('is_archived',false).order('id').range(from,to)),
     ]);
-    return {schedules,tags,people,events} as ScheduleData;
+    return {schedules:visibleEventSchedules(schedules as ScheduleData['schedules'],events),tags,people,events} as ScheduleData;
   }catch{return null;}
 }
