@@ -38,3 +38,20 @@ test('real in-memory PostgreSQL accepts exact column grants and rejects excess/i
   }
  } finally {await db.close();}
 });
+test('executable candidate adds reviewed-policy snapshot and final assertions without changing security DDL',()=>{
+ const executable=readFileSync('supabase/review-release/01_production_install.sql','utf8');
+ assert(!executable.includes('DRAFT_ONLY:'));
+ assert(executable.includes('qkhlvdctdcpfyvohhikl'));
+ assert(executable.includes('existing Storage policy snapshot changed'));
+ assert(executable.includes('review policy scope/roles/commands mismatch'));
+ assert(executable.includes('review bucket configuration mismatch'));
+ const policies=s=>s.match(/CREATE POLICY[\s\S]*?;/gi);
+ assert.deepEqual(policies(executable),policies(sql));
+ const snapshot=JSON.parse(executable.split('$snapshot$')[1]);
+ assert.equal(snapshot.length,21);
+ assert.equal(snapshot.filter(p=>p.permissive==='RESTRICTIVE').length,8);
+ assert(snapshot.every(p=>p.table==='storage.objects'&&!p.name.startsWith('hrv2_')));
+ assert(executable.indexOf('existing Storage policy snapshot changed')<executable.indexOf('CREATE TABLE'));
+ assert.doesNotMatch(executable,/(?:ALTER TABLE|UPDATE|INSERT INTO|DELETE FROM)\s+public\.(?:event_|recruitment_|admin_users|history_photo_)/i);
+ assert(executable.trim().endsWith('COMMIT;'));
+});
