@@ -92,7 +92,7 @@
 .history-page .history-photo-edit { padding:4px 10px; border:1px solid #dce5e5; border-radius:6px; background:#fff; color:#07838d; font:inherit; font-size:12px; cursor:pointer; }
 
 /* Only photo archive width and participant-review cards; hero/timeline unchanged. */
-.history-page .history-gallery { width:100%; max-width:780px; margin-inline:auto; }
+.history-page .history-gallery { width:100%; max-width:none; margin-inline:auto; }
 .history-page .history-review-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; align-items:stretch; }
 .history-page .history-review-card .review-card-open { display:grid; grid-template-columns:minmax(0,1fr) auto; align-content:start; gap:10px 12px; padding:16px; }
 .history-page .review-card-body { display:grid; grid-template-rows:auto auto auto; gap:6px; min-width:0; }
