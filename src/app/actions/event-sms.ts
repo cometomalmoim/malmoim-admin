@@ -31,6 +31,7 @@ async function prepareApplicantSmsCore(input:{batch:string;event:string;source:s
  const template=data.templates.find(t=>t.id===input.template&&t.active&&t.language===input.language);if(!template)throw new Error('활성 템플릿을 다시 선택해주세요.');
  if(template.category==='confirmation'&&(a.data!.status!=='accepted'||a.data!.payment_status!=='paid'))throw new Error('입금 완료와 참가 승인이 모두 필요합니다.');
  if(input.purpose!==undefined&&!['payment_received','refund_completed'].includes(input.purpose))throw new Error('문자 목적 오류');
+ if(paymentNoticeTemplate(template,'received')&&input.purpose!=='payment_received')throw new Error('입금 확인 문자는 입금 완료 상태 확인이 필요합니다.');
  if(input.purpose==='payment_received'&&(a.data!.payment_status!=='paid'||!paymentNoticeTemplate(template,a.data!.status)))throw new Error('입금 완료 상태와 안내 템플릿을 다시 확인해주세요.');
  if(refundNoticeTemplate(template)&&input.purpose!=='refund_completed')throw new Error('환불 완료 문자는 실제 환불 완료 확인이 필요합니다.');
  if(input.purpose==='refund_completed'){
@@ -77,15 +78,19 @@ export async function prepareApplicantSmsBatch(input:{event:string;template:stri
 }
 export async function cancelApplicantSms(batch:string){const db=await client();const r=await db.rpc('cancel_applicant_sms_preview',{p_batch:batch});checked(r.error);}
 export type EventSmsLog={id:string;kind:string;event_id:string|null;application_source:string|null;application_id:string|null;applicant_name:string|null;template_id:string|null;language:string|null;recipient:string|null;body:string;state:string;created_at:string;updated_at:string;provider_group:string|null;resend:boolean;failure_reason:string|null;message_type:string;batch_id:string|null};
-export async function eventSmsLogs(filters:{event?:string;source?:string;id?:string;name?:string;language?:string;state?:string;date?:string;until?:string;category?:string;page?:number}={}){
- const db=await client();let q=db.from('sms_jobs').select('*,event_sms_templates(category,title,version),sms_batches(created_by)',{count:'exact'}).order('created_at',{ascending:false}).order('id');
+export async function eventSmsLogs(filters:{event?:string;source?:string;id?:string;name?:string;language?:string;state?:string;date?:string;until?:string;category?:string;page?:number;batches?:string[]}={}){
+ const db=await client();if(filters.batches&&(!Array.isArray(filters.batches)||!filters.batches.length||filters.batches.length>50||!filters.batches.every(smsUuid)))throw new Error('발송 기록 선택을 확인해주세요.');let q=db.from('sms_jobs').select('*,event_sms_templates(category,title,version),sms_batches(created_by)',{count:'exact'}).order('created_at',{ascending:false}).order('id');
+ if(filters.batches)q=q.in('batch_id',filters.batches);
  if(filters.event)q=q.eq('event_id',filters.event);if(filters.source)q=q.eq('application_source',filters.source);if(filters.id)q=q.eq('application_id',filters.id);
  if(filters.name)q=q.ilike('applicant_name','%'+filters.name.replace(/[%_]/g,'').slice(0,100)+'%');if(filters.language)q=q.eq('language',filters.language);if(filters.state)q=q.eq('state',filters.state);
  if(filters.date&&/^\d{4}-\d{2}-\d{2}$/.test(filters.date))q=q.gte('created_at',filters.date+'T00:00:00+09:00');
  if(filters.until&&/^\d{4}-\d{2}-\d{2}$/.test(filters.until))q=q.lt('created_at',new Date(new Date(filters.until+'T00:00:00+09:00').getTime()+86400000).toISOString());
  if(filters.category){const t=await db.from('event_sms_templates').select('id').eq('category',filters.category);checked(t.error);if(!t.data?.length)return {rows:[],count:0};q=q.in('template_id',t.data.map(v=>v.id));}
  const page=Math.max(0,Math.min(10000,Math.floor(filters.page??0)));const r=await q.range(page*30,page*30+29);checked(r.error);
- return {rows:r.data as (EventSmsLog&{event_sms_templates:{category:string;title:string;version:number}|null;sms_batches:{created_by:string}|null})[],count:r.count??0};
+ const actor=await db.auth.getUser();
+ const delivered=r.data?.length?await db.from('sms_job_history').select('job_id,happened_at').in('job_id',r.data.map(row=>row.id)).in('state',['accepted','delivered']).order('happened_at'):null;
+ if(delivered)checked(delivered.error);
+ return {rows:((r.data??[]) as unknown as (EventSmsLog&{event_sms_templates:{category:string;title:string;version:number}|null;sms_batches:{created_by:string}|null})[]).map(row=>({...row,sent_at:delivered?.data?.find(item=>item.job_id===row.id)?.happened_at??null,can_cancel:row.state==='draft'&&!!actor.data.user&&batchOwner(row.sms_batches)===actor.data.user.id})),count:r.count??0};
 }
 export async function eventSmsHistory(id:string){const db=await client();const r=await db.from('sms_job_history').select('*').eq('job_id',id).order('id');checked(r.error);return r.data as {id:number;state:string;happened_at:string;actor:string|null;provider_group:string|null;failure_reason:string|null}[];}
 
@@ -118,4 +123,10 @@ export async function resolveApplicantSmsDraft(input:{event:string;source:string
  if(jobs.data?.some(j=>batchOwner(j.sms_batches)!==user.data.user!.id))throw new Error('다른 운영진의 초안은 취소하지 않습니다. 담당자에게 확인해주세요.');
  for(const job of jobs.data??[])if(job.batch_id){const result=await db.rpc('cancel_applicant_sms_preview',{p_batch:job.batch_id});checked(result.error);}
  return {message:'내 미발송 초안을 취소했습니다. 최신 상태로 다시 준비합니다.'};
+}
+
+export async function smsBatchOutcomes(batches:string[]){
+ const db=await client();if(!Array.isArray(batches)||!batches.length||batches.length>50||!batches.every(smsUuid))throw new Error('발송 결과 선택을 확인해주세요.');
+ const result=await db.from('sms_jobs').select('id,batch_id,applicant_name,recipient,body,state,failure_reason').in('batch_id',batches).limit(2500);checked(result.error);
+ return (result.data??[]).map(row=>({id:row.id,batch_id:row.batch_id!,name:row.applicant_name??'수신자',to:row.recipient?maskPhone(row.recipient):'번호 없음',body:row.body,state:row.state,reason:row.failure_reason}));
 }
