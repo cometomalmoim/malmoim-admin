@@ -3,7 +3,9 @@ export function englishPublicText(value:string):string {
  const key=value.trim().replace(/\s+/g,' '), exact=aboutHistoryEnglish[key];
  if(exact)return value.replace(value.trim(),exact);
  const rules:[RegExp,(...parts:string[])=>string][]=[
+  [/^게시물 (\d+)개 중 (\d+)개 표시$/,(total,shown)=>`Showing ${shown} of ${total} posts`],
   [/^\|\s*(\d+)분$/,n=>`| ${n} min`],
+  [/^(\d+)년 공개된 사진이 아직 없습니다[.]$/,n=>`No published photos from ${n} yet.`],
   [/^(\d+)기$/,n=>`Season ${n}`],
   [/^(\d+)기 정규 세션 사진이 아직 없습니다[.]$/,n=>`No regular session photos for Season ${n} yet.`],
   [/^(\d+)년 특별 활동 사진이 아직 없습니다[.]$/,n=>`No special event photos from ${n} yet.`],

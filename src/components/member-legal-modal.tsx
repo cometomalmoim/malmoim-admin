@@ -14,7 +14,7 @@ export function MemberLegalModal({ open, onClose, document, locale, kind }: {
   const bodyRef = useRef<HTMLDivElement>(null);
   const id = useId();
   const title = kind === "privacy" ? (locale === "en" ? "Privacy Policy" : "개인정보 처리방침")
-    : (locale === "en" ? "Terms of Use" : "이용약관");
+    : (locale === "en" ? "Terms of Service" : "서비스 이용약관");
 
   useEffect(() => {
     const dialog = dialogRef.current;

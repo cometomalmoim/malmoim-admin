@@ -5,22 +5,25 @@ import {Localized} from "@/components/public-translation";
 import Image from "next/image";
 import { HistoryPhotoDialog } from "./history-photo-dialog";
 import { useRef, useState, type KeyboardEvent } from "react";
-import { displayDate, type HistoryPhoto } from "./history-data";
+import { activityYear, displayDate, type HistoryPhoto } from "./history-data";
+
+import {HISTORY_COHORTS} from '@/lib/history-simple/categories';
 
 const categories = [
-  { id: "regular", label: "정규 세션", empty: "정규 세션 사진을 준비하고 있습니다.", filter: "기수" },
+  { id: "regular", label: "정규 활동", empty: "정규 세션 사진을 준비하고 있습니다.", filter: "기수" },
   { id: "special", label: "특별 활동", empty: "특별 활동 사진을 준비하고 있습니다.", filter: "연도" },
+  { id: "other", label: "기타", empty: "공개된 사진이 아직 없습니다.", filter: "연도" },
 ] as const;
-const PAGE_SIZE = 6;
+const PAGE_SIZE = 12;
 
-function CategoryGallery({ category, photos }: { category: typeof categories[number]; photos: HistoryPhoto[] }) {
+function CategoryGallery({ category, photos,onEditAlbum,managedIds }: { category: typeof categories[number]; photos: HistoryPhoto[];onEditAlbum?:(id:string)=>void;managedIds:string[] }) {
   const [detail, setDetail] = useState<HistoryPhoto | null>(null);
   const [filter, setFilter] = useState("all");
   const [limit, setLimit] = useState(PAGE_SIZE);
   const items = photos.filter((photo) => photo.category === category.id);
-  const filterValue = (photo: HistoryPhoto) => photo.category === "regular" ? String(photo.cohort) : photo.date.slice(0, 4);
-  const options = category.id === "regular" ? ["9", "8", "7", "6", "5", "4", "3", "2", "1"] : ["2026", "2025"];
-  const emptyMessage = filter === "all" ? category.empty : category.id === "regular" ? `${filter}기 정규 세션 사진이 아직 없습니다.` : `${filter}년 특별 활동 사진이 아직 없습니다.`;
+  const filterValue = (photo: HistoryPhoto) => photo.category === "regular" ? String(photo.cohort) : activityYear(photo.date);
+  const options = category.id === "regular" ? Array.from(new Set([...HISTORY_COHORTS,...items.filter(p=>p.category==="regular").map(p=>p.cohort)])).sort((a,b)=>b-a).map(String) : Array.from(new Set(["2026","2025",...items.map(p=>activityYear(p.date))])).sort().reverse();
+  const emptyMessage = filter === "all" ? category.empty : category.id === "regular" ? `${filter}기 정규 세션 사진이 아직 없습니다.` : `${filter}년 공개된 사진이 아직 없습니다.`;
   const filtered = items.filter((photo) => filter === "all" || filterValue(photo) === filter);
   const visible = filtered.slice(0, limit);
 
@@ -29,12 +32,12 @@ function CategoryGallery({ category, photos }: { category: typeof categories[num
       {["all", ...options].map((option) => <button key={option} type="button" aria-pressed={filter === option} onClick={() => { setFilter(option); setLimit(PAGE_SIZE); }}>{option === "all" ? "전체" : `${option}${category.id === "regular" ? "기" : ""}`}</button>)}
     </div>
     <div className="history-results" aria-live="polite" aria-atomic="true">
-      {filtered.length > 0 ? <p className="history-result-count">사진 {filtered.length}개 중 {visible.length}개 표시</p> : <div className="history-empty"><h3>{emptyMessage}</h3><p>공개할 활동 사진이 등록되면 이곳에서 만나보실 수 있습니다.</p></div>}
+      {filtered.length > 0 ? <p className="history-result-count">게시물 {filtered.length}개 중 {visible.length}개 표시</p> : <div className="history-empty"><h3>{emptyMessage}</h3><p>공개할 활동 사진이 등록되면 이곳에서 만나보실 수 있습니다.</p></div>}
     </div>
     <div className="history-gallery">
       {visible.map((photo) => <article className="history-photo-card" key={photo.id}>
-        <button type="button" className="history-photo-open" aria-label={`${photo.title} 사진 상세 보기`} onClick={() => setDetail(photo)}><Image unoptimized={photo.unoptimized} src={photo.src} alt={photo.alt} width={900} height={540} sizes="(max-width: 540px) calc(100vw - 40px), (max-width: 800px) 46vw, 350px" /></button>
-        <h3 data-i18n-skip>{photo.title}</h3><time dateTime={photo.date}>{displayDate(photo.date)}</time><p data-i18n-skip>{photo.description}</p>
+        <button type="button" className="history-photo-open" aria-label={`${photo.title} 사진 상세 보기`} onClick={() => setDetail(photo)}><Image unoptimized={photo.unoptimized} src={photo.slidePhotos?.[0]?.src??photo.src} alt={photo.slidePhotos?.[0]?.alt??photo.alt} width={540} height={540} sizes="(max-width: 540px) 28vw, (max-width: 1100px) 29vw, 360px" /></button>
+        <h3 data-i18n-skip>{photo.title}</h3>{onEditAlbum&&managedIds.includes(photo.id)&&<button type="button" className="history-photo-edit" onClick={()=>onEditAlbum(photo.id)}>수정</button>}<time dateTime={photo.date}>{displayDate(photo.date)}</time><p data-i18n-skip>{photo.description}</p>
       </article>)}
     </div>
     {detail && <HistoryPhotoDialog key={detail.id} photo={detail} close={() => setDetail(null)} />}
@@ -42,7 +45,7 @@ function CategoryGallery({ category, photos }: { category: typeof categories[num
   </>}</Localized>;
 }
 
-export function HistoryGallery({ photos }: { photos: HistoryPhoto[] }) {
+export function HistoryGallery({ photos,onEditAlbum,managedIds=[] }: { photos: HistoryPhoto[];onEditAlbum?:(id:string)=>void;managedIds?:string[] }) {
   const [selected, setSelected] = useState(0);
   const tabs = useRef<(HTMLButtonElement | null)[]>([]);
   function handleKey(event: KeyboardEvent<HTMLButtonElement>, index: number) {
@@ -61,6 +64,6 @@ export function HistoryGallery({ photos }: { photos: HistoryPhoto[] }) {
     <div className="history-tabs" role="tablist" aria-label="사진 분류">
       {categories.map((category, index) => <button key={category.id} type="button" role="tab" id={`history-tab-${category.id}`} aria-controls={`history-panel-${category.id}`} aria-selected={selected === index} tabIndex={selected === index ? 0 : -1} ref={(element) => { tabs.current[index] = element; }} onClick={() => setSelected(index)} onKeyDown={(event) => handleKey(event, index)}>{category.label}</button>)}
     </div>
-    {categories.map((category, index) => <div key={category.id} id={`history-panel-${category.id}`} role="tabpanel" aria-labelledby={`history-tab-${category.id}`} hidden={selected !== index} tabIndex={0} className="history-tab-panel"><CategoryGallery key={selected} category={category} photos={photos} /></div>)}
+    {categories.map((category, index) => <div key={category.id} id={`history-panel-${category.id}`} role="tabpanel" aria-labelledby={`history-tab-${category.id}`} hidden={selected !== index} tabIndex={0} className="history-tab-panel"><CategoryGallery key={selected} category={category} photos={photos} onEditAlbum={onEditAlbum} managedIds={managedIds} /></div>)}
   </section>}</Localized>;
 }

@@ -1,6 +1,17 @@
 import type { PublicLocale } from "./public-content";
 // UI text only. Never translate persisted country/language/gender/proficiency codes.
 const english: Record<string, string> = {
+  "인증 서비스에서 이 이메일 주소를 사용할 수 없습니다. 실제로 메일을 받을 수 있는 다른 이메일 주소를 입력해주세요.": "This email address cannot be used with the authentication service. Enter another email address where you can receive mail.",
+  "인증 메일 발송 설정으로 인해 가입을 진행하지 못했습니다. 운영팀에 문의해주세요.": "Registration could not proceed because of the verification email configuration. Please contact the operations team.",
+  "회원가입 설정과 저장 준비를 확인하지 못했습니다. 계정과 개인정보는 저장되지 않았습니다.": "Registration configuration or storage is not ready. No account or personal information was saved.",
+  "이메일 인증을 확인해주세요.": "Check your email verification.",
+  "계정과 회원 정보가 저장되었습니다. 받은 이메일에서 인증을 완료한 후 로그인해주세요. 회원 정보를 다시 입력할 필요는 없습니다.": "Your account and membership information have been saved. Verify your email, then log in. You do not need to enter your membership information again.",
+  "이미 가입된 이메일입니다. 로그인해주세요.": "This email is already registered. Please log in.",
+  "회원가입이 완료되었습니다.": "Registration complete.",
+  "별표(*)가 있는 필수 항목만 수집합니다.": "Only the required fields marked with an asterisk (*) are collected.",
+  "회원 정보 저장": "Save membership information",
+  "현재 가입에서는 선택 개인정보를 수집하지 않습니다. 페이지를 새로 열어주세요.": "Optional personal information is not collected during registration. Reopen the page.",
+  "회원가입 저장 서비스가 준비 중입니다. 잠시 후 다시 방문해주세요.": "The registration storage service is being prepared. Please check back later.",
   "별표(*)가 있는 항목을 입력해 주세요. 추가 외국어는 선택입니다.": "Complete the fields marked with an asterisk (*). Additional languages are optional.",
   "닉네임": "Nickname",
   "게시판과 커뮤니티 활동에서 표시되는 이름입니다.": "This name will be displayed in community posts and comments.",

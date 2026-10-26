@@ -3,8 +3,8 @@ import {startTransition,useActionState,useEffect,useRef} from 'react';
 import {saveApplicant} from '@/app/actions/applicants';
 import {applicationStatuses,paymentStatuses} from '@/lib/applicant-validation';
 import type {ApplicationRow} from '@/lib/recruitment';
-export function ApplicantEditor({slug,row,returnHref}:{slug:string;row?:ApplicationRow;returnHref?:string}){
- const [state,action,pending]=useActionState(saveApplicant.bind(null,slug),{code:''});
+export function ApplicantEditor({slug,row,returnHref,onSaved}:{slug:string;row?:ApplicationRow;returnHref?:string;onSaved?:(payment:string)=>void}){
+ const [state,action,pending]=useActionState(async(previous:{code:string},form:FormData)=>{const result=await saveApplicant(slug,previous,form);if(result.code==='saved')onSaved?.(String(form.get('payment_status')??''));return result;},{code:''});
  const duplicatePopup=useRef<HTMLDialogElement>(null);
  useEffect(()=>{if(state.code==='duplicate')duplicatePopup.current?.showModal();},[state]);
  const messages:Record<string,string>={saved:'저장했습니다.',invalid:'필수 항목과 입력 형식을 확인해주세요.',duplicate:'이미 등록하였습니다.',conflict:'다른 운영진이 먼저 수정했습니다. 새로고침하여 최신 내용을 확인한 뒤 다시 수정해주세요.',missing:'이벤트 또는 신청자를 찾을 수 없습니다.',forbidden:'관리자 권한을 확인해주세요.',error:'저장하지 못했습니다. 입력을 유지한 채 다시 시도해주세요.'};

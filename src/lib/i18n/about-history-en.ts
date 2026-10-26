@@ -1,5 +1,12 @@
 // Korean source text is the stable lookup key. Keep additions paired with English.
 export const aboutHistoryEnglish:Record<string,string> = {
+  "더 보기": "Read more",
+  "게시물": "Posts",
+  "정규 활동": "Regular activities",
+  "행사·파티": "Events & parties",
+  "스터디": "Study groups",
+  "공개된 사진이 아직 없습니다.": "No published photos yet.",
+
   "확인": "OK",
   "말모임 참가 확인 후 후기를 작성할 수 있어요.": "You can share a review once your MALMOIM participation is confirmed.",
   "후기 작성 권한을 확인하지 못했어요. 잠시 후 다시 확인해주세요.": "We couldn’t check your review permissions. Please try again shortly.",

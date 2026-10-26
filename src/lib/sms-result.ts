@@ -1,0 +1,2 @@
+export type SmsOutcome={id:string;batch_id:string;name:string;to:string;body:string;state:string;reason:string|null};
+export function smsResultSummary(rows:SmsOutcome[]){return {completed:rows.filter(row=>['accepted','delivered'].includes(row.state)).length,waiting:rows.filter(row=>['draft','queued','dispatching','unknown','unverified'].includes(row.state)).length,failed:rows.filter(row=>['failed','cancelled'].includes(row.state)).length};}
