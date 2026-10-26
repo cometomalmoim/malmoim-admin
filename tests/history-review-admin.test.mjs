@@ -29,3 +29,23 @@ test('manager requires inspection, identity confirmation, eligible evidence and 
  render().find(n=>n.type==='input'&&!n.props.type).props.onChange({target:{value:pid}});
  assert(!render().some(n=>n.type==='button'&&n.props.children==='후기 작성 권한 승인'));
 });
+test('post-install verification includes exact read RPC signature and missing-function detection',()=>{const sql=readFileSync('supabase/review-release/02_verify_readonly.sql','utf8');assert(sql.includes('public.history_admin_review_context(uuid,uuid)'));assert(sql.includes('function_presence'));assert(sql.includes('service_role_execute'));});
+test('in-memory PostgreSQL denies anonymous EXECUTE and non-admin direct read RPC before accessing personal tables',{skip:!process.env.REVIEW_ACL_PGLITE_MODULE},async()=>{
+ const {PGlite}=await import(process.env.REVIEW_ACL_PGLITE_MODULE);const db=new PGlite();
+ try {
+ await db.exec(`CREATE ROLE anon;CREATE ROLE authenticated;CREATE ROLE service_role;CREATE SCHEMA auth;
+ CREATE TABLE public.admin_users(user_id uuid);
+ CREATE FUNCTION auth.uid() RETURNS uuid LANGUAGE sql AS $$SELECT 'aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa'::uuid$$;
+ GRANT USAGE ON SCHEMA auth,public TO anon,authenticated;GRANT EXECUTE ON FUNCTION auth.uid() TO anon,authenticated;`);
+ const sql=readFileSync('supabase/review-release/03_admin_review_context.sql','utf8');
+ const definition=sql.slice(sql.indexOf('CREATE FUNCTION public.history_admin_review_context'),sql.indexOf('\nDO $$ BEGIN',sql.indexOf('CREATE FUNCTION public.history_admin_review_context')));
+ await db.exec(definition);
+ for(const role of ['anon','authenticated']) {
+ await db.exec('BEGIN');await db.exec(`SET LOCAL ROLE ${role}`);
+ await assert.rejects(db.query(`SELECT public.history_admin_review_context('${uid}','${pid}')`),e=>e.code==='42501'&&(role==='anon'?/permission denied/i:/Administrator required/i).test(e.message));
+ await db.exec('ROLLBACK');
+ }
+ // No auth.users, participant or audit table even exists in this test instance:
+ // unauthorized calls must exit before reaching those personal data reads.
+ }finally{await db.close();}
+});
