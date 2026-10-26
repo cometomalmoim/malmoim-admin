@@ -1,13 +1,17 @@
 import "server-only";
 import type { SupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
+import { logReviewFailure } from "./review-diagnostics";
 import type { ReviewAccess, ReviewPermission } from "./review-types";
 
 /** No caller-supplied identity and no participant records leave this module. */
 export async function checkReviewApproval(db: Pick<SupabaseClient, "rpc">): Promise<Exclude<ReviewPermission, "anonymous">> {
   try {
     const { data, error } = await db.rpc("history_can_create_review");
-    if (error || typeof data !== "boolean") return "error";
+    if (error || typeof data !== "boolean") {
+      logReviewFailure("eligibility", error);
+      return "error";
+    }
     return data ? "approved" : "unapproved";
   } catch { return "error"; }
 }

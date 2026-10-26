@@ -220,7 +220,7 @@ export function HistoryReviews({ initial, userId, permission }: { initial: Revie
     });
   }
   return <Localized>{<>
-    <div className="review-toolbar"><div className="history-filters" role="group" aria-label="후기 카테고리 필터">{(["all", "regular", "special", "other"] as const).map((key) => <button type="button" key={key} aria-pressed={filter === key} disabled={busy} onClick={() => { setMessage(""); fetchPage(key); }}>{key === "all" ? "전체" : reviewCategories[key]}</button>)}</div><button className="review-create" type="button" disabled={checking} onClick={requestNewReview}>{checking ? "작성 권한 확인 중…" : access.permission === "error" ? "작성 권한 다시 확인" : "후기 등록하기"}</button></div>
+    <div className="review-toolbar"><div className="history-filters" role="group" aria-label="후기 카테고리 필터">{(["all", "regular", "special", "other"] as const).map((key) => <button type="button" key={key} aria-pressed={filter === key} disabled={busy} onClick={() => { setMessage(""); fetchPage(key); }}>{key === "all" ? "전체" : reviewCategories[key]}</button>)}</div><button className="review-create" type="button" disabled={checking} onClick={requestNewReview}>{checking ? "작성 권한 확인 중…" : "후기 등록하기"}</button></div>
     {(access.permission === "unapproved" || access.permission === "error") && <p className="review-notice" role="status">{access.permission === "unapproved" ? reviewApprovalNotice : reviewApprovalError}</p>}
     {process.env.NODE_ENV === "development" && <p className="review-demo-notice"><Link href="/history/preview">후기 UI 개발용 미리보기</Link> · 실제 데이터 저장 없이 폼과 카드를 확인합니다.</p>}
     <p className="review-notice" role="status">{busy ? "요청을 처리하고 있어요. 잠시만 기다려주세요." : message}</p>
