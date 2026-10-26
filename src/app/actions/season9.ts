@@ -1,4 +1,5 @@
 "use server";
+import {compactSeason9Input} from '@/lib/season9-compact';
 import {registrationReceipt,type MetaRegistrationReceipt} from '@/lib/meta-registration-receipt';
 import {season9RequiredFields,season9ParticipationFields} from '@/lib/season9-required';
 import {after} from 'next/server';
@@ -39,4 +40,19 @@ export async function submitSeason9(_state: SubmissionState, form: FormData): Pr
     revalidatePath("/admin", "layout");
     return {success:true,conversion:registrationReceipt('season9',submissionId,form.get('application_language')),message:"신청이 접수되었습니다. 참가 확정과 납부 안내는 확인 후 보내드립니다. / Application received. Confirmation and payment instructions will follow after review."};
   }catch{return fail("서버에 연결하지 못했습니다. 다시 시도해주세요. / Connection failed. Please retry.");}
+}
+
+export async function compactSeason9Info():Promise<{open:boolean;unavailable?:boolean}>{
+ try{const client=await createClient();const {data,error}=await client.rpc('season9_compact_registration_info');return error?{open:false,unavailable:true}:{open:data?.open===true};}catch{return {open:false,unavailable:true};}
+}
+export async function submitCompactSeason9(_state:SubmissionState,form:FormData):Promise<SubmissionState>{
+ const payload=compactSeason9Input(form);
+ if(!payload)return {success:false,message:'입력 항목과 필수 동의를 확인해주세요. / Check your details and required consent.'};
+ try{
+  const client=await createClient();const {data,error}=await client.rpc('submit_season9_compact_application',{payload});
+  if(error||data?.accepted!==true){const reason=error?.message??'';return {success:false,message:reason.includes('duplicate_application')?'이미 등록된 연락처입니다. 변경은 운영진에게 문의해주세요. / This contact is already registered. Please contact the organizers.':reason.includes('recruitment_closed')?'현재 신청을 받지 않습니다. / Applications are currently closed.':reason.includes('rate_limited')?'신청이 몰리고 있어요. 잠시 후 다시 시도해주세요. / Please try again shortly.':'저장하지 못했습니다. 입력은 유지됩니다. 다시 시도해주세요. / Unable to save. Please retry.'};}
+  try{after(async()=>{try{await processSmsQueue(client);}catch{/* Application is already committed. */}});}catch{/* Receipt remains valid. */}
+  revalidatePath('/admin','layout');
+  return {success:true,message:'신청이 접수되었습니다. / Application received.',conversion:registrationReceipt('season9',String(payload.submission_id),form.get('application_language'))};
+ }catch{return {success:false,message:'연결하지 못했습니다. 다시 시도해주세요. / Connection failed. Please retry.'};}
 }
