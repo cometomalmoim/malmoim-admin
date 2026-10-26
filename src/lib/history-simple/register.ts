@@ -8,7 +8,7 @@ export function validateRegistrationFiles(files:File[]){
 export async function registerPhotos(info:Record<string,unknown>,files:File[],ports:{create(info:ReturnType<typeof albumInput>):Promise<{id:string}>;upload(id:string,files:File[]):Promise<void>;publish(id:string):Promise<unknown>}){
  const input=albumInput(info);validateRegistrationFiles(files);
  const album=await ports.create(input);
- try{await ports.upload(album.id,files);}catch{throw Error('PHOTO_UPLOAD_INCOMPLETE');}
+ try{await ports.upload(album.id,files);}catch(cause){throw new Error('PHOTO_UPLOAD_INCOMPLETE',{cause});}
  await ports.publish(album.id);
  return album;
 }

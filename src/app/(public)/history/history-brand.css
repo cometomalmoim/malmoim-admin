@@ -88,3 +88,21 @@
 .history-page .history-photo-card time { font-size:11px; margin-block:4px; }
 .history-page .history-photo-card > p { font-size:12px; line-height:1.5; overflow-wrap:anywhere; }
 @media(max-width:540px){.history-page .history-gallery{gap:16px 6px}.history-page .history-photo-card time{font-size:10px}}
+
+.history-page .history-photo-edit { padding:4px 10px; border:1px solid #dce5e5; border-radius:6px; background:#fff; color:#07838d; font:inherit; font-size:12px; cursor:pointer; }
+
+/* Only photo archive width and participant-review cards; hero/timeline unchanged. */
+.history-page .history-gallery { width:100%; max-width:none; margin-inline:auto; }
+.history-page .history-review-grid { grid-template-columns:repeat(3,minmax(0,1fr)); gap:14px; align-items:stretch; }
+.history-page .history-review-card .review-card-open { display:grid; grid-template-columns:minmax(0,1fr) auto; align-content:start; gap:10px 12px; padding:16px; }
+.history-page .review-card-body { display:grid; grid-template-rows:auto auto auto; gap:6px; min-width:0; }
+.history-page .review-card-body h3 { margin:0; font-size:16px; line-height:1.4; -webkit-line-clamp:2; }
+.history-page .review-card-body .review-preview { margin:0; font-size:13px; line-height:1.6; display:-webkit-box; -webkit-box-orient:vertical; -webkit-line-clamp:3; max-height:4.8em; overflow:hidden; }
+.history-page .review-card-open > .review-card-photo { grid-column:2; grid-row:1; width:64px; height:64px; aspect-ratio:1; object-fit:cover; border-radius:6px; }
+.history-page .review-card-open .review-byline { grid-column:1/-1; display:flex; flex-wrap:nowrap; gap:8px; margin:0; padding-top:8px; font-size:11px; }
+.history-page .review-byline > span { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+.history-page .review-byline time { font-size:11px; }
+.history-page .review-card-body .review-category { font-size:11px; }
+.history-page .review-card-more { grid-column:1/-1; color:#07838D; font-size:12px; font-weight:600; }
+@media(max-width:800px){.history-page .history-review-grid{grid-template-columns:repeat(2,minmax(0,1fr));}}
+@media(max-width:540px){.history-page .history-review-grid{grid-template-columns:minmax(0,1fr);gap:12px;}.history-page .history-review-card .review-card-open{padding:14px;}}
