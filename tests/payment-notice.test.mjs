@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {changedPaymentNotice,paymentNoticeTemplate,paymentReceivedExamples} from '../src/lib/payment-notice.ts';
+import {changedPaymentNotice,paymentNoticeTemplate,paymentReceivedExamples,refundNoticeTemplate,refundCompletedExamples} from '../src/lib/payment-notice.ts';
 test('only changed paid/refunded statuses open a notice',()=>{
  assert.equal(changedPaymentNotice('unknown','paid'),'paid');assert.equal(changedPaymentNotice('paid','refunded'),'refunded');
  for(const [a,b] of [['paid','paid'],['refunded','refunded'],['paid','unpaid'],['unknown','unknown']])assert.equal(changedPaymentNotice(a,b),null);
@@ -35,4 +35,10 @@ test('gathering keeps latest purpose per applicant and groups no silent overflow
  store.offer(item('51'));assert.equal(store.queueSnapshot().length,50);assert.equal(store.snapshot().row.id,'51');
  store.remove('1refunded');assert.equal(store.queueSnapshot().length,49);
  store.clearQueue();store.dismiss();assert.equal(store.gatheringSnapshot(),false);
+});
+
+
+test('refund completed starters exclude request notices and do not invent an amount',()=>{
+ for(const template of refundCompletedExamples){assert.equal(refundNoticeTemplate(template),true);assert.ok(!/금액|참가비}/.test(template.body));}
+ assert.equal(refundNoticeTemplate({category:'custom',title:'환불 요청 접수'}),false);
 });
