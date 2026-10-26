@@ -150,7 +150,7 @@ export function ReviewCard({ review, open }: { review: Review; open: () => void 
   return <Localized>{<article className="history-review-card"><button type="button" className="review-card-open" onClick={open} aria-label={`${review.title} 후기 상세 보기`}>
     <div className="review-card-body"><span className="review-category">{reviewCategories[review.category]}</span><h3 data-i18n-skip>{review.title}</h3><p className="review-preview" data-i18n-skip>{review.content}</p></div>
     {cover && <Image unoptimized className="review-card-photo" src={cover} alt={`${review.title} 대표 사진`} width={600} height={360} />}
-    <span className="review-byline"><span data-i18n-skip={!!review.display_name?.trim() && review.display_name.trim() !== "익명"}>{review.display_name?.trim() || "익명"}</span><time dateTime={review.created_at}>{reviewDate(review.created_at)}</time></span>
+    <span className="review-byline"><span data-i18n-skip={!!review.display_name?.trim() && review.display_name.trim() !== "익명"}>{review.display_name?.trim() || "익명"}</span><time dateTime={review.created_at}>{reviewDate(review.created_at)}</time></span><span className="review-card-more">더 보기 <span aria-hidden="true">↗</span></span>
   </button></article>}</Localized>;
 }
 
