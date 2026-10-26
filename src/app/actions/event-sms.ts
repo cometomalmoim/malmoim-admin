@@ -2,6 +2,7 @@
 import {getAdminAccess} from '@/lib/auth';
 import {createClient} from '@/lib/supabase/server';
 import {smsConfig,smsPrice,maskPhone} from '@/lib/solapi';
+import {paymentNoticeTemplate} from '@/lib/payment-notice';
 import {domesticPhone,smsUuid,validSmsText} from '@/lib/sms-contract';
 import {renderEventSms,smsMessageType,type EventSmsTemplate,eventSmsCategories} from '@/lib/event-sms';
 async function client(){if((await getAdminAccess()).status!=='admin')throw new Error('관리자 권한이 필요합니다.');return createClient();}
@@ -28,7 +29,7 @@ async function prepareApplicantSmsCore(input:{batch:string;event:string;source:s
  const template=data.templates.find(t=>t.id===input.template&&t.active&&t.language===input.language);if(!template)throw new Error('활성 템플릿을 다시 선택해주세요.');
  if(template.category==='confirmation'&&(a.data!.status!=='accepted'||a.data!.payment_status!=='paid'))throw new Error('입금 완료와 참가 승인이 모두 필요합니다.');
  if(input.purpose!==undefined&&input.purpose!=='payment_received')throw new Error('문자 목적 오류');
- if(input.purpose==='payment_received'&&(a.data!.payment_status!=='paid'||!['custom','confirmation'].includes(template.category)))throw new Error('입금 완료 상태와 안내 템플릿을 다시 확인해주세요.');
+ if(input.purpose==='payment_received'&&(a.data!.payment_status!=='paid'||!paymentNoticeTemplate(template,a.data!.status)))throw new Error('입금 완료 상태와 안내 템플릿을 다시 확인해주세요.');
  const fee=input.fee||data.preference?.fee||'';
  const rendered=renderEventSms({...template,body:input.body??template.body},data.event,a.data!.name,data.details,fee);
  if(rendered.missing.length||!validSmsText(rendered.text))throw new Error('미입력 변수 또는 잘못된 본문: '+rendered.missing.join(', '));
@@ -41,7 +42,7 @@ async function prepareApplicantSmsCore(input:{batch:string;event:string;source:s
  return {id:input.batch,text:j.data!.body,type:j.data!.message_type,cost:Number(b.data!.unit_price),sender:maskPhone(config.sender),to:maskPhone(j.data!.recipient)};
 }
 export async function prepareApplicantSms(input:Parameters<typeof prepareApplicantSmsCore>[0]){return prepareApplicantSmsCore(input);}
-export async function prepareApplicantSmsBatch(input:{event:string;template:string;language:'ko'|'en';fee:string;body:string;resend:boolean;items:{batch:string;id:string;source:string}[]}){
+export async function prepareApplicantSmsBatch(input:{event:string;template:string;language:'ko'|'en';fee:string;body:string;resend:boolean;purpose?:'payment_received';items:{batch:string;id:string;source:string}[]}){
  const db=await client(),config=smsConfig();
  if(!config)throw new Error('문자 서비스 연결 설정을 확인해주세요.');
  if(!smsUuid(input.event)||!smsUuid(input.template)||!['ko','en'].includes(input.language)||typeof input.body!=='string'||new TextEncoder().encode(input.body).length>2000||typeof input.fee!=='string'||input.fee.length>100||!Array.isArray(input.items)||input.items.length<1||input.items.length>50||input.items.some(item=>!item||![item.batch,item.id].every(smsUuid)||!['season9','registration','manual'].includes(item.source))||new Set(input.items.map(item=>item.batch)).size!==input.items.length||new Set(input.items.map(item=>item.source+':'+item.id)).size!==input.items.length)throw new Error('대상은 중복 없이 최대 50명까지 선택해주세요.');

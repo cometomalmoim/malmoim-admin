@@ -3,3 +3,5 @@
 .messaging-recipients form{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:end}.messaging-recipients form button{min-height:40px}.applicant-bulk{flex-wrap:wrap;gap:12px}@media(max-width:600px){.messaging-recipients form{grid-template-columns:1fr}}
 
 .bulk-sms-summary{align-items:center;padding:10px 12px}.bulk-sms-summary details{margin:0}.bulk-sms-dialog>header{margin-bottom:14px;padding:0 0 12px}.bulk-sms-dialog header p{margin:6px 0 0}.bulk-sms-controls{margin-bottom:12px}.bulk-sms-composer>.bulk-sms-help{margin:6px 0 8px}
+
+.payment-notice-bar{position:fixed;z-index:40;bottom:20px;left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 32px);box-sizing:border-box;display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:14px 18px;border:1px solid #c8d7cd;border-radius:12px;background:#fff;box-shadow:0 8px 32px #173a2426;font-size:13px}.payment-notice-bar>span{flex:1}.payment-notice-bar button{min-height:36px}
