@@ -18,12 +18,14 @@ BEGIN
  IF p_email IS NULL OR length(p_email)>254 OR p_email<>btrim(p_email)
  OR p_email !~ '^[^[:space:]@,;]+@[^[:space:]@,;]+\.[^[:space:]@,;]+$' THEN
  RAISE EXCEPTION 'One exact email required' USING ERRCODE='22023'; END IF;
- -- Equality, NOT LIKE/ILIKE or fuzzy matching; no implicit lowercasing/identity linking.
- SELECT count(*) INTO matches FROM auth.users u WHERE u.email::text=p_email;
+ -- Supabase Auth normalizes and looks up LOWER(email). Compare the full
+ -- normalized email, never LIKE/ILIKE; reject all ambiguous case variants.
+ -- This normalization never creates a participant link or approval.
+ SELECT count(*) INTO matches FROM auth.users u WHERE lower(u.email::text)=lower(p_email);
  IF matches>1 THEN RAISE EXCEPTION 'Ambiguous account; no member selected' USING ERRCODE='21000'; END IF;
  IF matches=0 THEN RETURN NULL; END IF;
  SELECT jsonb_build_object('id',u.id,'email',u.email,'confirmed',u.email_confirmed_at IS NOT NULL)
- INTO result FROM auth.users u WHERE u.email::text=p_email;
+ INTO result FROM auth.users u WHERE lower(u.email::text)=lower(p_email);
  RETURN result;
 END $$;
 REVOKE ALL ON FUNCTION public.history_admin_find_review_member(text) FROM PUBLIC,anon,authenticated,service_role;

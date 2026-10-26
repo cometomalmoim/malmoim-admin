@@ -18,7 +18,14 @@ test('real in-memory PostgreSQL email lookup rejects non-admins, duplicates and 
  for(const role of ['anon','authenticated']){await db.exec('BEGIN');await db.exec(`SET LOCAL ROLE ${role}`);await assert.rejects(db.query('SELECT public.history_admin_find_review_member($1)',[email]),e=>e.code==='42501');await db.exec('ROLLBACK');}
  await db.query('INSERT INTO public.admin_users VALUES ($1)',[id]);await db.exec('SET ROLE authenticated');
  const find=async value=>(await db.query('SELECT public.history_admin_find_review_member($1) AS member',[value])).rows[0].member;
- assert.deepEqual(await find(email),{id,email,confirmed:true});assert.equal(await find('member@example.invalid'),null);assert.equal(await find('%@example.invalid'),null);assert.equal(await find('missing@example.invalid'),null);
- await assert.rejects(find('duplicate@example.invalid'),e=>e.code==='21000');await assert.rejects(find('a@b.co,c@d.co'),e=>e.code==='22023');
+ assert.deepEqual(await find(email),{id,email,confirmed:true});assert.deepEqual(await find('member@example.invalid'),{id,email,confirmed:true});assert.equal(await find('%@example.invalid'),null);assert.equal(await find('missing@example.invalid'),null);
+ await assert.rejects(find('duplicate@example.invalid'),e=>e.code==='21000');
+ await db.exec('RESET ROLE');await db.query('INSERT INTO auth.users VALUES ($1,$2,NULL)',['dddddddd-dddd-4ddd-8ddd-dddddddddddd','MEMBER@EXAMPLE.INVALID']);await db.exec('SET ROLE authenticated');await assert.rejects(find(email),e=>e.code==='21000');await assert.rejects(find('a@b.co,c@d.co'),e=>e.code==='22023');
  }finally{await db.close();}
+});
+test('server accepts Auth-normalized case while preserving stored email and rejecting a different address',async()=>{
+ const api=setup('admin',{id,email:'member@example.invalid',confirmed:true});
+ assert('member'in await api.findReviewMemberByEmail('MEMBER@EXAMPLE.INVALID'));
+ assert.equal(api.calls[0].args.p_email,'MEMBER@EXAMPLE.INVALID');
+ assert('error'in await api.findReviewMemberByEmail('other@example.invalid'));
 });

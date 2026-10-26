@@ -22,7 +22,7 @@ test('manager requires inspection, identity confirmation, eligible evidence and 
  render().find(n=>n.type==='form'&&n.props['aria-label']==='회원 이메일 검색').props.onSubmit({preventDefault(){}});await Promise.all(tasks.splice(0));
  tree=render();assert.equal(writes.length,0);assert(!tree.some(n=>n.type==='button'&&n.props.children==='후기 작성 권한 승인'));
  const ids=tree.filter(n=>n.type==='input'&&!n.props.type);assert.equal(ids.length,2);assert.equal(ids[0].props.value,uid);
- ids[0].props.onChange({target:{value:uid}});ids[1].props.onChange({target:{value:pid}});
+ ids[1].props.onChange({target:{value:pid}});
  render().find(n=>n.type==='form'&&n.props['aria-label']==='회원·참가 이력 조회').props.onSubmit({preventDefault(){}});await Promise.all(tasks.splice(0));tree=render();
  const approve=()=>render().find(n=>n.type==='button'&&n.props.children==='후기 작성 권한 승인');assert.equal(approve().props.disabled,true);
  tree.find(n=>n.type==='input'&&n.props.type==='radio').props.onChange();assert.equal(approve().props.disabled,true);
