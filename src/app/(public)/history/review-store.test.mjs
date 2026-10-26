@@ -43,7 +43,7 @@ function store(rows, sign, error = null) {
     } },
   };
   return {
-    ...load("./review-store.ts", { "server-only": {}, "@/lib/supabase/server": { createClient: async () => client } }),
+    ...load("./review-store.ts", { "server-only": {}, "./review-diagnostics": { logReviewFailure() {} }, "@/lib/supabase/server": { createClient: async () => client } }),
     requests,
   };
 }
