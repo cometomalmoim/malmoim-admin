@@ -17,9 +17,9 @@ export function createSimpleAdminApi(ports:{enabled():boolean;access():Promise<{
   }
   if(!type.startsWith('application/json'))throw Error('INVALID_INPUT');const input=JSON.parse((await bounded(request,8192)).toString());if(!input||typeof input!=='object'||Array.isArray(input))throw Error('INVALID_INPUT');
   const {op,id,...body}=input;if(typeof op!=='string')throw Error('INVALID_INPUT');
-  if(op==='create'){if(id!==undefined||Object.keys(body).sort().join()!=='date,description,title')throw Error('INVALID_INPUT');return reply(200,{value:await ports.ops.create(albumInput(body))});}
+  if(op==='create'){if(id!==undefined||!['date,description,title','category,cohort,date,description,title'].includes(Object.keys(body).sort().join()))throw Error('INVALID_INPUT');return reply(200,{value:await ports.ops.create(albumInput(body))});}
   if(!validId(id))throw Error('INVALID_INPUT');
-  if(op==='edit'){if(Object.keys(body).sort().join()!=='date,description,title')throw Error('INVALID_INPUT');await ports.ops.edit(id,albumInput(body));}
+  if(op==='edit'){if(!['date,description,title','category,cohort,date,description,title'].includes(Object.keys(body).sort().join()))throw Error('INVALID_INPUT');await ports.ops.edit(id,albumInput(body));}
   else if(op==='publish'){if(Object.keys(body).join()!=='published'||typeof body.published!=='boolean')throw Error('INVALID_INPUT');await ports.ops.publish(id,body.published);}
   else if(op==='delete_album'||op==='delete_photo'){if(Object.keys(body).length)throw Error('INVALID_INPUT');await (op==='delete_album'?ports.ops.deleteAlbum:ports.ops.deletePhoto)(id);}
   else throw Error('INVALID_INPUT');return reply(200,{ok:true});

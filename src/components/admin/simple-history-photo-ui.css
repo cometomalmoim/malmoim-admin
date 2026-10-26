@@ -5,3 +5,5 @@
 .simple-photo-manager .simple-photo-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(180px, 100%), 1fr)); gap: 1rem; }
 .simple-photo-manager img { max-width: 100%; height: auto; object-fit: contain; }
 .simple-photo-manager button { max-width: 100%; white-space: normal; margin: .25rem; }
+
+.simple-photo-manager select { width:100%; min-width:0; padding:.65rem; font:inherit; border:1px solid #c5d2cc; border-radius:6px; background:#fff; color:#172c2e; }
