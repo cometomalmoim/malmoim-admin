@@ -15,9 +15,9 @@ test('loopback and foreign origins never bypass strict same-origin',async()=>{fo
 
 test('legacy local test ports do not bypass production same-origin',async()=>{for(const [origin,host,status] of [['http://127.0.0.1:3030','127.0.0.1:3030',403],['http://127.0.0.1:3022','127.0.0.1:3030',403],['http://127.0.0.1:3030','127.0.0.1:3022',403],['http://127.0.0.1:3030','evil.invalid',403]]){const f=fixture();assert.equal((await f.handler(new Request('http://localhost:3030/api/admin/history-photos',{method:'POST',headers:{origin,host,'content-type':'application/json'},body:'{}'}))).status,status);assert.equal(f.state.calls.length,0);}});
 
-test('all five categories survive admin create and public gallery mapping; new seasons supported',async()=>{
+test('all three categories survive admin create and public gallery mapping; new seasons supported',async()=>{
  const {publicHistoryPhoto}=load('./public-photo');
- for(const category of ['regular','special','event','study','other']){
+ for(const category of ['regular','special','other']){
   const f=fixture(),cohort=category==='regular'?10:null;
   assert.equal((await f.handler(req({op:'create',title:'Synthetic activity',date:'2026-10-26',description:'',category,cohort}))).status,200);
   const saved=f.state.albums[0];assert.equal(saved.category,category);assert.equal(saved.cohort,cohort);
@@ -26,11 +26,13 @@ test('all five categories survive admin create and public gallery mapping; new s
  }
 });
 test('invalid category/season and forged permission fields cannot reach create or edit',async()=>{
- for(const info of [{category:'admin',cohort:null},{category:'regular',cohort:null},{category:'regular',cohort:0},{category:'regular',cohort:1.5},{category:'regular',cohort:32768},{category:'special',cohort:9},{category:'regular',cohort:'9'}]){
+ for(const info of [{category:'event',cohort:null},{category:'study',cohort:null},{category:'admin',cohort:null},{category:'regular',cohort:null},{category:'regular',cohort:0},{category:'regular',cohort:1.5},{category:'regular',cohort:32768},{category:'special',cohort:9},{category:'regular',cohort:'9'}]){
   const f=fixture();for(const op of ['create','edit'])assert.equal((await f.handler(req({op,...(op==='edit'?{id}:{}),title:'x',date:'2026-10-26',description:'',...info}))).status,400);
  }
  for(const access of ['anonymous','denied','error']){const f=fixture();f.state.access=access;for(const op of ['create','edit'])assert.equal((await f.handler(req({op,...(op==='edit'?{id}:{}),title:'x',date:'2026-10-26',description:'',category:'regular',cohort:9}))).status,access==='anonymous'?401:403);assert.equal(f.state.calls.length,0);}
 });
 test('legacy album defaults to special and null cohort',()=>{const info=albumInput({title:'old',date:'2026-10-26',description:''});assert.equal(info.category,'special');assert.equal(info.cohort,null);});
 
-test('admin can change an existing album category and season without changing publication',async()=>{const f=fixture();await f.handler(req({op:'create',title:'x',date:'2026-10-26',description:''}));f.state.albums[0].published=true;for(const category of ['regular','event','study','other','special']){const cohort=category==='regular'?11:null;assert.equal((await f.handler(req({op:'edit',id,title:'x',date:'2026-10-26',description:'',category,cohort}))).status,200);assert.equal(f.state.albums[0].category,category);assert.equal(f.state.albums[0].cohort,cohort);assert.equal(f.state.albums[0].published,true);}});
+test('admin can change an existing album category and season without changing publication',async()=>{const f=fixture();await f.handler(req({op:'create',title:'x',date:'2026-10-26',description:''}));f.state.albums[0].published=true;for(const category of ['regular','other','special']){const cohort=category==='regular'?11:null;assert.equal((await f.handler(req({op:'edit',id,title:'x',date:'2026-10-26',description:'',category,cohort}))).status,200);assert.equal(f.state.albums[0].category,category);assert.equal(f.state.albums[0].cohort,cohort);assert.equal(f.state.albums[0].published,true);}});
+
+test('legacy event/study reads map to other without changing stored data; metadata edits preserve classification',async()=>{const {publicHistoryPhoto}=load('./public-photo');for(const category of ['event','study']){const row={id,title:'legacy',date:'2026-10-26',description:'',category,cohort:null,coverId:id,photos:[{id,src:'/api/history-photo-file?id='+id}]};assert.equal(publicHistoryPhoto(row).category,'other');assert.equal(row.category,category);const f=fixture();f.state.albums.push({...row,published:true});assert.equal((await f.handler(req({op:'edit',id,title:'updated',date:row.date,description:''}))).status,200);assert.equal(f.state.albums[0].category,category);assert.equal(f.state.albums[0].published,true);}});

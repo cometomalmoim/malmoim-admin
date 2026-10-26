@@ -1,5 +1,5 @@
 import {albumInput,SIMPLE_MAX_BYTES,validId} from './policy';
-export type SimpleOperations={list():Promise<unknown>;create(info:ReturnType<typeof albumInput>):Promise<unknown>;edit(id:string,info:ReturnType<typeof albumInput>):Promise<void>;upload(id:string,bytes:Uint8Array):Promise<unknown>;publish(id:string,published:boolean):Promise<void>;deleteAlbum(id:string):Promise<void>;deletePhoto(id:string):Promise<void>};
+export type SimpleOperations={list():Promise<unknown>;create(info:ReturnType<typeof albumInput>):Promise<unknown>;edit(id:string,info:Pick<ReturnType<typeof albumInput>,'title'|'date'|'description'>&Partial<Pick<ReturnType<typeof albumInput>,'category'|'cohort'>>):Promise<void>;upload(id:string,bytes:Uint8Array):Promise<unknown>;publish(id:string,published:boolean):Promise<void>;deleteAlbum(id:string):Promise<void>;deletePhoto(id:string):Promise<void>};
 const reply=(status:number,data:unknown)=>Response.json(data,{status,headers:{'Cache-Control':'no-store'}});
 async function bounded(request:Request,max:number){const reader=request.body?.getReader();if(!reader)throw Error('INVALID_INPUT');const chunks:Uint8Array[]=[];let size=0;try{for(;;){const p=await reader.read();if(p.done)break;size+=p.value.length;if(size>max)throw Error('TOO_LARGE');chunks.push(p.value);}return Buffer.concat(chunks);}finally{await reader.cancel().catch(()=>{});reader.releaseLock();}}
 export function createSimpleAdminApi(ports:{enabled():boolean;access():Promise<{status:string}>;ops:SimpleOperations}){return async(request:Request)=>{
@@ -19,7 +19,7 @@ export function createSimpleAdminApi(ports:{enabled():boolean;access():Promise<{
   const {op,id,...body}=input;if(typeof op!=='string')throw Error('INVALID_INPUT');
   if(op==='create'){if(id!==undefined||!['date,description,title','category,cohort,date,description,title'].includes(Object.keys(body).sort().join()))throw Error('INVALID_INPUT');return reply(200,{value:await ports.ops.create(albumInput(body))});}
   if(!validId(id))throw Error('INVALID_INPUT');
-  if(op==='edit'){if(!['date,description,title','category,cohort,date,description,title'].includes(Object.keys(body).sort().join()))throw Error('INVALID_INPUT');await ports.ops.edit(id,albumInput(body));}
+  if(op==='edit'){if(!['date,description,title','category,cohort,date,description,title'].includes(Object.keys(body).sort().join()))throw Error('INVALID_INPUT');const info=albumInput(body);await ports.ops.edit(id,Object.hasOwn(body,'category')?info:{title:info.title,date:info.date,description:info.description});}
   else if(op==='publish'){if(Object.keys(body).join()!=='published'||typeof body.published!=='boolean')throw Error('INVALID_INPUT');await ports.ops.publish(id,body.published);}
   else if(op==='delete_album'||op==='delete_photo'){if(Object.keys(body).length)throw Error('INVALID_INPUT');await (op==='delete_album'?ports.ops.deleteAlbum:ports.ops.deletePhoto)(id);}
   else throw Error('INVALID_INPUT');return reply(200,{ok:true});
