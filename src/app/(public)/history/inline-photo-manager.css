@@ -1,0 +1,10 @@
+.history-photo-tools{display:flex;align-items:center;justify-content:flex-end;flex-wrap:wrap;gap:1rem;margin:1rem auto;max-width:1200px;padding:0 24px;color:#526264;font-size:.9rem}
+.history-photo-tools button,.history-photo-dialog button{border:1px solid #07838d;border-radius:8px;padding:.65rem 1rem;background:#07838d;color:#fff;cursor:pointer;font:inherit}
+.history-photo-dialog{width:min(900px,calc(100vw - 32px));max-height:85dvh;border:1px solid #dce5e5;border-radius:16px;padding:24px;background:#fff;color:#172c2e;box-shadow:0 24px 80px #132e3533;overflow:auto}
+.history-photo-dialog::backdrop{background:#102d365c}
+.history-photo-dialog header{display:flex;align-items:center;justify-content:space-between;gap:1rem;border-bottom:1px solid #dce5e5;padding-bottom:1rem}
+.history-photo-dialog h2{margin:0;font-size:1.35rem}
+.history-photo-dialog .simple-photo-manager .ops-panel{padding:1rem;border:1px solid #dce5e5;border-radius:12px;margin-top:1rem}
+.history-photo-dialog button:disabled{opacity:.5;cursor:default}
+.history-photo-dialog :focus-visible,.history-photo-tools :focus-visible{outline:3px solid #ffbf20;outline-offset:3px}
+@media(max-width:540px){.history-photo-dialog{padding:16px}.history-photo-tools{justify-content:flex-start}}

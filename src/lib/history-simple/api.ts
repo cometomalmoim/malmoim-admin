@@ -7,10 +7,7 @@ export function createSimpleAdminApi(ports:{enabled():boolean;access():Promise<{
   if(request.method==='GET')return reply(200,{enabled:true,albums:await ports.ops.list()});
   if(request.method!=='POST')return reply(405,{code:'METHOD_NOT_ALLOWED'});
   const origin=request.headers.get('origin'),urlOrigin=new URL(request.url).origin;
-  // Next dev canonicalizes the URL to localhost even when bound to 127.0.0.1.
-  // Accept only this fixed loopback test origin with its matching Host header.
-  const localTestOrigin=process.env.NODE_ENV!=='production'&&['3022','3030'].some(port=>urlOrigin===`http://localhost:${port}`&&origin===`http://127.0.0.1:${port}`&&request.headers.get('host')===`127.0.0.1:${port}`);
-  if((origin!==urlOrigin&&!localTestOrigin)||request.headers.get('sec-fetch-site')==='cross-site')return reply(403,{code:'ORIGIN_DENIED'});
+  if(origin!==urlOrigin||request.headers.get('sec-fetch-site')==='cross-site')return reply(403,{code:'ORIGIN_DENIED'});
   const type=request.headers.get('content-type')??'';
   if(type.startsWith('multipart/form-data')){
    const bytes=await bounded(request,SIMPLE_MAX_BYTES+65536),form=await new Request(request.url,{method:'POST',headers:{'content-type':type},body:bytes}).formData();
