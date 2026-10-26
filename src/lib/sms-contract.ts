@@ -1,4 +1,4 @@
-export const smsStates:Record<string,string>={draft:'발송 전 확인',queued:'대기',dispatching:'업체 요청 중',accepted:'업체 접수 · 도달 미확인',delivered:'도달 성공',failed:'발송 실패',unknown:'결과 불명 · 재발송 금지',cancelled:'취소'};
+export const smsStates:Record<string,string>={draft:'발송 전 확인',queued:'발송 대기',dispatching:'발송 요청 중',accepted:'발송 완료 · 도달 확인 중',delivered:'발송 완료 · 도달 성공',failed:'발송 실패',unknown:'결과 불명 · 재발송 금지',cancelled:'취소'};
 export function domesticPhone(value:string):string|null {
  let n=value.trim().replace(/[ ()-]/g,'');
  if(n.startsWith('+82'))n='0'+n.slice(3);else if(n.startsWith('0082'))n='0'+n.slice(4);
