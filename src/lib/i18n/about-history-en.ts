@@ -1,5 +1,6 @@
 // Korean source text is the stable lookup key. Keep additions paired with English.
 export const aboutHistoryEnglish:Record<string,string> = {
+  "게시물": "Posts",
   "정규 활동": "Regular activities",
   "행사·파티": "Events & parties",
   "스터디": "Study groups",
