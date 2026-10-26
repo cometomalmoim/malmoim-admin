@@ -12,15 +12,20 @@ test('new read RPC requires admin before identity access and never mutates exist
 test('cohort aggregates require explicit mappings, retain unclassified records and contain no personal outputs',()=>{const sql=readFileSync('supabase/review-release/00b_historical_eligibility_counts_readonly.sql','utf8');assert.match(sql,/BEGIN READ ONLY/);assert.match(sql,/cohort_map\(cohort,event_id\)/);assert.match(sql,/LEFT JOIN cohort_map/);assert.doesNotMatch(sql,/jsonb_build_object\([^;]*(?:'email'|'contact'|'person_id')/s);assert(sql.includes('excluded_sessions_exist_but_only_event_attendance'));});
 test('manager requires inspection, identity confirmation, eligible evidence and reason; changing IDs clears approval state',async()=>{
  const React=await import('react');const runtime=await import('react/jsx-runtime');
- const hooks=[];let at=0;const tasks=[];const writes=[];
+ const hooks=[];let at=0;const tasks=[];const writes=[];const searches=[];
  const context={member:{id:uid,email:'synthetic@example.invalid',confirmed:true},person:{id:pid,name:'Synthetic participant',contact:'Synthetic contact'},link:null,evidence:[{source:'manual',application:pid,title:'Synthetic attended activity',starts_at:null,confirmation:'confirmed',attendance:'attended',archived:false,eligible:true}],audit:[]};
- const mockReact={...React,useState(initial){const i=at++;if(!(i in hooks))hooks[i]=initial;return [hooks[i],v=>{hooks[i]=typeof v==='function'?v(hooks[i]):v;}];},useTransition(){return [false,fn=>tasks.push(Promise.resolve(fn()))];}};
- const compiled={exports:{}};runInNewContext(ts.transpileModule(readFileSync('src/app/admin/history-review-access/review-access-manager.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText,{module:compiled,exports:compiled.exports,require:n=>n==='react'?mockReact:n==='react/jsx-runtime'?runtime:n==='next/link'?{default:()=>null}:{findReviewMemberByEmail:async()=>({member:context.member}),inspectReviewMember:async()=>({data:context}),manageReviewMember:async v=>{writes.push(v);return {revision:1};}}});
+ const mockReact={...React,useRef(initial){const i=at++;return hooks[i]??=( {current:initial} );},useState(initial){const i=at++;if(!(i in hooks))hooks[i]=initial;return [hooks[i],v=>{hooks[i]=typeof v==='function'?v(hooks[i]):v;}];},useTransition(){return [false,fn=>tasks.push(Promise.resolve(fn()))];}};
+ const compiled={exports:{}};runInNewContext(ts.transpileModule(readFileSync('src/app/admin/history-review-access/review-access-manager.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX}}).outputText,{module:compiled,exports:compiled.exports,require:n=>n==='react'?mockReact:n==='react/jsx-runtime'?runtime:n==='next/link'?{default:()=>null}:{findReviewMemberByEmail:async email=>{searches.push(email);return {member:context.member};},inspectReviewMember:async()=>({data:context}),manageReviewMember:async v=>{writes.push(v);return {revision:1};}}});
  function nodes(n){if(!n||typeof n!=='object')return [];if(Array.isArray(n))return n.flatMap(nodes);return [n,...nodes(n.props?.children)];}
  const render=()=>{at=0;return nodes(compiled.exports.ReviewAccessManager());};
  let tree=render();tree.find(n=>n.type==='input'&&n.props.type==='email').props.onChange({target:{value:'synthetic@example.invalid'}});
- render().find(n=>n.type==='form'&&n.props['aria-label']==='회원 이메일 검색').props.onSubmit({preventDefault(){}});await Promise.all(tasks.splice(0));
- tree=render();assert.equal(writes.length,0);assert(!tree.some(n=>n.type==='button'&&n.props.children==='후기 작성 권한 승인'));
+ const searchButton=()=>render().find(n=>n.type==='button'&&n.props.children==='회원 이메일 검색');
+ assert.equal(searchButton().props.type,'button');
+ assert(render().filter(n=>n.type==='input'&&!n.props.type).every(n=>n.props.value===''&&n.props.required));
+ render().find(n=>n.type==='input'&&n.props.type==='email').props.ref.current={reportValidity:()=>false};searchButton().props.onClick();assert.equal(searches.length,0);
+ render().find(n=>n.type==='input'&&n.props.type==='email').props.ref.current={reportValidity:()=>true};
+ render().find(n=>n.type==='button'&&n.props.children==='회원 이메일 검색').props.onClick();await Promise.all(tasks.splice(0));
+ tree=render();assert.equal(searches.length,1);assert.equal(writes.length,0);assert(!tree.some(n=>n.type==='button'&&n.props.children==='후기 작성 권한 승인'));
  const ids=tree.filter(n=>n.type==='input'&&!n.props.type);assert.equal(ids.length,2);assert.equal(ids[0].props.value,uid);
  ids[1].props.onChange({target:{value:pid}});
  render().find(n=>n.type==='form'&&n.props['aria-label']==='회원·참가 이력 조회').props.onSubmit({preventDefault(){}});await Promise.all(tasks.splice(0));tree=render();
