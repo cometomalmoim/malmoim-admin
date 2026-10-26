@@ -56,6 +56,7 @@ export const aboutHistoryEnglish:Record<string,string> = {
   "매주 목요일 또는 토요일": "Every Thursday or Saturday",
   "참가비": "Participation fee",
   "50,000원 / 6주": "KRW 50,000 / 6 weeks",
+  "신청서를 작성해 말모임 9기에 참여해 보세요.": "Complete the application to join MALMOIM Season 9.",
   "신청 링크 준비 중": "Application link coming soon",
   "신청 링크가 준비되면 안내하겠습니다. 현재 이 페이지에서는 신청을 접수하지 않습니다.": "We'll let you know when the application link is ready. Applications are not currently accepted on this page.",
   "자주 묻는 질문": "FAQ",

@@ -2,6 +2,7 @@
 import {Localized} from "@/components/public-translation";
 import type { Metadata } from "next";
 import Image from "next/image";
+import Link from "next/link";
 import { ProgramTabs } from "./program-tabs";
 import "./about.css";
 import "./about-brand.css";
@@ -95,8 +96,8 @@ export default function AboutPage() {
               <div><svg className="about-recruitment-icon about-recruitment-price-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" aria-hidden="true" focusable="false"><ellipse cx="12" cy="5" rx="8" ry="3" /><path d="M4 5v14c0 1.7 3.6 3 8 3s8-1.3 8-3V5M4 10c0 1.7 3.6 3 8 3s8-1.3 8-3M4 15c0 1.7 3.6 3 8 3s8-1.3 8-3" /></svg><dt>참가비</dt><dd>50,000원 / 6주</dd></div>
             </dl>
           </div>
-          <button className="about-recruitment-apply" type="button" disabled aria-describedby="about-recruitment-status">신청 링크 준비 중</button>
-          <p id="about-recruitment-status" className="about-recruitment-status">신청 링크가 준비되면 안내하겠습니다. 현재 이 페이지에서는 신청을 접수하지 않습니다.</p>
+          <Link className="about-recruitment-apply" href="/season9/apply" aria-describedby="about-recruitment-status">9기 신청하기 →</Link>
+          <p id="about-recruitment-status" className="about-recruitment-status">신청서를 작성해 말모임 9기에 참여해 보세요.</p>
         </div>
       </section>
 
