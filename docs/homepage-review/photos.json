@@ -1,0 +1,58 @@
+[
+  {
+    "name": "conversation",
+    "source": "/Users/masonsmacbookair/Downloads/KakaoTalk_Photo_2026-10-27-14-44-40 002.jpeg",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 170132
+  },
+  {
+    "name": "table-talk",
+    "source": "/Users/masonsmacbookair/Downloads/KakaoTalk_Photo_2026-10-27-14-42-28 001.jpeg",
+    "width": 1200,
+    "height": 1600,
+    "bytes": 182578
+  },
+  {
+    "name": "session",
+    "source": "/Users/masonsmacbookair/Downloads/KakaoTalk_Photo_2026-10-27-14-44-40 001.jpeg",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 158594
+  },
+  {
+    "name": "outdoors",
+    "source": "public/history/history-hero-01.jpeg",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 599934
+  },
+  {
+    "name": "night-together",
+    "source": "public/history/history-hero-03.jpeg",
+    "width": 1600,
+    "height": 900,
+    "bytes": 127648
+  },
+  {
+    "name": "at-the-table",
+    "source": "/Users/masonsmacbookair/Downloads/KakaoTalk_Photo_2026-10-27-14-42-41 005.jpeg",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 292566
+  },
+  {
+    "name": "making",
+    "source": "/Users/masonsmacbookair/Downloads/KakaoTalk_Photo_2026-10-27-14-44-41 007.jpeg",
+    "width": 1200,
+    "height": 1600,
+    "bytes": 193904
+  },
+  {
+    "name": "group",
+    "source": "/Users/masonsmacbookair/Downloads/KakaoTalk_Photo_2026-10-27-14-45-40 004.jpeg",
+    "width": 1600,
+    "height": 1159,
+    "bytes": 187460
+  }
+]
