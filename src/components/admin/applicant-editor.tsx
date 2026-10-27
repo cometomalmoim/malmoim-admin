@@ -1,4 +1,5 @@
- 'use client';
+'use client';
+import {applicantGenderLabel} from '@/lib/season9-gender';
 import {startTransition,useActionState,useEffect,useRef} from 'react';
 import {saveApplicant} from '@/app/actions/applicants';
 import {applicationStatuses,paymentStatuses} from '@/lib/applicant-validation';
@@ -16,7 +17,7 @@ export function ApplicantEditor({slug,row,returnHref,onSaved}:{slug:string;row?:
  <label>연락처 유형<select name="contact_type" defaultValue={row?.contact_type??'phone'}><option value="phone">전화번호</option>{row?.source!=='registration'&&<option value="instagram">인스타그램</option>}</select></label>
  <label>연락처<input name="contact" defaultValue={row?.contact} maxLength={200} required/></label>
  <label>출생연도<input name="birth_year" type="number" min={1900} max={new Date().getUTCFullYear()} defaultValue={row?.birth_year??''} placeholder="예: 1998"/><small>출생연도만 기록합니다. 미확인 시 비워두세요.</small></label>
- {row&&<p>성별: {({male:'남성',female:'여성',other:'기타'} as Record<string,string>)[row.gender??'']??row.gender??'미입력'}</p>}
+ {row&&<p>성별: {applicantGenderLabel(row.gender)}</p>}
  <label>국적<input name="nationality" defaultValue={row?.nationality??''} maxLength={100} placeholder="미확인 시 비워두세요"/></label>
  <label>선발 상태<select name="status" defaultValue={row?.status??'received'}>{Object.entries(applicationStatuses).map(([v,label])=><option value={v} key={v}>{label}</option>)}</select></label>
  <label>입금 확인<select name="payment_status" defaultValue={row?.payment_status??'unknown'}>{Object.entries(paymentStatuses).map(([v,label])=><option value={v} key={v}>{label}</option>)}</select><small>운영진 수동 기록이며 결제·환불을 실행하지 않습니다.</small></label>

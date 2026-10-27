@@ -1,7 +1,14 @@
 import test from 'node:test';import assert from 'node:assert/strict';
-import {compactSeason9Input} from '../src/lib/season9-compact.ts';
+import {readFileSync} from 'node:fs';
+import {runInNewContext} from 'node:vm';
+import ts from 'typescript';
+function load(name){const module={exports:{}};const source=readFileSync(new URL('../src/lib/'+name+'.ts',import.meta.url),'utf8');runInNewContext(ts.transpileModule(source,{compilerOptions:{module:ts.ModuleKind.CommonJS}}).outputText,{module,exports:module.exports,FormData,Date,require:name=>load(name.replace('./',''))});return module.exports;}
+const {compactSeason9Input}=load('season9-compact');
 function fixture(kind='new'){const f=new FormData();for(const [k,v]of Object.entries({application_kind:kind,name:' TEST ',nationality:'Korea',birth_year:'2001',contact:'010-0000-0011',contact_type:'phone',preferred_class:'thursday',privacy_consent:'on',fee_confirmed:'on',photo_consent:'on',submission_id:'11111111-1111-4111-8111-111111111111'}))f.set(k,v);return f;}
-test('new accepts only compact fields without fabricating a date or profile',()=>{const p=compactSeason9Input(fixture());assert.equal(p.birth_year,2001);assert.equal(p.name,'TEST');assert.equal('date_of_birth'in p,false);assert.equal('gender'in p,false);});
+test('new accepts only compact fields without fabricating a date or profile',()=>{const p=compactSeason9Input(fixture());assert.equal(p.birth_year,2001);assert.equal(p.name,'TEST');assert.equal('date_of_birth'in p,false);assert.equal(p.gender,null);});
 test('returning does not require nationality or year and discards hidden values',()=>{const f=fixture('returning');const p=compactSeason9Input(f);assert.equal(p.nationality,null);assert.equal(p.birth_year,null);f.delete('nationality');f.delete('birth_year');assert.ok(compactSeason9Input(f));});
 test('missing core fields, invalid years/contact and consent are blocked',()=>{for(const [key,value]of [['name',''],['contact','abc'],['preferred_class','other'],['birth_year','1899'],['birth_year','9999'],['nationality',''],['photo_consent',''],['privacy_consent',''],['fee_confirmed',''],['website','bot'],['submission_id','bad']]){const f=fixture();f.set(key,value);assert.equal(compactSeason9Input(f),null,key);}});
 test('Instagram and attribution are preserved without filling uncollected fields',()=>{const f=fixture();f.set('contact_type','instagram');f.set('contact','@test_account');f.set('utm_source','instagram');assert.equal(compactSeason9Input(f).utm_source,'instagram');});
+
+test('optional gender is normalized and never requires a response',()=>{for(const kind of ['new','returning']){for(const gender of ['', 'male','female','prefer_not_to_say']){const f=fixture(kind);f.set('gender',gender);assert.equal(compactSeason9Input(f).gender,gender||null);}}});
+test('self-description is bounded; switching choices discards hidden descriptions',()=>{const f=fixture();f.set('gender','self_describe');assert.equal(compactSeason9Input(f).gender,null);f.set('gender_description',' 나의 표현 ');assert.equal(compactSeason9Input(f).gender,'self_describe:나의 표현');f.set('gender_description','a'.repeat(36));assert.equal(compactSeason9Input(f),null);f.set('gender','male');assert.equal(compactSeason9Input(f).gender,'male');f.set('gender','invalid');assert.equal(compactSeason9Input(f),null);});

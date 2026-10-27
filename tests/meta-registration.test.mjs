@@ -5,7 +5,7 @@ import {createRequire} from 'node:module';
 import {runInNewContext} from 'node:vm';
 import ts from 'typescript';
 const require=createRequire(import.meta.url);
-function load(file,mocks={},globals={}){const {outputText}=ts.transpileModule(readFileSync(new URL('../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}});const m={exports:{}};runInNewContext(outputText,{module:m,exports:m.exports,FormData,Date,URLSearchParams,Error,...globals,require:n=>Object.hasOwn(mocks,n)?mocks[n]:n.startsWith('@/')?load('src/'+n.slice(2)+'.ts',mocks):n==='./meta-pixel'?load('src/lib/meta-pixel.ts'):require(n)});return m.exports;}
+function load(file,mocks={},globals={}){const {outputText}=ts.transpileModule(readFileSync(new URL('../'+file,import.meta.url),'utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS}});const m={exports:{}};runInNewContext(outputText,{module:m,exports:m.exports,FormData,Date,URLSearchParams,Error,...globals,require:n=>Object.hasOwn(mocks,n)?mocks[n]:n.startsWith('@/')?load('src/'+n.slice(2)+'.ts',mocks):n.startsWith('./')?load('src/lib/'+n.slice(2)+'.ts',mocks):require(n)});return m.exports;}
 const {registrationReceipt}=load('src/lib/meta-registration-receipt.ts');
 const {completeRegistration}=load('src/lib/meta-registration.ts');
 const id='11111111-1111-4111-8111-111111111111';
@@ -65,4 +65,12 @@ test('inline season9 landing paths dispatch only after compact DB success',async
  for(const path of ['/season9/ko','/season9/en']){const h=harness();h.ctx.path=path;assert.equal(await completeRegistration(h.w,registrationReceipt('season9',id,'ko'),h.ctx),true);}
  const f=new FormData();for(const [key,value]of Object.entries({application_kind:'returning',name:'TEST',contact:'01000000001',contact_type:'phone',preferred_class:'saturday',privacy_consent:'on',fee_confirmed:'on',photo_consent:'on',submission_id:id,application_language:'en'}))f.set(key,value);
  for(const response of [{data:{accepted:true}},{data:{accepted:false}},{error:{message:'duplicate_application'}}]){const api=load('src/app/actions/season9.ts',actionMocks(response));const result=await api.submitCompactSeason9({},f);assert.equal(!!result.conversion,response.data?.accepted===true);}
+});
+
+test('direct Korean landing records a confirmed registration without applicant fields',async()=>{const h=harness();h.ctx.path='/season9';assert.equal(await completeRegistration(h.w,registrationReceipt('season9',id,'ko'),h.ctx),true);assert.equal(h.calls.filter(args=>args[2]==='CompleteRegistration').length,1);assert.equal(JSON.stringify(h.calls).includes('gender'),false);});
+
+test('compact v2 forwards optional gender to DB but never into the conversion receipt',async()=>{
+ let called,payload;const mocks=actionMocks({data:{accepted:true}});mocks['@/lib/supabase/server']={createClient:async()=>({rpc:async(name,args)=>{called=name;payload=args.payload;return {data:{accepted:true}};}})};
+ const api=load('src/app/actions/season9.ts',mocks);const f=new FormData();for(const [key,value]of Object.entries({application_kind:'returning',name:'TEST',contact:'01000000001',contact_type:'phone',preferred_class:'saturday',privacy_consent:'on',fee_confirmed:'on',photo_consent:'on',submission_id:id,application_language:'en',gender:'self_describe',gender_description:'test description'}))f.set(key,value);
+ const result=await api.submitCompactSeason9({},f);assert.equal(called,'submit_season9_compact_application_v2');assert.equal(payload.gender,'self_describe:test description');assert.equal(payload.notice_version,'season9-2026-10-27-optional-gender-v2');assert.equal(result.success,true);assert.equal('gender' in result.conversion,false);
 });

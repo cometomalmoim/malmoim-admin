@@ -1,7 +1,7 @@
 import {META_PIXEL_ID,type MetaWindow} from './meta-pixel';
 import type {MetaRegistrationReceipt} from './meta-registration-receipt';
 type Context={host:string;path:string;storage:Pick<Storage,'getItem'|'setItem'>;lock:(name:string,callback:()=>Promise<boolean>)=>Promise<boolean>};
-function matches(receipt:MetaRegistrationReceipt,path:string){return receipt.event==='season9'?['/season9/ko','/season9/en','/season9/apply','/season9/en/apply','/season9/apply/en'].includes(path):path==='/2026halloweenparty'||path==='/2026halloweenparty/en';}
+function matches(receipt:MetaRegistrationReceipt,path:string){return receipt.event==='season9'?['/season9','/season9/ko','/season9/en','/season9/apply','/season9/en/apply','/season9/apply/en'].includes(path):path==='/2026halloweenparty'||path==='/2026halloweenparty/en';}
 /** At-most-once browser dispatch; a blocked/failed pixel never fails the registration. */
 export async function completeRegistration(w:MetaWindow,receipt:MetaRegistrationReceipt|undefined,ctx:Context):Promise<boolean>{
  try{
