@@ -10,3 +10,6 @@
 .malmoim-home .mh-activity-party .mh-activity-visual{display:block;flex:initial}
 .malmoim-home .mh-activity-visual{background:#fff}
 @media(min-width:761px){.malmoim-home .mh-activity-visual,.malmoim-home .mh-activity-party .mh-activity-visual{height:360px;display:flex;align-items:center;justify-content:center;background:transparent}.malmoim-home .mh-activity-visual img{height:100%;width:100%;object-fit:contain}}
+/* Match the other landscape activity photos; trim sky and pavement around the group. */
+.malmoim-home .mh-activity-outdoors .mh-activity-visual img{aspect-ratio:4/3;object-fit:cover;object-position:50% 48%}
+@media(min-width:761px){.malmoim-home .mh-activity-outdoors .mh-activity-visual img{width:auto;height:100%;max-width:100%}}
