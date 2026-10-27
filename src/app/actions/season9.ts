@@ -43,13 +43,13 @@ export async function submitSeason9(_state: SubmissionState, form: FormData): Pr
 }
 
 export async function compactSeason9Info():Promise<{open:boolean;unavailable?:boolean}>{
- try{const client=await createClient();const {data,error}=await client.rpc('season9_compact_registration_info');return error?{open:false,unavailable:true}:{open:data?.open===true};}catch{return {open:false,unavailable:true};}
+ try{const client=await createClient();const {data,error}=await client.rpc('season9_compact_registration_info_v2');return error?{open:false,unavailable:true}:{open:data?.open===true};}catch{return {open:false,unavailable:true};}
 }
 export async function submitCompactSeason9(_state:SubmissionState,form:FormData):Promise<SubmissionState>{
  const payload=compactSeason9Input(form);
  if(!payload)return {success:false,message:'입력 항목과 필수 동의를 확인해주세요. / Check your details and required consent.'};
  try{
-  const client=await createClient();const {data,error}=await client.rpc('submit_season9_compact_application',{payload});
+  const client=await createClient();const {data,error}=await client.rpc('submit_season9_compact_application_v2',{payload});
   if(error||data?.accepted!==true){const reason=error?.message??'';return {success:false,message:reason.includes('duplicate_application')?(payload.contact_type==='instagram'?'이미 사용한 인스타그램 ID입니다. 전화번호로 다시 신청할 수 있습니다. / This Instagram ID was already used. You can apply using a phone number.':'신청 접수 설정을 확인하지 못했습니다. 잠시 후 다시 시도해주세요. / Unable to confirm the registration settings. Please retry shortly.'):reason.includes('recruitment_closed')?'현재 신청을 받지 않습니다. / Applications are currently closed.':reason.includes('rate_limited')?'신청이 몰리고 있어요. 잠시 후 다시 시도해주세요. / Please try again shortly.':'저장하지 못했습니다. 입력은 유지됩니다. 다시 시도해주세요. / Unable to save. Please retry.'};}
   try{after(async()=>{try{await processSmsQueue(client);}catch{/* Application is already committed. */}});}catch{/* Receipt remains valid. */}
   revalidatePath('/admin','layout');
