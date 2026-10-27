@@ -1,58 +1,88 @@
 [
   {
-    "name": "conversation",
-    "source": "/Users/masonsmacbookair/Downloads/KakaoTalk_Photo_2026-10-27-14-44-40 002.jpeg",
-    "width": 1600,
-    "height": 1200,
-    "bytes": 170132
-  },
-  {
-    "name": "table-talk",
-    "source": "/Users/masonsmacbookair/Downloads/KakaoTalk_Photo_2026-10-27-14-42-28 001.jpeg",
-    "width": 1200,
-    "height": 1600,
-    "bytes": 182578
-  },
-  {
-    "name": "session",
-    "source": "/Users/masonsmacbookair/Downloads/KakaoTalk_Photo_2026-10-27-14-44-40 001.jpeg",
-    "width": 1600,
-    "height": 1200,
-    "bytes": 158594
-  },
-  {
-    "name": "outdoors",
-    "source": "public/history/history-hero-01.jpeg",
-    "width": 1600,
-    "height": 1200,
-    "bytes": 599934
-  },
-  {
-    "name": "night-together",
-    "source": "public/history/history-hero-03.jpeg",
-    "width": 1600,
-    "height": 900,
-    "bytes": 127648
-  },
-  {
-    "name": "at-the-table",
-    "source": "/Users/masonsmacbookair/Downloads/KakaoTalk_Photo_2026-10-27-14-42-41 005.jpeg",
-    "width": 1600,
-    "height": 1200,
-    "bytes": 292566
-  },
-  {
-    "name": "making",
-    "source": "/Users/masonsmacbookair/Downloads/KakaoTalk_Photo_2026-10-27-14-44-41 007.jpeg",
-    "width": 1200,
-    "height": 1600,
-    "bytes": 193904
-  },
-  {
-    "name": "group",
-    "source": "/Users/masonsmacbookair/Downloads/KakaoTalk_Photo_2026-10-27-14-45-40 004.jpeg",
+    "order": 1,
+    "source": "/var/folders/lx/j6966n4j2vb5ts9zf_kqwb780000gn/T/codex-clipboard-f38a66f7-a224-47dc-b5f3-6c0b2829a8c7.png",
     "width": 1600,
     "height": 1159,
-    "bytes": 187460
+    "bytes": 200128,
+    "placement": "첫 화면"
+  },
+  {
+    "order": 2,
+    "source": "/var/folders/lx/j6966n4j2vb5ts9zf_kqwb780000gn/T/codex-clipboard-1506c252-1d12-4f1e-962f-29a6475d2c8a.png",
+    "width": 1220,
+    "height": 1600,
+    "bytes": 205532,
+    "placement": "말모임 소개"
+  },
+  {
+    "placement": "정규 세션",
+    "source": "codex-clipboard-1615e0fb-d689-4ee4-a316-3cd3e88fa61e.png",
+    "width": 1600,
+    "height": 1200
+  },
+  {
+    "order": 3,
+    "source": "/var/folders/lx/j6966n4j2vb5ts9zf_kqwb780000gn/T/codex-clipboard-7a4a8dfd-8427-4833-b936-1bea6dd2c546.png",
+    "width": 1200,
+    "height": 1600,
+    "bytes": 560560,
+    "placement": "특별 야외행사"
+  },
+  {
+    "order": 4,
+    "source": "/var/folders/lx/j6966n4j2vb5ts9zf_kqwb780000gn/T/codex-clipboard-be5aa4dd-02de-4fa8-aecd-7b9839c1b63a.png",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 285792,
+    "placement": "파티"
+  },
+  {
+    "order": 5,
+    "source": "/var/folders/lx/j6966n4j2vb5ts9zf_kqwb780000gn/T/codex-clipboard-4f682c52-41c7-4d63-8ead-e4b9716751dc.png",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 344848,
+    "placement": "축제·부스"
+  },
+  {
+    "order": 6,
+    "source": "/var/folders/lx/j6966n4j2vb5ts9zf_kqwb780000gn/T/codex-clipboard-91eb085a-1aec-4535-ac45-77183f2f096e.png",
+    "width": 1600,
+    "height": 900,
+    "bytes": 141736,
+    "placement": "MT"
+  },
+  {
+    "order": 7,
+    "source": "/var/folders/lx/j6966n4j2vb5ts9zf_kqwb780000gn/T/codex-clipboard-c6e8c54d-4979-4f3d-83a2-5366599b6c49.png",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 215006,
+    "placement": "9기 모집 카드"
+  },
+  {
+    "order": 8,
+    "source": "/var/folders/lx/j6966n4j2vb5ts9zf_kqwb780000gn/T/codex-clipboard-6b02f3be-5b4c-41f9-b1c8-cb22b22976db.png",
+    "width": 1600,
+    "height": 1200,
+    "bytes": 297494,
+    "placement": "갤러리 1"
+  },
+  {
+    "order": 9,
+    "source": "/var/folders/lx/j6966n4j2vb5ts9zf_kqwb780000gn/T/codex-clipboard-4419ce4b-37da-4723-8e5b-929286c885a9.png",
+    "width": 1200,
+    "height": 1600,
+    "bytes": 200436,
+    "placement": "갤러리 2"
+  },
+  {
+    "order": 10,
+    "source": "/var/folders/lx/j6966n4j2vb5ts9zf_kqwb780000gn/T/codex-clipboard-ce3bb823-43c9-4a2a-a5de-1c3ed17600a5.png",
+    "width": 1200,
+    "height": 1600,
+    "bytes": 408528,
+    "placement": "갤러리 3"
   }
 ]
