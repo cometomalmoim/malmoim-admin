@@ -1,5 +1,6 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
+import { logReviewFailure } from "./review-diagnostics";
 import type { Review, ReviewFilter, ReviewPage } from "./review-types";
 export const REVIEW_BUCKET = "history-review-photos";
 export async function readReviews(filter: ReviewFilter = "all", offset = 0): Promise<ReviewPage> {
@@ -23,7 +24,8 @@ export async function readReviews(filter: ReviewFilter = "all", offset = 0): Pro
       return { ...row, photos } as Review;
     }));
     return { reviews, more: (data?.length ?? 0) > 6, error: "" };
-  } catch {
+  } catch (error) {
+    logReviewFailure("list", error);
     return { reviews: [], more: false, error: "후기 저장소에 연결하지 못했어요. 잠시 후 다시 불러와 주세요. 문제가 계속되면 운영팀에 알려주세요." };
   }
 }
