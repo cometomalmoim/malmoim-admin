@@ -74,7 +74,7 @@
 .about-page .about-recruitment-price-icon { color: var(--about-yellow); }
 .about-page .about-recruitment-info dt { color: var(--about-muted); font-size: 13px; font-weight: 500; }
 .about-page .about-recruitment-info dd { grid-column: 2; color: var(--about-ink); font-size: 16px; line-height: 1.6; font-weight: 700; }
-.about-page .about-recruitment-apply { display: block; width: 100%; min-height: 48px; margin-top: 24px; padding: 10px 16px; border: 0; border-radius: 8px; background: var(--about-yellow); color: var(--about-ink); font-size: 18px; line-height: 1.5; font-weight: 700; white-space: normal; overflow-wrap: anywhere; }
+.about-page .about-recruitment-apply { text-align: center; text-decoration: none; display: block; width: 100%; min-height: 48px; margin-top: 24px; padding: 10px 16px; border: 0; border-radius: 8px; background: var(--about-yellow); color: var(--about-ink); font-size: 18px; line-height: 1.5; font-weight: 700; white-space: normal; overflow-wrap: anywhere; }
 .about-page .about-recruitment-apply:disabled { opacity: 1; cursor: not-allowed; }
 .about-page .about-recruitment-status { margin-top: 8px; font-size: 12px; text-align: center; }
 
