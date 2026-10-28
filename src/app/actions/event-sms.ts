@@ -1,4 +1,5 @@
 'use server';
+import {season9ClassSmsTemplates} from '@/lib/season9-sms-templates';
 import {smsPurposes,smsTemplatePurpose} from '@/lib/sms-purpose';
 import {getAdminAccess} from '@/lib/auth';
 import {createClient} from '@/lib/supabase/server';
@@ -139,4 +140,15 @@ export async function smsBatchOutcomes(batches:string[]){
  const db=await client();if(!Array.isArray(batches)||!batches.length||batches.length>50||!batches.every(smsUuid))throw new Error('발송 결과 선택을 확인해주세요.');
  const result=await db.from('sms_jobs').select('id,batch_id,applicant_name,recipient,body,state,failure_reason').in('batch_id',batches).limit(2500);checked(result.error);
  return (result.data??[]).map(row=>({id:row.id,batch_id:row.batch_id!,name:row.applicant_name??'수신자',to:row.recipient?maskPhone(row.recipient):'번호 없음',body:row.body,state:row.state,reason:row.failure_reason}));
+}
+
+export async function createSeason9ClassSmsTemplates(eventId:string){
+ const data=await eventSmsData(eventId);
+ if(data.event.slug!=='season9')throw new Error('9기 행사에서만 등록할 수 있습니다.');
+ let created=0;
+ for(const template of season9ClassSmsTemplates(eventId)){
+  if(data.templates.some(row=>row.title===template.title&&row.language===template.language))continue;
+  await saveEventSmsTemplate(eventId,null,0,{category:template.category,language:template.language,title:template.title,body:template.body,active:true,is_default:false});created++;
+ }
+ return created;
 }
