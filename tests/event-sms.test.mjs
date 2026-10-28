@@ -12,7 +12,7 @@ const m=load('../src/lib/event-sms.ts',{'./messaging-templates':compose});
 const event={title:'한글 행사',starts_at:'2026-10-31T19:00:00+09:00',ends_at:'2026-10-31T23:30:00+09:00',location:'서울',fee_notice:'얼리버드 25,000원 · 일반 30,000원'};
 test('입금과 승인 모두 필요하며 SMS 90 UTF8 bytes 경계 적용',()=>{assert.equal(m.defaultSmsCategory('accepted','paid'),'confirmation');assert.equal(m.defaultSmsCategory('accepted','unpaid'),'payment');assert.equal(m.defaultSmsCategory('received','paid'),'payment');assert.equal(m.smsMessageType('가'.repeat(30)),'SMS');assert.equal(m.smsMessageType('가'.repeat(31)),'LMS');});
 test('모호한 가격을 자동 확정하지 않고 개별 금액 최우선',()=>{assert.equal(m.unambiguousFee(event.fee_notice),'');assert.equal(m.unambiguousFee('참가비 추후 안내'),'');assert.equal(m.unambiguousFee('30,000원'),'30,000원');const t={language:'ko',body:'{이름} {참가비} {종료시간}'};assert.ok(m.renderEventSms(t,event,'테스트',{},'').missing.includes('참가비'));const r=m.renderEventSms(t,event,'테스트',{'참가비':'30,000원'},'25,000원');assert.match(r.text,/25,000원/);assert.match(r.text,/11:30/);assert.equal(r.missing.length,0);});
-test('한영 할로윈 4개 예시의 변수와 운영 일정 자동 치환',()=>{for(const t of m.halloweenSmsExamples){const r=m.renderEventSms(t,event,'Synthetic',{'은행':'토스','계좌번호':'000-TEST','예금주':'테스트','영문행사명':'Halloween'},'25,000 KRW');assert.equal(r.missing.length,0);assert.ok(!r.text.includes('{'));assert.ok(new TextEncoder().encode(r.text).length<=2000);assert.ok(r.text.includes('11:30'));if(t.language==='en')assert.match(r.text,/Halloween/);}});
+test('한영 할로윈 4개 예시의 변수와 운영 일정 자동 치환',()=>{for(const t of m.halloweenSmsExamples){const r=m.renderEventSms(t,event,'Synthetic',{'은행':'토스','계좌번호':'000-TEST','예금주':'테스트','영문행사명':'Halloween','영문장소':'Seoul','영문은행':'Test Bank','영문예금주':'Test Holder'},'25,000 KRW');assert.equal(r.missing.length,0);assert.ok(!r.text.includes('{'));assert.ok(new TextEncoder().encode(r.text).length<=2000);assert.ok(r.text.includes('11:30'));if(t.language==='en')assert.match(r.text,/Halloween/);}});
 test('신규 서버 액션은 비관리자를 DB/API 접근 전에 거부',async()=>{
  let touched=false;
  const actions=load('../src/app/actions/event-sms.ts',{'@/lib/season9-sms-templates':classes,'@/lib/sms-purpose':purpose,'@/lib/auth':{getAdminAccess:async()=>({status:'forbidden'})},'@/lib/supabase/server':{createClient:()=>{touched=true;throw Error('must not connect');}},'@/lib/solapi':{},'@/lib/sms-contract':{},'@/lib/sms-preparation-error':preparationErrors,'@/lib/payment-notice':paymentNotice,'@/lib/event-sms':m});
@@ -47,7 +47,7 @@ test('bulk audience scopes event, removes duplicate phones and protects final co
  assert.equal(result.eligible.length,1);assert.equal(result.excluded.length,4);
 });
 test('all starter templates use supported variables and explicit languages',()=>{
- for(const language of ['ko','en'])for(const template of bulk.smsStarterTemplates('e',language)){assert.equal(template.language,language);if(!template.body)continue;const text=m.renderEventSms(template,event,'TEST',{'참가비':'TEST FEE','은행':'TEST BANK','계좌번호':'TEST ACCOUNT','예금주':'TEST HOLDER'},'');assert.equal(text.missing.length,0,template.title);assert.ok(new TextEncoder().encode(text.text).length<=2000);}
+ for(const language of ['ko','en'])for(const template of bulk.smsStarterTemplates('e',language)){assert.equal(template.language,language);if(!template.body)continue;const text=m.renderEventSms(template,event,'TEST',{'영문행사명':'Test Event','영문장소':'Seoul','참가비':'TEST FEE','은행':'TEST BANK','계좌번호':'TEST ACCOUNT','예금주':'TEST HOLDER'},'');assert.equal(text.missing.length,0,template.title);assert.ok(new TextEncoder().encode(text.text).length<=2000);}
 });
 test('bulk preparation shares one price lookup, preserves individual fees and does not approve or send',async()=>{
  const eventId='aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa',templateId='bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb';
@@ -147,4 +147,16 @@ test('season9 class templates keep Saturday dates separate from the Thursday eve
  else assert.match(text,template.language==='ko'?/목요일 18:30–21:00/:/Thursday, 6:30–9:00 PM/);
  assert.ok(new TextEncoder().encode(text).length<=2000);assert.ok(!/운영진에게.*확인.*요청/.test(text));
  }
+});
+
+test('English templates never silently fall back to Korean event, address or bank details',()=>{
+ const template={language:'en',body:'Hi {이름}: {행사명} / {장소} / {은행} / {예금주}'};
+ const missing=m.renderEventSms(template,event,'SIMA FEIFEI',{'은행':'토스뱅크','예금주':'홍길동'},'');
+ assert.deepEqual(Array.from(missing.missing),['행사명','장소','은행','예금주']);
+ const translated=m.renderEventSms(template,event,'SIMA FEIFEI',{'영문행사명':'MALMOIM Season 9','영문장소':'Seoul Youth Center Eunpyeong, 9 Tongil-ro 67-gil, Eunpyeong-gu, Seoul','영문은행':'Toss Bank','영문예금주':'Test Holder'},'');
+ assert.equal(translated.missing.length,0);assert.ok(!/[가-힣]/.test(translated.text));
+});
+
+test('English numeric won fee is displayed as KRW and Korean fee prose is never copied',()=>{
+ const t={language:'en',body:'Fee: {참가비}'};assert.equal(m.renderEventSms(t,event,'TEST',{},'50,000원').text,'Fee: KRW 50,000');assert.ok(m.renderEventSms(t,event,'TEST',{},'현장 납부').missing.includes('참가비'));
 });
