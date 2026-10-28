@@ -1,4 +1,5 @@
 'use server';
+import {copiedClassTemplate} from '@/lib/season9-sms-schedule';
 import {season9ClassSmsTemplates} from '@/lib/season9-sms-templates';
 import {smsPurposes,smsTemplatePurpose} from '@/lib/sms-purpose';
 import {getAdminAccess} from '@/lib/auth';
@@ -28,7 +29,7 @@ export async function eventSmsVersions(key:string){const db=await client();const
 async function prepareApplicantSmsCore(input:{batch:string;event:string;source:string;id:string;template:string;language:'ko'|'en';fee:string;resend:boolean;body?:string;purpose?:'payment_received'|'refund_completed';refundConfirmed?:boolean},context?:{db:Awaited<ReturnType<typeof client>>;config:NonNullable<ReturnType<typeof smsConfig>>;rates:Awaited<ReturnType<typeof smsPrice>>}){
  const db=context?.db??await client();const config=context?.config??smsConfig();if(!config)throw new Error('SOLAPI_API_KEY, SOLAPI_API_SECRET, SOLAPI_SENDER_NUMBER, SOLAPI_ADMIN_NOTIFY_NUMBER 설정이 필요합니다.');
  if(![input.batch,input.event,input.id,input.template].every(smsUuid)||!['season9','registration','manual'].includes(input.source)||input.fee.length>100||(input.body!==undefined&&(typeof input.body!=='string'||new TextEncoder().encode(input.body).length>2000)))throw new Error('입력 오류');
- const [data,a]=await Promise.all([eventSmsData(input.event,input.source,input.id),db.from('event_application_admin_list').select('name,contact,contact_type,revision,status,payment_status').eq('event_id',input.event).eq('source',input.source).eq('id',input.id).eq('is_archived',false).single()]);checked(a.error);
+ const [data,a]=await Promise.all([eventSmsData(input.event,input.source,input.id),db.from('event_application_admin_list').select('name,contact,contact_type,revision,status,payment_status,preferred_class').eq('event_id',input.event).eq('source',input.source).eq('id',input.id).eq('is_archived',false).single()]);checked(a.error);
  const template=data.templates.find(t=>t.id===input.template&&t.active&&t.language===input.language);if(!template)throw new Error('활성 템플릿을 다시 선택해주세요.');
  if(template.category==='confirmation'&&(a.data!.status!=='accepted'||a.data!.payment_status!=='paid'))throw new Error('입금 완료와 참가 승인이 모두 필요합니다.');
  if(input.purpose!==undefined&&!['payment_received','refund_completed'].includes(input.purpose))throw new Error('문자 목적 오류');
@@ -41,7 +42,7 @@ async function prepareApplicantSmsCore(input:{batch:string;event:string;source:s
   const latest=await db.from('event_application_admin_list').select('revision,payment_status').eq('event_id',input.event).eq('source',input.source).eq('id',input.id).eq('is_archived',false).single();checked(latest.error);if(latest.data?.payment_status!=='refunded')throw new Error('환불 상태가 변경되었습니다. 최신 상태를 확인해주세요.');a.data!.revision=latest.data.revision;
  }
  const fee=input.fee||data.preference?.fee||'';
- const rendered=renderEventSms({...template,body:input.body??template.body},data.event,a.data!.name,data.details,fee);
+ const rendered=renderEventSms({...template,body:input.body??template.body},data.event,a.data!.name,data.details,fee,a.data!.preferred_class);
  if(rendered.missing.length||!validSmsText(rendered.text))throw new Error('미입력 변수 또는 잘못된 본문: '+rendered.missing.join(', '));
  const type=smsMessageType(rendered.text),rates=context?.rates??await smsPrice();
  const r=await db.rpc('prepare_applicant_sms',{p_batch:input.batch,p_event:input.event,p_source:input.source,p_app:input.id,p_revision:a.data!.revision,p_template:template.id,p_text:rendered.text,p_price:rates[type],p_type:type,p_resend:input.resend,p_language:input.language,p_fee:fee});
@@ -149,4 +150,14 @@ export async function createSeason9ClassSmsTemplates(eventId:string){
   await saveEventSmsTemplate(eventId,null,0,{category:template.category,language:template.language,title:template.title,body:template.body,active:true,is_default:false});created++;
  }
  return created;
+}
+
+export async function tidySeason9SmsTemplates(eventId:string){
+ const data=await eventSmsData(eventId);if(data.event.slug!=='season9')throw new Error('9기 행사에서만 정리합니다.');
+ const seen=new Set<string>();let count=0;
+ for(const row of [...data.templates].sort((a,b)=>b.created_at.localeCompare(a.created_at))){
+  if(!row.active)continue;const key=row.language+':'+row.title;
+  if(copiedClassTemplate(row.title)||seen.has(key)){await saveEventSmsTemplate(eventId,row.template_key,row.version,{category:row.category,language:row.language,title:row.title,body:row.body,active:false,is_default:false});count++;}else seen.add(key);
+ }
+ return count;
 }

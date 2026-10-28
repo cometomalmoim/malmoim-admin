@@ -1,7 +1,7 @@
 import {messagingTemplates} from './messaging-templates';
 import type {EventSmsTemplate} from './event-sms';
 import {domesticPhone} from './sms-contract';
-export type SmsAudience={id:string;source:string;event_id:string;event_title?:string;name:string;contact:string;contact_type:string;status:string;payment_status:string};
+export type SmsAudience={id:string;source:string;event_id:string;event_title?:string;name:string;contact:string;contact_type:string;status:string;payment_status:string;preferred_class?:string|null};
 export function bulkSmsAudience(rows:SmsAudience[],event:string,category:string){
  const seen=new Set<string>(),eligible:SmsAudience[]=[],excluded:{row:SmsAudience;reason:string}[]=[];
  for(const row of rows){let reason='';const phone=domesticPhone(row.contact);
