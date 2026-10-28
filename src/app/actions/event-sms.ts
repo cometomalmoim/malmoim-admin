@@ -28,8 +28,7 @@ export async function eventSmsVersions(key:string){const db=await client();const
 async function prepareApplicantSmsCore(input:{batch:string;event:string;source:string;id:string;template:string;language:'ko'|'en';fee:string;resend:boolean;body?:string;purpose?:'payment_received'|'refund_completed';refundConfirmed?:boolean},context?:{db:Awaited<ReturnType<typeof client>>;config:NonNullable<ReturnType<typeof smsConfig>>;rates:Awaited<ReturnType<typeof smsPrice>>}){
  const db=context?.db??await client();const config=context?.config??smsConfig();if(!config)throw new Error('SOLAPI_API_KEY, SOLAPI_API_SECRET, SOLAPI_SENDER_NUMBER, SOLAPI_ADMIN_NOTIFY_NUMBER 설정이 필요합니다.');
  if(![input.batch,input.event,input.id,input.template].every(smsUuid)||!['season9','registration','manual'].includes(input.source)||input.fee.length>100||(input.body!==undefined&&(typeof input.body!=='string'||new TextEncoder().encode(input.body).length>2000)))throw new Error('입력 오류');
- const data=await eventSmsData(input.event,input.source,input.id);
- const a=await db.from('event_application_admin_list').select('name,contact,contact_type,revision,status,payment_status').eq('event_id',input.event).eq('source',input.source).eq('id',input.id).eq('is_archived',false).single();checked(a.error);
+ const [data,a]=await Promise.all([eventSmsData(input.event,input.source,input.id),db.from('event_application_admin_list').select('name,contact,contact_type,revision,status,payment_status').eq('event_id',input.event).eq('source',input.source).eq('id',input.id).eq('is_archived',false).single()]);checked(a.error);
  const template=data.templates.find(t=>t.id===input.template&&t.active&&t.language===input.language);if(!template)throw new Error('활성 템플릿을 다시 선택해주세요.');
  if(template.category==='confirmation'&&(a.data!.status!=='accepted'||a.data!.payment_status!=='paid'))throw new Error('입금 완료와 참가 승인이 모두 필요합니다.');
  if(input.purpose!==undefined&&!['payment_received','refund_completed'].includes(input.purpose))throw new Error('문자 목적 오류');
@@ -54,8 +53,7 @@ async function prepareApplicantSmsCore(input:{batch:string;event:string;source:s
   const issue=smsPreparationIssue(r.error.message??'',blocking);throw new SmsPreparationError(issue.code,issue.message);
  }
  // Return the saved snapshot, including on a retry of the same batch ID.
- const j=await db.from('sms_jobs').select('body,message_type,recipient').eq('batch_id',input.batch).single();checked(j.error);
- const b=await db.from('sms_batches').select('unit_price').eq('id',input.batch).single();checked(b.error);
+ const [j,b]=await Promise.all([db.from('sms_jobs').select('body,message_type,recipient').eq('batch_id',input.batch).single(),db.from('sms_batches').select('unit_price').eq('id',input.batch).single()]);checked(j.error||b.error);
  return {id:input.batch,text:j.data!.body,type:j.data!.message_type,cost:Number(b.data!.unit_price),sender:maskPhone(config.sender),to:maskPhone(j.data!.recipient)};
 }
 export async function prepareApplicantSms(input:Parameters<typeof prepareApplicantSmsCore>[0]){return prepareApplicantSmsCore(input);}
