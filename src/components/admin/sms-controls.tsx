@@ -5,21 +5,21 @@ import {useSmsDelivery} from './use-sms-delivery';
 import {smsStates,type SmsPrepared} from '@/lib/sms-contract';
 type Request=Parameters<typeof prepareSms>[0];
 export function SmsSend({input,disabled=false}:{input:Request;disabled?:boolean}){
- const [preview,setPreview]=useState<SmsPrepared|null>(null),[message,setMessage]=useState(''),[confirmed,setConfirmed]=useState(false),[sent,setSent]=useState(false);
+ const [preview,setPreview]=useState<SmsPrepared|null>(null),[message,setMessage]=useState(''),[sent,setSent]=useState(false);
  const [busy,start]=useTransition(),heading=useRef<HTMLHeadingElement>(null);
  useEffect(()=>{if(preview)heading.current?.focus();},[preview]);
  return <section className="sms-send-panel">
-  {!preview?<button type="button" className="messaging-send" disabled={disabled||busy} onClick={()=>start(async()=>{const result=await prepareSms(input);setPreview(result.preview??null);setMessage(result.message??'');})}>{busy?'준비 중…':input.mode==='test'?'본인 번호 테스트 준비':'발송 전 대상·요금 확인'}</button>:<div className="sms-confirm">
-   <h3 ref={heading} tabIndex={-1}>발송 전 최종 확인</h3>
-   <p>발신 {preview.sender} → {preview.recipient}</p><p>장문(LMS) {preview.count}건 × 계정 단가 {preview.unit.toLocaleString()}원 = 예상 {preview.total.toLocaleString()}원</p>
-   <p>계정 조회 시점 단가이며 세금·최종 과금은 SOLAPI 기준입니다. 미리보기는 10분간 유효합니다.</p>
-   <details><summary>대상별 전체 내용 확인</summary>{preview.items.map((item,i)=><div key={i}><strong>{item.to}</strong><pre>{item.text}</pre></div>)}</details>
-   <label><input type="checkbox" checked={confirmed} disabled={busy||sent} onChange={e=>setConfirmed(e.target.checked)}/>수신 대상·내용·예상 비용을 확인했으며 실제 유료 발송에 동의합니다.</label>
-   <button type="button" disabled={!confirmed||busy||sent} className="messaging-send" onClick={()=>start(async()=>{
+  {!preview?<button type="button" className="messaging-send" disabled={disabled||busy} onClick={()=>start(async()=>{const result=await prepareSms(input);setPreview(result.preview??null);setMessage(result.message??'');})}>{busy?'준비 중…':input.mode==='test'?'본인 번호 테스트 준비':'문자 내용 미리보기'}</button>:<div className="sms-confirm">
+   <h3 ref={heading} tabIndex={-1}>문자 내용 미리보기</h3>
+   <p>발신 {preview.sender} → {preview.recipient}</p><p>발송 대상 {preview.count}명</p>
+
+   <details open><summary>수신자별 내용</summary>{preview.items.map((item,i)=><div key={i}><strong>{item.to}</strong><pre>{item.text}</pre></div>)}</details>
+
+   <button type="button" disabled={busy||sent} className="messaging-send" onClick={()=>start(async()=>{
     let previous=51;
     for(let i=0;i<17;i++){const result=await approveSms(preview.id);setMessage(result.message);if(!result.ok)break;setSent(true);if(!result.remaining||result.remaining>=previous)break;previous=result.remaining;}
-   })}>{busy?'발송 요청 처리 중…':sent?'요청 처리됨 · 발송 기록 확인':input.mode==='test'?'내 알림번호로 실제 테스트 1건 발송':'확인한 대상에게 실제 발송'}</button>
-   {!sent&&<button type="button" disabled={busy} onClick={()=>{setPreview(null);setConfirmed(false);}}>취소</button>}
+   })}>{busy?'발송 요청 처리 중…':sent?'요청 처리됨 · 발송 기록 확인':input.mode==='test'?'내 알림번호로 실제 테스트 1건 발송':`${preview.count}명에게 발송`}</button>
+   {!sent&&<button type="button" disabled={busy} onClick={()=>{setPreview(null);}}>취소</button>}
    <p>결과 불명은 자동 재발송하지 않습니다. 발송 기록과 SOLAPI 내역을 먼저 확인하세요.</p>
   </div>}
   <p role="status">{message}</p>
