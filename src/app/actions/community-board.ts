@@ -1,5 +1,5 @@
 "use server";
-import { revalidatePath } from "next/cache";
+import { revalidatePath,updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { getAdminAccess } from "@/lib/auth";
@@ -37,6 +37,7 @@ export async function mutateCommunity(_previous: CommunityActionState,form:FormD
  }catch(error){
   return {message:error instanceof Error&&error.message==="validation"?t("입력 내용과 글자 수를 확인해주세요.","Check the input and character limits."):t("요청을 처리하지 못했습니다. 입력 내용은 유지됩니다.","Could not process the request. Your input has been kept.")};
  }
+ updateTag("public-announcements");
  revalidatePath("/board","layout");revalidatePath("/en/board","layout");
  // These URLs are pages in /admin/[...segments], not member-board layouts.
  // Revalidate in the action response so counts, selection and logs update together;

@@ -36,7 +36,7 @@ test("post/comment validation rejects blank, overlong, notice escalation and mal
 function actions({user={id},admin=false,owner=true,rpcError=null,throwClient=false}={}){
  const calls=[],refresh=[];
  const api=load("src/app/actions/community-board.ts",{
-  "next/cache":{revalidatePath:path=>refresh.push(path)},
+  "next/cache":{updateTag:tag=>{assert.equal(tag,"public-announcements");},revalidatePath:path=>refresh.push(path)},
   "next/navigation":{redirect:path=>{throw new Error("REDIRECT:"+path);}},
   "@/lib/auth":{getAdminAccess:async()=>({status:admin?"admin":"denied"})},
   "@/lib/supabase/server":{createClient:async()=>{if(throwClient)throw new Error("private-secret-error");return{
@@ -52,25 +52,25 @@ test("anonymous and forged administrator mutations stop before writes",async()=>
 });
 test("server checks the owner before editing or deleting another author's post/comment",async()=>{
  for(const action of ["post_save","post_delete","comment_save","comment_delete"]){
-  const a=actions({owner:false});
+  const a=actions({admin:true,owner:false});
   const result=await a.api.mutateCommunity({},form({action,id,version:"2026-10-17T00:00:00.000Z"}));
   assert.match(result.message,/cannot change/);assert.equal(a.calls.length,1);assert.equal(a.calls[0].name,"member_board_can_change");
  }
 });
 test("valid save uses the existing client with no submitted author/status and retains English destination",async()=>{
- const a=actions();
+ const a=actions({admin:true});
  await assert.rejects(a.api.mutateCommunity({},form({author_id:other,status:"hidden",is_pinned:"true"})),/REDIRECT:\/en\/board\//);
  assert.equal(a.calls[0].name,"member_board_mutate");assert.equal("author_id"in a.calls[0].args.p_input,false);
  assert.equal("status"in a.calls[0].args.p_input,false);assert.ok(a.refresh.includes("/en/board"));
 });
 test("database/stale/network failures give safe messages, no success and no redirects",async()=>{
- const a=actions({rpcError:{code:"40001",message:"private SQL details"}}),result=await a.api.mutateCommunity({},form());
+ const a=actions({admin:true,rpcError:{code:"40001",message:"private SQL details"}}),result=await a.api.mutateCommunity({},form());
  assert.match(result.message,/Could not save/);assert.equal(result.success,undefined);assert.doesNotMatch(result.message,/private SQL/);assert.equal(a.refresh.length,0);
  const unavailable=actions({throwClient:true});assert.doesNotMatch((await unavailable.api.mutateCommunity({},form())).message,/private-secret/);
 });
 test("forged operation IDs, timestamps and nonces are rejected without mutation",async()=>{
  for(const values of [{action:"DROP TABLE"},{id:"bad",version:"bad"},{id,version:"bad"},{nonce:"bad"}]){
-  const a=actions();assert.match((await a.api.mutateCommunity({},form(values))).message,/input/);assert.equal(a.calls.length,0);
+  const a=actions({admin:true});assert.match((await a.api.mutateCommunity({},form(values))).message,/input/);assert.equal(a.calls.length,0);
  }
 });
 test("view counting requires a verified member and never runs for anonymous",async()=>{
@@ -120,7 +120,7 @@ test("unavailable database never redirects, revalidates or reports successful in
  }
 });
 
-test("detail rendering preserves content, ownership, login prompts and real comment pagination",async()=>{
+test("detail rendering preserves legacy content but no member writing controls; existing comments retain pagination",async()=>{
  const React=require("react"),{renderToStaticMarkup}=require("react-dom/server");
  const {CommunityDetailView}=load("src/components/community/board-detail.tsx",{
   "./board-form":{BoardForm:({action})=>React.createElement("form",{"data-action":action}),CommunityViewCounter:()=>null},
@@ -130,14 +130,14 @@ test("detail rendering preserves content, ownership, login prompts and real comm
  const render=(overrides={})=>renderToStaticMarkup(React.createElement(CommunityDetailView,{data:{...data,...overrides},locale:"en"}));
  const anon=render();
  assert.match(anon,/Original line\nhttps:\/\/example.com\/long/);
- assert.match(anon,/Member-public-alias/);assert.match(anon,/Log in to write a comment/);
+ assert.match(anon,/Member-public-alias/);assert.doesNotMatch(anon,/Log in to write a comment/);
  assert.doesNotMatch(anon,/data-action="(?:post_delete|report|comment_save)"/);
  assert.doesNotMatch(anon,/aria-label="Comment pages"/);
  const owner=render({authenticated:true,post:{...data.post,can_edit:true}});
- assert.match(owner,/data-action="post_delete"/);assert.match(owner,/data-action="report"/);assert.match(owner,/data-action="comment_save"/);
- assert.match(owner,new RegExp("/en/board/"+id+"/edit"));
+ assert.doesNotMatch(owner,/data-action="(?:post_delete|report|comment_save)"/);
+ assert.doesNotMatch(owner,new RegExp("/en/board/"+id+"/edit"));
  assert.match(render({comment_total:31}),/aria-label="Comment pages"/);
- assert.match(render({comment_total:0,comment_page:2}),/cp=1/);
+ assert.doesNotMatch(render({comment_total:0,comment_page:2}),/cp=1/);
 });
 
 test("localized loading variants announce busy state and never duplicate the public header",()=>{

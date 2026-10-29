@@ -1,0 +1,17 @@
+import {readFileSync} from 'node:fs';
+import ts from 'typescript';
+import {runInNewContext} from 'node:vm';
+import assert from 'node:assert/strict';
+const calls=[];let fail=false;
+const q={};for(const method of ['select','eq','order','or'])q[method]=(...args)=>{calls.push([method,...args]);return q;};
+q.range=async(...args)=>{calls.push(['range',...args]);return fail?{error:{message:'unavailable'}}:{data:[{id:'notice',title:'Public title',content:'Public body',category:'notice',status:'public',is_pinned:false,created_at:'2026-10-29',updated_at:'2026-10-29',view_count:1}],count:1};};
+const module={exports:{}};
+const code=ts.transpileModule(readFileSync('src/lib/public-announcements.ts','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,target:ts.ScriptTarget.ES2022}}).outputText;
+runInNewContext(code,{module,exports:module.exports,require:id=>id==='next/cache'?{cacheLife:()=>{},cacheTag:tag=>calls.push(['tag',tag])}:id==='./supabase/public'?{createPublicClient:()=>({from:table=>{calls.push(['table',table]);return q;}})}:{}});
+let result=await module.exports.publicAnnouncements('한국어,(status.eq.hidden)%',2);
+assert.equal(result.admin,false);assert.equal(result.authenticated,false);assert.equal(result.posts[0].can_edit,false);
+assert.ok(calls.some(x=>x[0]==='eq'&&x[1]==='category'&&x[2]==='notice'));assert.ok(calls.some(x=>x[0]==='eq'&&x[1]==='status'&&x[2]==='public'));
+assert.ok(calls.some(x=>x[0]==='range'&&x[1]===20&&x[2]===39));assert.ok(calls.some(x=>x[0]==='tag'&&x[1]==='public-announcements'));
+assert.equal(calls.find(x=>x[0]==='or')[1].split(',').length,2);
+fail=true;assert.equal(await module.exports.publicAnnouncements('',1),null);
+console.log('PASS: anonymous public-only notices, bounded pagination, sanitized search, cache tag, fail-closed errors');
