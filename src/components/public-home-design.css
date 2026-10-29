@@ -13,3 +13,5 @@
 /* Match the other landscape activity photos; trim sky and pavement around the group. */
 .malmoim-home .mh-activity-outdoors .mh-activity-visual img{aspect-ratio:4/3;object-fit:cover;object-position:50% 48%}
 @media(min-width:761px){.malmoim-home .mh-activity-outdoors .mh-activity-visual img{width:auto;height:100%;max-width:100%}}
+
+.mh-join-options{display:grid;grid-template-columns:1fr 1fr;gap:24px;margin-top:28px}.mh-join-options article{background:#f2f5e9;border-radius:16px;padding:28px}.mh-join-options article:nth-child(2){background:#fff6da}.mh-join-options h3{font-size:23px!important;line-height:1.4}.mh-join-options p{font-size:14px;line-height:1.8;color:#53685d}@media(max-width:760px){.mh-join-options{grid-template-columns:1fr}.mh-join-options article{padding:24px}}

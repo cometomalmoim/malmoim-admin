@@ -53,3 +53,14 @@
  .public-site[lang=en] .public-navigation.is-open{display:flex}
  .public-site[lang=en] .public-navigation a{padding:14px 16px;font-size:14px}
 }
+
+@media(min-width:961px) and (max-width:1180px){
+ .public-site .public-header{flex-wrap:wrap;gap:12px}
+ .public-site .public-menu-toggle{display:block;order:1;margin-left:auto;min-height:44px;padding:10px 16px;border:1px solid #d4dcd7;border-radius:9999px;background:white;font-size:13px;font-weight:700}
+ .public-site .public-login,.public-site .public-account,.public-site .public-account-loading{order:3}
+ .public-site .public-languages{order:2}
+ .public-site .public-navigation{display:none;order:4;width:100%;margin:0;flex-direction:column;align-items:stretch;gap:8px;padding:12px;background:#f7f8f7;border-radius:24px}
+ .public-site .public-navigation.is-open{display:flex}
+ .public-site .public-navigation a{padding:14px 16px;font-size:14px;border:0}
+}
+@media(min-width:1181px){.public-site .public-header{gap:12px}.public-site .public-logo{width:150px}.public-site .public-navigation{gap:2px}.public-site .public-navigation a{padding:12px 9px}}

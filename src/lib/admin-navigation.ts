@@ -25,6 +25,11 @@ export const adminGroups = [
         "description": "여러 이벤트의 신청·선발·입금 상태와 유입경로를 관리합니다."
       },
       {
+        "slug": "daily-participation",
+        "title": "일일참여 신청 관리",
+        "description": "일일참여 일정과 신청·참가 확정을 관리합니다."
+      },
+      {
         "slug": "participants",
         "title": "전체 참여 이력 관리",
         "description": "사람별 누적 참여와 이벤트·회차별 실제 참석 기록을 조회합니다."
