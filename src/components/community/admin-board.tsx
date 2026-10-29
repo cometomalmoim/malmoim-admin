@@ -16,12 +16,12 @@ import "./admin-board.css";
 
 const category=(value:string)=>boardCategories.find(c=>c.value===value)?.ko??value;
 function Badge({value,label}:{value:string;label?:string}){return <span className={"member-badge member-badge--"+value}>{label??visibilityLabels[value]??reportStates[value]??value}</span>;}
-export function AdminBoardLoading({panel=false}:{panel?:boolean}){return <div className={"member-admin member-loading "+(panel?"member-panel":"")} aria-busy="true"><span role="status" className="member-sr-only">{panel?"상세 정보를 불러오는 중":"회원 게시판을 불러오는 중"}</span><div aria-hidden="true">{!panel&&<div className="member-stats">{[0,1,2,3].map(i=><span className="member-skeleton" key={i}/>)}</div>}{panel&&[0,1,2,3,4].map(i=><div className="member-skeleton member-skeleton-row" key={i}/>)}</div></div>;}
+export function AdminBoardLoading({panel=false}:{panel?:boolean}){return <div className={"member-admin member-loading "+(panel?"member-panel":"")} aria-busy="true"><span role="status" className="member-sr-only">{panel?"상세 정보를 불러오는 중":"주요 안내사항을 불러오는 중"}</span><div aria-hidden="true">{!panel&&<div className="member-stats">{[0,1,2,3].map(i=><span className="member-skeleton" key={i}/>)}</div>}{panel&&[0,1,2,3,4].map(i=><div className="member-skeleton member-skeleton-row" key={i}/>)}</div></div>;}
 export function AdminBoardWorkspace({email,query}:{email:string;query:AdminBoardQuery}){
- return <AdminShell current="member-board" title="회원 게시판 관리" email={email}><div className="member-admin">
-  <header className="member-heading"><div><h1>회원 게시판 관리</h1><p>회원 게시글, 댓글, 신고 내역, 공지사항을 한곳에서 관리합니다.</p></div><Link className="member-primary" href={base+"/new"}>공지사항 작성</Link></header>
+ return <AdminShell current="member-board" title="주요 안내사항 관리" email={email}><div className="member-admin">
+  <header className="member-heading"><div><h1>주요 안내사항 관리</h1><p>홈페이지의 주요 안내사항을 작성하고 관리합니다. 기존 게시글·댓글·신고 기록은 보존됩니다.</p></div><Link className="member-primary" href={base+"/new"}>공지사항 작성</Link></header>
   <Suspense fallback={<AdminBoardLoading/>}><Stats/></Suspense>
-  <nav className="member-tabs" aria-label="회원 게시판 관리 탭">{([["posts","게시글 목록"],["reports","신고 내역"],["hidden","숨김 게시글"],["notices","공지사항"]] as const).map(([tab,label])=><Link key={tab} aria-current={query.tab===tab?"page":undefined} href={href({...query,tab,selected:"",page:1,status:"all",category:"all",pinned:"all",report_status:"all",target:"all",outcome:"all"})}>{label}</Link>)}</nav>
+  <nav className="member-tabs" aria-label="주요 안내사항 관리 탭">{([["notices","주요 안내사항"],["posts","기존 게시글"],["reports","신고 내역"],["hidden","숨김 게시글"]] as const).map(([tab,label])=><Link key={tab} aria-current={query.tab===tab?"page":undefined} href={href({...query,tab,selected:"",page:1,status:"all",category:"all",pinned:"all",report_status:"all",target:"all",outcome:"all"})}>{label}</Link>)}</nav>
   <Suspense key={JSON.stringify(query)} fallback={<div className={"member-report-workspace"+(query.tab==="reports"&&query.selected?" has-selection":"")}><AdminBoardLoading panel/>{query.tab==="reports"&&query.selected&&<AdminBoardLoading panel/>}</div>}>{query.tab==="reports"?<ReportWorkspace query={query}/>:<PostWorkspace query={query}/>}</Suspense>
  </div></AdminShell>;
 }

@@ -17,7 +17,7 @@ export async function mutateCommunity(_previous: CommunityActionState,form:FormD
   const client=await createClient();
   const {data:{user},error}=await client.auth.getUser();
   if(error||!user)return {message:t("로그인 후 이용해주세요.","Please log in to continue.")};
-  if(admin&&(await getAdminAccess()).status!=="admin")return {message:t("관리자 권한이 필요합니다.","Administrator access is required.")};
+  if((admin||["post_save","post_delete","comment_save","comment_delete"].includes(action))&&(await getAdminAccess()).status!=="admin")return {message:t("관리자 권한이 필요합니다.","Administrator access is required.")};
   if((id&&!uuid(id))||(!id&&!["post_save","comment_save"].includes(action)))throw new Error("validation");
   if(id&&action!=="report"&&(!version||!Number.isFinite(Date.parse(version))))throw new Error("validation");
   const input=communityInput(action,form,admin);
