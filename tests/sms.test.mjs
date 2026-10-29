@@ -36,6 +36,13 @@ test('신청 알림은 길이에 따라 SMS/LMS를 선택하고 지정된 운영
   let sent,claimed=false;
   const {processSmsQueue}=load('src/lib/sms-worker.ts',{'server-only':{},'./solapi':{smsConfig:()=>({worker:'TEST_WORKER',notify:'01000000002'}),sendSms:async(...args)=>{sent=args;return 'GTEST0000000001';}}});
   await processSmsQueue({rpc:async(name)=>name==='sms_claim'&&!claimed?(claimed=true,{data:[{id:'test-id',kind:'notification',recipient:'01000000003',body}]}):{data:[]}});
-  assert.equal(sent[0],'01000000002');assert.equal(sent[1],body);assert.equal(sent[2],type);
+  assert.equal(sent[0],'01000000003');assert.equal(sent[1],body);assert.equal(sent[2],type);
  }
+});
+
+test('기존 수신번호가 비어 있는 알림은 원래 서버 번호를 계속 사용',async()=>{
+ let sent,claimed=false;
+ const {processSmsQueue}=load('src/lib/sms-worker.ts',{'server-only':{},'./solapi':{smsConfig:()=>({worker:'TEST_WORKER',notify:'01000000002'}),sendSms:async(to)=>{sent=to;return 'GTEST0000000001';}}});
+ await processSmsQueue({rpc:async(name)=>name==='sms_claim'&&!claimed?(claimed=true,{data:[{id:'test-id',kind:'notification',recipient:null,body:'TEST'}]}):{data:[]}});
+ assert.equal(sent,'01000000002');
 });
