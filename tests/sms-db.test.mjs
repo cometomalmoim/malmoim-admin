@@ -20,6 +20,7 @@ try{
  await db.exec(await sql('manual/open_season9_halloween.sql'));
  await db.exec(await sql('036_messaging.sql'));
  await db.exec(await sql('manual/update_application_sms_details.sql'));
+ await db.exec(await sql('migrations/20261029144038_sms_additional_notification_recipients.sql'));
  assert.equal(await one('select sending_enabled as value from public.sms_settings'),false);
  await db.exec('set role anon');
  for(const table of ['sms_settings','sms_jobs','sms_batches','sms_daily_usage'])await denied('select * from public.'+table);
@@ -45,5 +46,23 @@ try{
  const old=await prepare();await db.exec('reset role');await db.query("update public.sms_batches set created_at=now()-interval '11 minutes' where id=$1",[old]);await as(admin);await denied('select public.sms_approve($1)',[old]);
  batch=await prepare('manual');await db.query('select public.sms_approve($1)',[batch]);await db.exec('reset role');await db.exec('update public.sms_daily_usage set attempts=200');assert.equal((await claim(batch)).length,0);
  await as(admin);await db.exec('select public.sms_toggle(false,false)');assert.equal((await claim(batch)).length,0);
+ // Private additional recipient: both outbox records commit together, separately deduplicated.
+ await db.exec('reset role');
+ await db.exec("insert into sms_private.notification_recipients(phone) values('01000000005')");
+ await as(normal);await denied('select * from sms_private.notification_recipients');
+ await denied("insert into sms_private.notification_recipients(phone) values('01000000006')");
+ await as(admin);await denied('select * from sms_private.notification_recipients');
+ await db.exec('select public.sms_toggle(true,true)');
+ await db.exec('reset role');
+ await db.exec('update public.sms_daily_usage set attempts=0');
+ const signup=randomUUID();
+ await db.query("insert into public.event_registration_responses(event_id,submission_id,name,contact,participation_history,privacy_notice_version,privacy_consent,privacy_notice_snapshot) values($1,$2,'Synthetic extra recipient','01000000006','new','TEST',true,'TEST')",[party.id,signup]);
+ const extra=(await db.query("select * from public.sms_jobs where kind='notification' and application_id=(select id from public.event_registration_responses where submission_id=$1)",[signup])).rows;
+ assert.equal(extra.length,2);assert.deepEqual(extra.map(j=>j.recipient).sort(),['01000000005',null].sort());
+ await db.query("insert into public.sms_jobs(event_id,application_source,application_id,kind,recipient,body) select event_id,application_source,application_id,kind,recipient,body from public.sms_jobs where id=$1 on conflict do nothing",[extra[0].id]);
+ assert.equal((await db.query("select count(*)::int n from public.sms_jobs where application_id=$1",[extra[0].application_id])).rows[0].n,2);
+ const claimed=[];for(let n=0;n<2;n++){const [j]=await claim();claimed.push(j.recipient);await finish(j.id,'accepted');}
+ assert.deepEqual(claimed.sort(),['01000000005',null].sort());
+ console.log('PASS: additional notification recipient privacy, two independent jobs, per-recipient deduplication and claims');
  console.log('PASS: atomic notification outbox, retry deduplication, event/applicant name in alerts without contact details, recipient revisions, preview expiry, daily cap, disabled sending blocked');
 }catch(error){console.error(error.message);process.exitCode=1;}finally{await db.close();}
