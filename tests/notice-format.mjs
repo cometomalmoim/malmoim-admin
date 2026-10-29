@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {readFileSync} from 'node:fs';
+import {createRequire} from 'node:module';
+import {runInNewContext} from 'node:vm';
+import ts from 'typescript';
+const require=createRequire(import.meta.url),React=require('react'),{renderToStaticMarkup}=require('react-dom/server');
+const module={exports:{}};runInNewContext(ts.transpileModule(readFileSync('src/lib/notice-format.tsx','utf8'),{compilerOptions:{module:ts.ModuleKind.CommonJS,jsx:ts.JsxEmit.ReactJSX,target:ts.ScriptTarget.ES2022}}).outputText,{module,exports:module.exports,require});
+const html=renderToStaticMarkup(React.createElement(module.exports.NoticeBody,{content:'# 큰 제목\n## 중간\n### 작은\n**Bold** and *italic* and ***both***\n<script>alert(1)</script>'}));
+assert.match(html,/<h2>큰 제목<\/h2>/);assert.match(html,/<h3>중간<\/h3>/);assert.match(html,/<h4>작은<\/h4>/);assert.match(html,/<strong>Bold<\/strong>/);assert.match(html,/<em>italic<\/em>/);assert.match(html,/<strong><em>both<\/em><\/strong>/);assert.ok(!html.includes('<script>'));assert.match(html,/&lt;script&gt;/);
+assert.equal(module.exports.noticeExcerpt('# 제목\n**본문** 그리고 *강조*'),'제목 본문 그리고 강조');
+console.log('PASS: emphasis and sizes render; raw HTML remains escaped; excerpts omit formatting markers');

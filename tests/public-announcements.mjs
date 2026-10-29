@@ -13,5 +13,6 @@ assert.equal(result.admin,false);assert.equal(result.authenticated,false);assert
 assert.ok(calls.some(x=>x[0]==='eq'&&x[1]==='category'&&x[2]==='notice'));assert.ok(calls.some(x=>x[0]==='eq'&&x[1]==='status'&&x[2]==='public'));
 assert.ok(calls.some(x=>x[0]==='range'&&x[1]===20&&x[2]===39));assert.ok(calls.some(x=>x[0]==='tag'&&x[1]==='public-announcements'));
 assert.equal(calls.find(x=>x[0]==='or')[1].split(',').length,2);
+calls.length=0;await module.exports.publicAnnouncements('',1,'en');assert.ok(calls.some(x=>x[0]==='eq'&&x[1]==='language'&&x[2]==='en'));
 fail=true;assert.equal(await module.exports.publicAnnouncements('',1),null);
 console.log('PASS: anonymous public-only notices, bounded pagination, sanitized search, cache tag, fail-closed errors');
