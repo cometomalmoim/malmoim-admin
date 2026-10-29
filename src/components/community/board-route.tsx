@@ -3,12 +3,11 @@ import {Suspense} from "react";
 import {connection} from "next/server";
 import {notFound} from "next/navigation";
 import {communityList,communityDetail,communityIdentity} from "@/lib/community-board";
-import {communityQuery,boardText,boardCategories,uuid,type BoardField} from "@/lib/community-board-model";
+import {communityQuery,boardText,uuid,type BoardField} from "@/lib/community-board-model";
 import {localizedPublicPath} from "@/lib/public-locale";
 import {getAdminAccess} from "@/lib/auth";
 import {AdminShell} from "@/components/admin/admin-shell";
-import {CommunityListView} from "./board-list";
-import {CommunityDetailView} from "./board-detail";
+import {AnnouncementList,AnnouncementDetail} from "./announcements";
 import {BoardForm} from "./board-form";
 import {AdminBoardWorkspace,AdminPostRoute,AdminBoardLoading} from "./admin-board";
 import {adminBoardQuery} from "@/lib/member-board-admin-model";
@@ -29,7 +28,7 @@ export async function CommunityRoute({locale="ko",view="list",params,searchParam
   return wrap(<Suspense key={id+JSON.stringify(raw)} fallback={<AdminBoardLoading panel/>}><AdminPostRoute id={id} query={adminBoardQuery(raw)} page={Math.floor(Math.max(1,Math.min(Number(raw.cp)||1,10000)))} commentQuery={typeof raw.cq==="string"?raw.cq:""}/></Suspense>);
  }
  if(!admin&&(view==="new"||view==="edit"))return wrap(<section className="community-board"><h1>{t("운영진 전용 작성 공간입니다","Only our team can publish announcements")}</h1><Link href={base}>{t("주요 안내사항 보기","View announcements")}</Link></section>);
- if(view==="list")return wrap(<CommunityListView data={await communityList(query,admin)} query={query} locale={locale} admin={admin}/>);
+ if(view==="list")return wrap(<AnnouncementList data={await communityList(query)} query={query} locale={locale}/>);
  let data=null;
  if(view==="detail"||view==="edit"){
   const id=params?(await params).id:"";
@@ -39,19 +38,18 @@ export async function CommunityRoute({locale="ko",view="list",params,searchParam
   if(result.unavailable)return wrap(<section className="community-board"><p role="alert">{t("게시판을 불러올 수 없습니다. 잠시 후 다시 시도해주세요.","The post could not be loaded. Please try again later.")}</p><Link href={base}>{t("목록으로","Back to posts")}</Link></section>);
   if(!result.data||(!admin&&result.data.post.category!=="notice"))notFound();
   data=result.data;
-  if(view==="detail")return wrap(<CommunityDetailView data={data} locale={locale} commentQuery={typeof raw.cq==="string"?raw.cq:""}/>);
+  if(view==="detail")return wrap(<AnnouncementDetail data={data} locale={locale}/>);
  }
  const user=await communityIdentity();
  if(!user)return wrap(<section className="community-board"><h1>{t("로그인이 필요합니다","Log in to continue")}</h1><p>{t("글 작성은 로그인 후 이용할 수 있습니다.","Please log in before writing a post.")}</p><Link className="community-write" href={localizedPublicPath("/auth/login",locale)+"?returnTo="+encodeURIComponent(view==="edit"&&data?base+"/"+data.post.id+"/edit":base+"/new")}>{t("로그인","Log in")}</Link></section>);
  if(view==="edit"&&(!data?.post.can_edit||(!admin&&data.post.category==="notice")||(admin&&data.post.category!=="notice")))return wrap(<section className="community-board"><h1>{t("수정 권한이 없습니다","You cannot edit this post")}</h1><Link href={base}>{t("목록으로","Back to posts")}</Link></section>);
  if(view==="new"&&!(await communityList(communityQuery({}),admin)))return wrap(<section className="community-board"><p role="alert">{t("게시판 연결을 준비하고 있습니다. 아직 글을 저장할 수 없습니다.","The board is not available yet. Posts cannot be saved until setup is complete.")}</p><Link href={base}>{t("목록으로","Back to posts")}</Link></section>);
  const fields:BoardField[]=[
-  {name:"category",label:t("카테고리","Category"),type:"select",required:true,value:data?.post.category??(admin?"notice":"free"),options:boardCategories.filter(c=>admin?c.value==="notice":c.value!=="notice").map(c=>({value:c.value,label:t(c.ko,c.en)}))},
   {name:"title",label:t("제목","Title"),value:data?.post.title??"",required:true,maxLength:200},
   {name:"content",label:t("본문","Content"),value:data?.post.content??"",type:"textarea",required:true,maxLength:20000},
  ];
  return wrap(<section className="community-board community-editor"><h1>{admin?(view==="edit"?"공지사항 수정":"공지사항 작성"):view==="edit"?t("게시글 수정","Edit post"):t("글쓰기","Write a post")}</h1>
-  <p>{t("이메일·전화번호 등 개인정보를 본문에 포함하지 마세요. 공개 별칭은 게시판에서 자동 생성됩니다.","Do not include personal information such as email or phone numbers. A public board alias is generated automatically.")}</p>
-  <BoardForm action="post_save" locale={locale} fields={fields} hidden={{id:data?.post.id??"",version:data?.post.updated_at??"",admin:String(admin)}} label={t("저장","Save")} cancel={data?base+"/"+data.post.id:base}/>
+  <p>{view==="edit"?"수정한 내용이 저장되며 기존 공개·숨김 상태는 유지됩니다.":"게시하면 홈페이지의 주요 안내사항에 바로 표시됩니다. 목록에서 숨기거나 상단에 고정할 수 있습니다."}</p>
+  <BoardForm action="post_save" locale={locale} fields={fields} hidden={{id:data?.post.id??"",version:data?.post.updated_at??"",admin:String(admin),category:"notice"}} label={view==="edit"?t("수정 저장","Save changes"):t("홈페이지에 게시","Publish announcement")} cancel={data?base+"/"+data.post.id:base}/>
  </section>);
 }

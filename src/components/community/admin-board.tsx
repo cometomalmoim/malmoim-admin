@@ -13,15 +13,17 @@ import {AdminReportPanel} from "./admin-report-panel";
 import {BoardForm} from "./board-form";
 import {date} from "./board-list";
 import "./admin-board.css";
+import {AdminNoticeList} from "./announcements";
 
 const category=(value:string)=>boardCategories.find(c=>c.value===value)?.ko??value;
 function Badge({value,label}:{value:string;label?:string}){return <span className={"member-badge member-badge--"+value}>{label??visibilityLabels[value]??reportStates[value]??value}</span>;}
 export function AdminBoardLoading({panel=false}:{panel?:boolean}){return <div className={"member-admin member-loading "+(panel?"member-panel":"")} aria-busy="true"><span role="status" className="member-sr-only">{panel?"상세 정보를 불러오는 중":"주요 안내사항을 불러오는 중"}</span><div aria-hidden="true">{!panel&&<div className="member-stats">{[0,1,2,3].map(i=><span className="member-skeleton" key={i}/>)}</div>}{panel&&[0,1,2,3,4].map(i=><div className="member-skeleton member-skeleton-row" key={i}/>)}</div></div>;}
 export function AdminBoardWorkspace({email,query}:{email:string;query:AdminBoardQuery}){
  return <AdminShell current="member-board" title="주요 안내사항 관리" email={email}><div className="member-admin">
-  <header className="member-heading"><div><h1>주요 안내사항 관리</h1><p>홈페이지의 주요 안내사항을 작성하고 관리합니다. 기존 게시글·댓글·신고 기록은 보존됩니다.</p></div><Link className="member-primary" href={base+"/new"}>공지사항 작성</Link></header>
-  <Suspense fallback={<AdminBoardLoading/>}><Stats/></Suspense>
-  <nav className="member-tabs" aria-label="주요 안내사항 관리 탭">{([["notices","주요 안내사항"],["posts","기존 게시글"],["reports","신고 내역"],["hidden","숨김 게시글"]] as const).map(([tab,label])=><Link key={tab} aria-current={query.tab===tab?"page":undefined} href={href({...query,tab,selected:"",page:1,status:"all",category:"all",pinned:"all",report_status:"all",target:"all",outcome:"all"})}>{label}</Link>)}</nav>
+  <header className="member-heading"><div><h1>주요 안내사항 관리</h1><p>홈페이지의 주요 안내사항을 작성하고 관리합니다. 기존 게시글·댓글·신고 기록은 보존됩니다.</p></div><Link className="member-primary" href={base+"/new"}>안내사항 작성</Link><Link className="member-text-link" href="https://malmoim.com/board" target="_blank" rel="noopener noreferrer">홈페이지 보기 ↗</Link></header>
+  {query.tab!=="notices"&&<Suspense fallback={<AdminBoardLoading/>}><Stats/></Suspense>}
+  {query.tab!=="notices"&&<Link href={base}>← 주요 안내사항으로</Link>}
+  <details className="notice-admin-archive"><summary>기존 게시 기록 관리</summary><nav aria-label="기존 게시 기록"><Link href={href({tab:"posts"})}>기존 게시글</Link><Link href={href({tab:"reports"})}>신고 내역</Link><Link href={href({tab:"hidden"})}>숨김 기록</Link></nav></details>
   <Suspense key={JSON.stringify(query)} fallback={<div className={"member-report-workspace"+(query.tab==="reports"&&query.selected?" has-selection":"")}><AdminBoardLoading panel/>{query.tab==="reports"&&query.selected&&<AdminBoardLoading panel/>}</div>}>{query.tab==="reports"?<ReportWorkspace query={query}/>:<PostWorkspace query={query}/>}</Suspense>
  </div></AdminShell>;
 }
@@ -50,8 +52,9 @@ function ErrorState(){return <p className="member-empty member-error" role="aler
 function postOptions(p:CommunityPost):ModerationOption[]{return p.status==="deleted"?[]:[{value:"visibility",label:p.status==="hidden"?"게시글 숨김 해제":"게시글 숨김",action:p.status==="hidden"?"show_post":"hide_post",id:p.id,version:p.updated_at},{value:"pin",label:p.is_pinned?"상단 고정 해제":"상단 고정",action:"pin",id:p.id,version:p.updated_at,is_pinned:String(!p.is_pinned)}];}
 async function PostWorkspace({query}:{query:AdminBoardQuery}){
  const data=await communityList(query,true);
+ if(query.tab==="notices")return <AdminNoticeList data={data} query={query}/>;
  const hidden=query.tab==="hidden"&&data?await hiddenPostLogs(data.posts.map(p=>p.id)):undefined;
- return <section className="member-panel"><h2>{query.tab==="hidden"?"숨김 게시글":query.tab==="notices"?"공지사항":"게시글 목록"} {data&&<span>{data.total.toLocaleString()}건</span>}</h2><Filters query={query}/>
+ return <section className="member-panel"><h2>{query.tab==="hidden"?"숨김 게시글":"게시글 목록"} {data&&<span>{data.total.toLocaleString()}건</span>}</h2><Filters query={query}/>
   {!data?<ErrorState/>:<><div className="member-table-wrap"><table className="member-table member-post-table"><caption className="member-sr-only">회원 게시글 관리 목록</caption><thead><tr>{["카테고리","제목","작성자","작성일","조회 / 댓글","공개 상태","고정","관리"].map(h=><th key={h} scope="col">{h}</th>)}</tr></thead><tbody>
    {!data.posts.length&&<tr><td colSpan={8} className="member-empty">조건에 맞는 게시글이 없습니다.</td></tr>}
    {data.posts.map(p=>{const log=hidden?.find(l=>l.post_id===p.id);return <tr key={p.id}><td><Badge value={p.category} label={category(p.category)}/></td><td className="member-title"><Link href={base+"/"+p.id+"?"+new URLSearchParams(Object.entries(query).map(([k,v])=>[k,String(v)]))}>{p.title}</Link><details><summary>게시글 ID</summary><code>{p.id}</code></details>{query.tab==="hidden"&&<small>{hidden===null?"숨김 기록 조회 실패":log?<>{log.reason}<br/>{date(log.created_at,"ko")} · 관리자 {log.actor_id}</>:"숨김 기록 없음"}</small>}</td><td>{communityAuthorName(p.author_name,"ko")}</td><td><time dateTime={p.created_at}>{date(p.created_at,"ko")}</time></td><td>{p.view_count} / {p.comment_count}</td><td><Badge value={p.status}/></td><td>{p.is_pinned?"고정":"—"}</td><td><Link className="member-text-link" href={base+"/"+p.id+"?"+new URLSearchParams(Object.entries(query).map(([k,v])=>[k,String(v)]))}>상세·관리</Link>{p.category==="notice"&&p.status!=="deleted"&&<Link className="member-text-link" href={base+"/"+p.id+"/edit"}>공지 수정</Link>}</td></tr>;})}

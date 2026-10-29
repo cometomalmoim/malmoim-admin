@@ -17,7 +17,7 @@ export function CommunityLoading({ locale = "ko", view = "list" }: { locale?: Pu
    <div className="community-content" aria-hidden="true"><div className="community-tabs community-skeleton-tabs">{[0,1,2,3].map(i => <Bar key={i} />)}</div>
     <div className="community-layout"><div><div className="community-skeleton-filters"><Bar /><Bar /><Bar /><Bar className="community-skeleton-yellow" /></div><Bar className="community-skeleton-count" />
      <div className="community-skeleton-rows">{[0,1,2,3,4,5].map(i => <div className="community-skeleton-row" key={i}><Bar className="community-skeleton-category" /><div><Bar /><Bar className="community-skeleton-short" /></div><Bar className="community-skeleton-date" /></div>)}</div>
-    </div><aside className="community-keywords community-skeleton-keywords"><Bar />{[0,1,2,3,4].map(i => <div key={i}><Bar /></div>)}</aside></div>
+    </div></div>
    </div>
   </section> : <section className={"community-board community-loading " + (view === "detail" ? "community-detail community-detail-public" : "community-editor")}>
    {status}<div aria-hidden="true" className={view === "detail" ? "community-post-panel" : "community-skeleton-editor"}>
