@@ -1,11 +1,11 @@
-import { communityQuery, type CommunityQuery } from "./community-board-model";
+import { communityQuery,uuid, type CommunityQuery } from "./community-board-model";
 
 export const adminBoardBase = "/admin/member-board";
 export const reportStates: Record<string,string> = {pending:"처리 대기",reviewing:"검토 중",resolved:"처리 완료"};
 export const reportReasons: Record<string,string> = {spam:"스팸·홍보",abuse:"괴롭힘·부적절한 내용",privacy:"개인정보 노출",other:"기타"};
 export const visibilityLabels: Record<string,string> = {public:"공개",hidden:"숨김",deleted:"삭제됨"};
 export const logLabels: Record<string,string> = {hide_post:"게시글 숨김",show_post:"게시글 복구",hide_comment:"댓글 숨김",show_comment:"댓글 복구",pin:"고정 상태 변경",report_reviewing:"신고 검토",report_resolved:"신고 종료",notice_save:"공지 저장",notice_delete:"공지 삭제"};
-export type AdminBoardQuery = CommunityQuery & {tab:"posts"|"reports"|"hidden"|"notices";report_status:string;target:string;selected:string;outcome:string};
+export type AdminBoardQuery = CommunityQuery & {event?:string;tab:"posts"|"reports"|"hidden"|"notices";report_status:string;target:string;selected:string;outcome:string};
 export type ReportPost = {id:string;category:string;title:string;content:string;author_name:string;status:string;updated_at:string};
 export type ReportComment = {id:string;post_id:string;content:string;author_name:string;status:string;updated_at:string;post:ReportPost|null};
 export type AdminReport = {id:string;post_id:string|null;comment_id:string|null;reason:string;detail:string;original_content:string;status:string;created_at:string;updated_at:string;post:ReportPost|null;comment:ReportComment|null};
@@ -17,7 +17,7 @@ export function adminBoardQuery(raw:Record<string,string|string[]|undefined>):Ad
  const query=communityQuery(raw);
  if(tab==="hidden")query.status="hidden";
  if(tab==="notices")query.category="notice";
- return {...query,tab,report_status:choice("report_status",["all","open","pending","reviewing","resolved"],"all"),target:choice("target",["all","post","comment"],"all"),selected:typeof raw.selected==="string"?raw.selected:"",outcome:choice("outcome",["all","no_action"],"all")};
+ return {...query,tab,event:typeof raw.event==='string'&&(raw.event==='common'||uuid(raw.event))?raw.event:'',report_status:choice("report_status",["all","open","pending","reviewing","resolved"],"all"),target:choice("target",["all","post","comment"],"all"),selected:typeof raw.selected==="string"?raw.selected:"",outcome:choice("outcome",["all","no_action"],"all")};
 }
 export function adminBoardHref(query:Partial<AdminBoardQuery>,changes:Record<string,string|number|undefined>={}) {
  const params=new URLSearchParams();
