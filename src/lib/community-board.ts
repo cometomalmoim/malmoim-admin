@@ -4,7 +4,7 @@ import { getAdminAccess } from "./auth";
 import { uuid, type CommunityQuery, type CommunityList, type CommunityDetail } from "./community-board-model";
 export async function communityList(query: CommunityQuery, admin=false): Promise<CommunityList | null> {
  if(admin&&(await getAdminAccess()).status!=="admin")return null;
- try { const client=await createClient();const result=await client.rpc("member_board_list",{p_filter:query,p_admin:admin});return result.error?null:result.data as CommunityList; }catch{return null;}
+ try { const client=await createClient();const result=await client.rpc("member_board_list",{p_filter:admin?query:{...query,category:"notice"},p_admin:admin});return result.error?null:result.data as CommunityList; }catch{return null;}
 }
 export async function communityDetail(id: string,admin=false,page=1,search=""): Promise<{data:CommunityDetail|null;unavailable:boolean}> {
  if(!uuid(id))return {data:null,unavailable:false};

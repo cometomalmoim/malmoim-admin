@@ -33,7 +33,7 @@ function Category({ value, locale }: { value: string; locale: PublicLocale }) {
 function PostTable({ data, query, base, locale, admin }: { data: CommunityList | null; query: CommunityQuery; base: string; locale: PublicLocale; admin: boolean }) {
   const t = (ko: string, en: string) => boardText(locale, ko, en);
   const headers = admin ? ["ID", "카테고리", "제목", "작성자", "작성일", "조회", "댓글", "상태", "고정 / 관리"] : [t("번호", "No."), t("카테고리", "Category"), t("제목", "Title"), t("작성자", "Author"), t("작성일", "Date"), t("조회", "Views"), t("댓글", "Replies")];
-  const empty = !data ? t("게시판 연결을 준비하고 있습니다. 아직 글을 조회하거나 저장할 수 없습니다.", "The board is not available yet. Posts cannot be loaded or saved until setup is complete.") : query.q || query.category !== "all" || query.period !== "all" ? t("조건에 맞는 게시글이 없습니다.", "No posts match these filters.") : t("아직 게시글이 없습니다. 첫 이야기를 나눠보세요.", "There are no posts yet. Start the first conversation.");
+  const empty = !data ? t("게시판 연결을 준비하고 있습니다. 아직 글을 조회하거나 저장할 수 없습니다.", "The board is not available yet. Posts cannot be loaded or saved until setup is complete.") : query.q || query.category !== "all" || query.period !== "all" ? t("조건에 맞는 게시글이 없습니다.", "No posts match these filters.") : t("아직 등록된 안내사항이 없습니다.", "No announcements yet.");
   const pinControl = (post: CommunityPost) => post.status === "deleted" ? <span>삭제됨</span> : <BoardForm key={post.updated_at + String(post.is_pinned)} action="pin" label={post.is_pinned ? "고정 해제" : "상단 고정"} hidden={{ id: post.id, version: post.updated_at, is_pinned: String(!post.is_pinned), reason: "목록에서 " + (post.is_pinned ? "고정 해제" : "상단 고정"), admin: "true" }} />;
   return <div className="community-table-wrap">
     <table className={"community-table " + (admin ? "community-admin-table" : "community-public-table")}>
@@ -57,25 +57,21 @@ export function CommunityListView({ data, query, locale = "ko", admin = false }:
   const t = (ko: string, en: string) => boardText(locale, ko, en);
   const base = admin ? "/admin/member-board" : localizedPublicPath("/board", locale);
   return <section className={"community-board " + (admin ? "community-admin" : "community-public-list")}>
-    <div className="community-heading"><div className="community-heading-inner"><div><h1>{admin ? "회원 게시판 관리" : t("말모임의 이야기를 나누는 공간", "A space for our community’s stories")}</h1><p>{admin ? "회원 게시글·댓글·신고와 공지사항을 관리합니다." : t("언어와 일상의 이야기를 나눠보세요.", "Share your language questions and everyday stories.")}</p></div>
-      <Link className="community-write" href={base + "/new"}>{!admin && <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false"><path d="m15 4 5 5M4 20l5-1L21 7a2 2 0 0 0-4-4L5 15l-1 5Z" /></svg>}{admin ? "공지사항 작성" : t("글쓰기", "Write a post")}</Link>
+    <div className="community-heading"><div className="community-heading-inner"><div><h1>{admin ? "회원 게시판 관리" : t("주요 안내사항", "Announcements")}</h1><p>{admin ? "회원 게시글·댓글·신고와 공지사항을 관리합니다." : t("운영진이 전하는 모집·활동·참여 안내입니다.", "Recruitment, activities and participation updates from our team.")}</p></div>
+      {admin&&<Link className="community-write" href={base+"/new"}>공지사항 작성</Link>}
     </div></div>
     <div className="community-content">
       {admin && data?.stats && <dl className="community-stats"><div><dt>전체 게시글</dt><dd>{data.stats.total}</dd></div><div><dt>신고 대기</dt><dd>{data.stats.reports}</dd></div><div><dt>숨김 게시글</dt><dd>{data.stats.hidden}</dd></div></dl>}
-      <nav className="community-tabs" aria-label={t("게시판 카테고리", "Board categories")}>
+      {admin&&<nav className="community-tabs" aria-label={t("게시판 카테고리", "Board categories")}>
         <Link href={boardHref(base, { ...query, category: "all", page: 1 })} aria-current={query.category === "all" ? "page" : undefined}>{t("전체", "All")}</Link>
         {boardCategories.map(c => <Link key={c.value} href={boardHref(base, { ...query, category: c.value, page: 1 })} aria-current={query.category === c.value ? "page" : undefined}>{t(c.ko, c.en)}</Link>)}
-      </nav>
+      </nav>}
       <div className="community-layout"><div>
         <BoardFilters key={boardHref(base, query)} base={base} query={query} locale={locale} admin={admin} />
         {data && <p className="community-result-count">{t("게시글", "Posts")} <strong>{data.total.toLocaleString(locale)}</strong></p>}
         <PostTable data={data} query={query} base={base} locale={locale} admin={admin} />
         {data && <BoardPagination base={base} query={query} total={data.total} locale={locale} />}
-      </div>{!admin && <aside className="community-keywords" aria-labelledby="community-keywords-title">
-        <div className="community-keywords-heading"><h2 id="community-keywords-title">{t("핫 키워드", "Hot keywords")}</h2><Link href={base}>{t("전체보기", "All posts")} <span aria-hidden="true">›</span></Link></div>
-        {data?.keywords.length ? <ol>{data.keywords.map((k, index) => <li key={k.word}><Link href={boardHref(base, { q: k.word, scope: "all", period: "week", category: "all", page: 1 })}><span className="community-keyword-rank" aria-hidden="true">{index + 1}</span><span className="community-keyword-word">{k.word}</span><span className="community-keyword-count" aria-label={t("포함된 게시글 수 ", "Posts mentioning this keyword: ") + k.count}>{k.count.toLocaleString(locale)}</span></Link></li>)}</ol> : <p className="community-keywords-empty">{t("집계할 키워드가 아직 없습니다.", "No keywords to show yet.")}</p>}
-        <p className="community-keywords-note">{t("최근 7일 공개 게시글 최대 500개에서 집계한 게시글 수입니다.", "Counts posts mentioning each keyword, from up to 500 public posts in the past 7 days.")}</p>
-      </aside>}</div>
+      </div></div>
     </div>
   </section>;
 }

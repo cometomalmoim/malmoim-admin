@@ -118,8 +118,8 @@ export const adminGroups = [
       },
       {
         "slug": "member-board",
-        "title": "회원 게시판",
-        "description": "사용자 홈페이지의 회원 게시글을 관리합니다."
+        "title": "주요 안내사항",
+        "description": "홈페이지에 공개할 주요 안내사항과 기존 게시 기록을 관리합니다."
       },
       {
         "slug": "history",

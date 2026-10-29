@@ -288,3 +288,5 @@
  .community-loading-heading-actions > span { width: 116px; }
  .community-loading-heading-actions > span > .community-skeleton { height: 44px; }
 }
+
+.community-public-list .community-layout{grid-template-columns:minmax(0,1fr)}
