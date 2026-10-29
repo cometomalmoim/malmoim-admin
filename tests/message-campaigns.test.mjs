@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {messageCampaigns,messageNoticeKind,outsideMessageFilters,matchesNoticeFilter} from '../src/lib/message-campaigns.ts';
+import {messageCampaigns,messageNoticeKind,outsideMessageFilters,matchesNoticeFilter,summarizeNoticeHistory} from '../src/lib/message-campaigns.ts';
 test('recommendations distinguish unpaid from unverified and require confirmed paid applicants for event notices',()=>{
  assert.equal(messageCampaigns.payment.payment,'unpaid');assert.equal(messageCampaigns.payment.status,'accepted');assert.equal(messageCampaigns.event.payment,'paid');assert.equal(messageCampaigns.confirmation.status,'accepted');
 });
@@ -15,4 +15,8 @@ test('saved Korean and English notice titles are classified by actual notice kin
 test('off-filter selection is identified without depending on the currently loaded page',()=>{
  const row={name:'Test',contact:'01012345678',status:'accepted',payment_status:'paid',preferred_class:'saturday',nationality:'대한민국'};
  const f={query:'',status:'accepted',payment:'paid',group:'',nationality:'korean'};assert.equal(outsideMessageFilters(row,f),false);assert.equal(outsideMessageFilters(row,{...f,group:'thursday'}),true);assert.equal(outsideMessageFilters(row,{...f,query:'another'}),true);assert.equal(outsideMessageFilters(row,{...f,payment:'unpaid'}),true);
+});
+
+test('a cancelled newer draft does not erase an older delivered notice',()=>{
+ const history=summarizeNoticeHistory([{kind:'event',state:'cancelled'},{kind:'event',state:'delivered'},{kind:'accepted',state:'failed'}]);assert.equal(history.find(n=>n.kind==='event').state,'delivered');assert.equal(history.find(n=>n.kind==='accepted').state,'failed');
 });

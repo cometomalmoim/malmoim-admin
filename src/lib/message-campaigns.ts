@@ -36,3 +36,9 @@ export function matchesNoticeFilter(notice:{state:string}|null|undefined,filter:
  if(filter==='sent')return !!notice&&['accepted','delivered'].includes(notice.state);
  return !!notice&&notice.state==='failed';
 }
+
+export function summarizeNoticeHistory<T extends {kind:string;state:string}>(notices:T[]){
+ // A newer cancelled draft must not hide a previously successful notice.
+ const sorted=[...notices].sort((a,b)=>Number(['accepted','delivered'].includes(b.state))-Number(['accepted','delivered'].includes(a.state)));
+ return sorted.filter((notice,index,all)=>all.findIndex(item=>item.kind===notice.kind)===index);
+}
