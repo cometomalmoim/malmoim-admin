@@ -1,6 +1,6 @@
 export const messageCampaigns={
  accepted:{label:'합격 안내',status:'accepted',payment:''},
- payment:{label:'참가비 미확인 안내',status:'accepted',payment:'unpaid'},
+ payment:{label:'미입금자 안내',status:'accepted',payment:'unpaid'},
  confirmation:{label:'최종 참가 확정',status:'accepted',payment:'paid'},
  event:{label:'행사 안내',status:'accepted',payment:'paid'},
  reminder:{label:'참여 리마인드',status:'accepted',payment:'paid'},

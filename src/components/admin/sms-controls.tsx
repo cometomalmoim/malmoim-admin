@@ -1,4 +1,5 @@
 'use client';
+import {registerSmsOperation} from '@/app/actions/sms-operations';
 import {useEffect,useRef,useState,useTransition} from 'react';
 import {messagingStatus,initializeMessaging,toggleMessaging,prepareSms,approveSms,refreshSms,processPendingAlerts} from '@/app/actions/messaging';
 import {useSmsDelivery} from './use-sms-delivery';
@@ -16,6 +17,7 @@ export function SmsSend({input,disabled=false}:{input:Request;disabled?:boolean}
    <details open><summary>수신자별 내용</summary>{preview.items.map((item,i)=><div key={i}><strong>{item.to}</strong><pre>{item.text}</pre></div>)}</details>
 
    <button type="button" disabled={busy||sent} className="messaging-send" onClick={()=>start(async()=>{
+    await registerSmsOperation(preview.id,[preview.id]);
     let previous=51;
     for(let i=0;i<17;i++){const result=await approveSms(preview.id);setMessage(result.message);if(!result.ok)break;setSent(true);if(!result.remaining||result.remaining>=previous)break;previous=result.remaining;}
    })}>{busy?'발송 요청 처리 중…':sent?'요청 처리됨 · 발송 기록 확인':input.mode==='test'?'내 알림번호로 실제 테스트 1건 발송':`${preview.count}명에게 발송`}</button>
