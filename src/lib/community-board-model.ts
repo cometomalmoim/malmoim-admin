@@ -13,7 +13,7 @@ export function communityQuery(raw: Record<string, string | string[] | undefined
   author: typeof raw.author === "string" ? raw.author.trim().slice(0,100) : "", pinned: choice("pinned",["all","pinned","unpinned"],"all"),
   status: choice("status",["all","public","hidden","deleted","reported"],"all"), page: Number.isSafeInteger(page) && page>0 ? Math.min(page,10000) : 1 };
 }
-export type CommunityPost = { language?:'ko'|'en';images?:string[]; id: string; category: string; title: string; content: string; author_name: string; created_at: string; updated_at: string; view_count: number; is_pinned: boolean; status: string; can_edit: boolean; comment_count: number; report_count: number | null };
+export type CommunityPost = { event_id?:string|null;language?:'ko'|'en';images?:string[]; id: string; category: string; title: string; content: string; author_name: string; created_at: string; updated_at: string; view_count: number; is_pinned: boolean; status: string; can_edit: boolean; comment_count: number; report_count: number | null };
 export type CommunityComment = { id: string; post_id: string; content: string; author_name: string; created_at: string; updated_at: string; status: string; can_edit: boolean };
 export type CommunityReport = { id: string; post_id: string | null; comment_id: string | null; reason: string; detail: string; status: string; updated_at: string; original_content: string };
 export type CommunityLog = { id: string; actor_id: string; action: string; reason: string; created_at: string };

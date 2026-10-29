@@ -10,6 +10,7 @@ import {AdminShell} from "@/components/admin/admin-shell";
 import {publicAnnouncements} from "@/lib/public-announcements";
 import {AnnouncementList,AnnouncementDetail} from "./announcements";
 import {AnnouncementEditor,type NoticeEditorData} from "./announcement-editor";
+import {noticeEvents} from "@/lib/admin-notices";
 import {createClient} from "@/lib/supabase/server";
 import {AdminBoardWorkspace,AdminPostRoute,AdminBoardLoading} from "./admin-board";
 import {adminBoardQuery} from "@/lib/member-board-admin-model";
@@ -31,8 +32,8 @@ export async function CommunityRoute({locale="ko",view="list",params,searchParam
  }
  if(admin&&(view==="new"||view==="edit")){
   let initial:NoticeEditorData|undefined;
-  if(view==="edit"){const id=params?(await params).id:"";if(!uuid(id))notFound();const client=await createClient();const result=await client.from('board_posts').select('id,title,content,language,images,updated_at').eq('id',id).eq('category','notice').neq('status','deleted').single();if(result.error||!result.data)notFound();initial=result.data as NoticeEditorData;}
-  return wrap(<AnnouncementEditor initial={initial}/>);
+  if(view==="edit"){const id=params?(await params).id:"";if(!uuid(id))notFound();const client=await createClient();const result=await client.from('board_posts').select('id,title,content,language,images,updated_at,event_id').eq('id',id).eq('category','notice').neq('status','deleted').single();if(result.error||!result.data)notFound();initial=result.data as NoticeEditorData;}
+  return wrap(<AnnouncementEditor initial={initial} events={await noticeEvents()}/>);
  }
  if(!admin&&(view==="new"||view==="edit"))return wrap(<section className="community-board"><h1>{t("운영진 전용 작성 공간입니다","Only our team can publish announcements")}</h1><Link href={base}>{t("주요 안내사항 보기","View announcements")}</Link></section>);
  if(view==="list")return wrap(<AnnouncementList data={publicAnnouncements(query.q,query.page,locale)} query={query} locale={locale}/>);

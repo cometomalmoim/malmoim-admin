@@ -1,8 +1,8 @@
-import {createClient} from "@/lib/supabase/server";
+import {adminNoticeFeed,noticeEvents} from "@/lib/admin-notices";
 import {communityAuthorName} from "@/lib/member-nickname";
 import Link from "next/link";
 import {Suspense} from "react";
-import {notFound} from "next/navigation";
+import {notFound,redirect} from "next/navigation";
 import {AdminShell} from "@/components/admin/admin-shell";
 import {communityList,communityDetail} from "@/lib/community-board";
 import {boardCategories,type CommunityDetail,type CommunityPost} from "@/lib/community-board-model";
@@ -52,11 +52,8 @@ function Pagination({query,total,page=query.page}:{query:AdminBoardQuery;total:n
 function ErrorState(){return <p className="member-empty member-error" role="alert">데이터를 조회하지 못했습니다. 권한 및 DB 연결을 확인한 후 다시 시도해주세요.</p>;}
 function postOptions(p:CommunityPost):ModerationOption[]{return p.status==="deleted"?[]:[{value:"visibility",label:p.status==="hidden"?"게시글 숨김 해제":"게시글 숨김",action:p.status==="hidden"?"show_post":"hide_post",id:p.id,version:p.updated_at},{value:"pin",label:p.is_pinned?"상단 고정 해제":"상단 고정",action:"pin",id:p.id,version:p.updated_at,is_pinned:String(!p.is_pinned)}];}
 async function PostWorkspace({query}:{query:AdminBoardQuery}){
- let data=await communityList(query,true);
- if(query.tab==="notices"){
-  if(data?.posts.length){const client=await createClient();const extra=await client.from('board_posts').select('id,language,images').in('id',data.posts.map(post=>post.id));if(extra.error)return <ErrorState/>;data={...data,posts:data.posts.map(post=>({...post,...extra.data.find(row=>row.id===post.id)}))};}
-  return <AdminNoticeList data={data} query={query}/>;
- }
+ if(query.tab==="notices"){const [data,events]=await Promise.all([adminNoticeFeed(query),noticeEvents()]);if(data&&query.page>1&&(query.page-1)*20>=data.total)redirect(href(query,{page:Math.max(1,Math.ceil(data.total/20))}));return <AdminNoticeList data={data} query={query} events={events}/>;}
+ const data=await communityList(query,true);
  const hidden=query.tab==="hidden"&&data?await hiddenPostLogs(data.posts.map(p=>p.id)):undefined;
  return <section className="member-panel"><h2>{query.tab==="hidden"?"숨김 게시글":"게시글 목록"} {data&&<span>{data.total.toLocaleString()}건</span>}</h2><Filters query={query}/>
   {!data?<ErrorState/>:<><div className="member-table-wrap"><table className="member-table member-post-table"><caption className="member-sr-only">회원 게시글 관리 목록</caption><thead><tr>{["카테고리","제목","작성자","작성일","조회 / 댓글","공개 상태","고정","관리"].map(h=><th key={h} scope="col">{h}</th>)}</tr></thead><tbody>
