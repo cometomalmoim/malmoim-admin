@@ -105,7 +105,7 @@ export async function eventSmsLogs(filters:{event?:string;source?:string;id?:str
 export async function eventSmsHistory(id:string){const db=await client();const r=await db.from('sms_job_history').select('*').eq('job_id',id).order('id');checked(r.error);return r.data as {id:number;state:string;happened_at:string;actor:string|null;provider_group:string|null;failure_reason:string|null}[];}
 
 export async function failedSmsApplicants(jobIds:string[]){
- const db=await client();if(!Array.isArray(jobIds)||!jobIds.length||jobIds.length>30||!jobIds.every(smsUuid))throw new Error('실패 문자 선택을 확인해주세요.');
+ const db=await client();if(!Array.isArray(jobIds)||!jobIds.length||jobIds.length>50||!jobIds.every(smsUuid))throw new Error('실패 문자 선택을 확인해주세요.');
  const jobs=await db.from('sms_jobs').select('id,state,event_id,application_source,application_id').in('id',jobIds).eq('state','failed');checked(jobs.error);
  const targets=[];const seen=new Set<string>();
  for(const job of jobs.data??[]){
