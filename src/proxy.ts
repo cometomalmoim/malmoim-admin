@@ -54,4 +54,4 @@ export async function proxy(request: NextRequest) {
   return response;
 }
 // Only routes using the shared public header plus the existing admin boundaries.
-export const config = { matcher: ["/", "/about", "/events", "/exchange", "/board/:path*", "/history", "/privacy", "/terms", "/en/:path*", "/signup", "/auth/login", "/login", "/admin/:path*"] };
+export const config = { matcher: ["/", "/about", "/events", "/daily", "/exchange", "/board/:path*", "/history", "/privacy", "/terms", "/en/:path*", "/signup", "/auth/login", "/login", "/admin/:path*"] };
