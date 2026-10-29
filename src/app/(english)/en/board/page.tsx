@@ -1,5 +1,5 @@
 import {Suspense} from "react";
-import {CommunityLoading} from "@/components/community/board-loading";
+import {AnnouncementLoading} from "@/components/community/announcements";
 import {CommunityRoute} from "@/components/community/board-route";
 export const metadata={title:"Announcements"};
-export default function Page(props:{params:Promise<{id:string}>;searchParams:Promise<Record<string,string|string[]|undefined>>}){return <Suspense fallback={<CommunityLoading locale="en" view="list"/>}><CommunityRoute {...props} locale="en" view="list"/></Suspense>;}
+export default function Page(props:{params:Promise<{id:string}>;searchParams:Promise<Record<string,string|string[]|undefined>>}){return <Suspense fallback={<AnnouncementLoading locale="en"/>}><CommunityRoute {...props} locale="en"/></Suspense>;}

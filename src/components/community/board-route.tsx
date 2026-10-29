@@ -7,6 +7,7 @@ import {communityQuery,boardText,uuid,type BoardField} from "@/lib/community-boa
 import {localizedPublicPath} from "@/lib/public-locale";
 import {getAdminAccess} from "@/lib/auth";
 import {AdminShell} from "@/components/admin/admin-shell";
+import {publicAnnouncements} from "@/lib/public-announcements";
 import {AnnouncementList,AnnouncementDetail} from "./announcements";
 import {BoardForm} from "./board-form";
 import {AdminBoardWorkspace,AdminPostRoute,AdminBoardLoading} from "./admin-board";
@@ -17,7 +18,7 @@ type RawQuery=Record<string,string|string[]|undefined>;
 export async function CommunityRoute({locale="ko",view="list",params,searchParams,admin=false,email=""}:{
  locale?:PublicLocale;view?:"list"|"detail"|"new"|"edit";params?:Promise<{id:string}>;searchParams?:Promise<RawQuery>;admin?:boolean;email?:string;
 }){
- await connection();
+ if(admin||view!=="list")await connection();
  const raw=searchParams?await searchParams:{},query=communityQuery(raw),t=(ko:string,en:string)=>boardText(locale,ko,en);
  const base=admin?"/admin/member-board":localizedPublicPath("/board",locale);
  const wrap=(content:React.ReactNode)=>admin?<AdminShell current="member-board" title="주요 안내사항 관리" email={email}>{content}</AdminShell>:<main id="public-main" lang={locale} tabIndex={-1}>{content}</main>;
@@ -28,7 +29,7 @@ export async function CommunityRoute({locale="ko",view="list",params,searchParam
   return wrap(<Suspense key={id+JSON.stringify(raw)} fallback={<AdminBoardLoading panel/>}><AdminPostRoute id={id} query={adminBoardQuery(raw)} page={Math.floor(Math.max(1,Math.min(Number(raw.cp)||1,10000)))} commentQuery={typeof raw.cq==="string"?raw.cq:""}/></Suspense>);
  }
  if(!admin&&(view==="new"||view==="edit"))return wrap(<section className="community-board"><h1>{t("운영진 전용 작성 공간입니다","Only our team can publish announcements")}</h1><Link href={base}>{t("주요 안내사항 보기","View announcements")}</Link></section>);
- if(view==="list")return wrap(<AnnouncementList data={await communityList(query)} query={query} locale={locale}/>);
+ if(view==="list")return wrap(<AnnouncementList data={publicAnnouncements(query.q,query.page)} query={query} locale={locale}/>);
  let data=null;
  if(view==="detail"||view==="edit"){
   const id=params?(await params).id:"";

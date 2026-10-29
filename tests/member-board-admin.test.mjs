@@ -146,7 +146,7 @@ test("one action revalidation updates status, counts and timeline; selection cha
  const counts=[2,2,0,0],repo=repository({reports:[selectedReport,another],logs,counts});
  const invalidations=[];let committed=false,mutationCount=0,clientRefreshes=0,submitAction;
  const actions=load("src/app/actions/community-board.ts",{
-  "next/cache":{revalidatePath:(path,type)=>{assert.ok(committed);invalidations.push({path,type});}},
+  "next/cache":{updateTag:()=>{},revalidatePath:(path,type)=>{assert.ok(committed);invalidations.push({path,type});}},
   "next/navigation":{redirect:()=>assert.fail("keep the selected report and filters")},
   "@/lib/auth":{getAdminAccess:async()=>({status:"admin"})},
   "@/lib/supabase/server":{createClient:async()=>({auth:{getUser:async()=>({data:{user:{id}},error:null})},rpc:async(name,args)=>{
@@ -210,7 +210,7 @@ test("shared mutation requires admin access for every hide/restore/review and pr
   for(const admin of [false,true]){
    const calls=[];
    const api=load("src/app/actions/community-board.ts",{
-    "next/cache":{revalidatePath:()=>{}},"next/navigation":{redirect:()=>assert.fail("moderation must retain the current URL")},
+    "next/cache":{updateTag:()=>{},revalidatePath:()=>{}},"next/navigation":{redirect:()=>assert.fail("moderation must retain the current URL")},
     "@/lib/auth":{getAdminAccess:async()=>({status:admin?"admin":"denied"})},
     "@/lib/supabase/server":{createClient:async()=>({auth:{getUser:async()=>({data:{user:{id}},error:null})},rpc:async(name,args)=>{calls.push({name,args});return {data:postId,error:null};}})},
    });
