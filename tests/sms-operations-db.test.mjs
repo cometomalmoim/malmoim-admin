@@ -32,5 +32,13 @@ try{
  await q('select register_sms_send_operation($1,$2)',[operation,[batch1,batch2]]);await denied('select register_sms_send_operation($1,$2)',[randomUUID(),[batch1,batch2]]);
  assert.equal((await q('select total from sms_operation_list where operation_id=$1',[legacy])).rows[0].total,1);
  assert.equal((await q('select count(*)::int n from sms_jobs')).rows[0].n,4);assert.equal((await q('select sending_enabled from sms_settings')).rows[0].sending_enabled,false);
+ await db.exec('reset role');await db.exec(await readFile('supabase/migrations/20261029094314_sms_operator_history.sql','utf8'));
+ const operatorId=randomUUID();await q("insert into sms_jobs(id,kind,body,state) values($1,'notification','Internal team alert','delivered')",[operatorId]);
+ await as(admin);assert.equal((await q('select total from sms_operation_list where operator_notification')).rows[0].total,1);
+ assert.equal((await q('select sum(total)::int n from sms_operation_list where not operator_notification')).rows[0].n,4);
+ assert.equal((await q('select operator_notification from sms_operation_list where operation_id=$1',[operation])).rows[0].operator_notification,false);
+ await as(other);assert.equal((await q('select * from sms_operation_list where operator_notification')).rows.length,0);
+ await db.exec('set role anon');await denied('select * from sms_operation_list');
+ console.log('PASS: operator alerts isolated from applicant messages, original RLS preserved');
  console.log('PASS: true operation grouping, full counts, legacy isolation, owner/role guards, idempotency, no send');
 }finally{await db.close();}
