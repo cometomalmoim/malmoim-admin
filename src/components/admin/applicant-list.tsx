@@ -1,11 +1,10 @@
-import {applicantLanguageLevels} from '@/lib/applicant-languages';
 import {applicantPages} from '@/lib/applicant-pagination';
-import {trafficSources} from '@/lib/attribution';
 import {ApplicantMore} from './applicant-more';
 import {ApplicantTable} from './applicant-table';
 import Link from 'next/link';
 import type {ApplicationRow} from '@/lib/recruitment';
-import {applicationStatuses,paymentStatuses,type ApplicantQuery} from '@/lib/applicant-validation';
+import type {ApplicantQuery} from '@/lib/applicant-validation';
+import {ApplicantFilters} from './applicant-filters';
 import {ApplicantEditor} from './applicant-editor';
 import {ApplicantAdd} from './applicant-add';
 import './applicants.css';
@@ -22,17 +21,7 @@ export function ApplicantList({slug,title,rows,count,page,query={},events=[]}:{s
  return <section className="ops-panel"><div className="applicant-heading"><div><h2>{title} · 조회 {count}건</h2><p className="ops-muted">{slug?'이벤트별 상세 응답과 참여 이력을 확인합니다.':'전체 이벤트의 신청·유입경로를 비교합니다. 선발·입금 상태만 목록에서 수정하고, 나머지는 상세·수정에서 변경합니다.'} 입금 기록은 운영진이 수동 확인합니다.</p></div></div>
  {!slug&&query.archived!=='1'&&<ApplicantAdd events={events.filter(event=>!event.is_archived)} initialEvent={query.event}/>}
  {slug&&<details className="applicant-add"><summary>+ 신청자 직접 추가</summary><ApplicantEditor slug={slug}/></details>}
- <form key={JSON.stringify(query)} method="get" className="applicant-filters" aria-label="신청자 검색·필터">
- {cohort&&query.preferred_class&&<input type="hidden" name="preferred_class" value={query.preferred_class}/>}{query.archived==='1'&&<input type="hidden" name="archived" value="1"/>}{query.nationality_group&&<input type="hidden" name="nationality_group" value={query.nationality_group}/>}
- {!slug&&<label className="applicant-filter-wide">이벤트<select name="event" defaultValue={query.event??''}><option value="">전체 이벤트</option>{events.map(e=><option key={e.id} value={e.id}>{e.title}</option>)}</select></label>}
- <label className="applicant-filter-wide">이름·연락처 검색<input name="q" defaultValue={query.q} maxLength={100}/></label>
- <label>선발 상태<select name="status" defaultValue={query.status??''}><option value="">전체</option>{Object.entries(applicationStatuses).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
- <label>입금 여부<select name="payment" defaultValue={query.payment??''}><option value="">전체</option>{Object.entries(paymentStatuses).map(([v,l])=><option key={v} value={v}>{l}</option>)}</select></label>
- <details className="applicant-advanced" open={['utm_source','utm_medium','year','nationality','korean','english'].some(key=>!!query[key as keyof ApplicantQuery])}><summary>상세 필터 · 언어·유입경로 등</summary><div className="applicant-advanced-fields"> <label>유입경로 (SOURCE)<select name="utm_source" defaultValue={query.utm_source??''}><option value="">전체</option>{Object.entries(trafficSources).map(([value,label])=><option key={value} value={value}>{label}</option>)}<option value="__unknown">미확인</option></select></label>
- <label>매체 (MEDIUM)<input name="utm_medium" maxLength={150} defaultValue={query.utm_medium} placeholder="social, paid_social 등"/></label>
- <label>출생연도<input name="year" type="number" min={1900} max={new Date().getUTCFullYear()} defaultValue={query.year}/></label>
- <label>국적 원문 검색<input name="nationality" defaultValue={query.nationality} maxLength={100}/></label>
- {(['korean','english'] as const).map(language=><label key={language}>{language==='korean'?'한국어 수준':'영어 수준'}<select name={language} defaultValue={query[language]??''}><option value="">전체</option>{Object.entries(applicantLanguageLevels).map(([value,label])=><option key={value} value={value}>{label}</option>)}</select></label>)}</div></details><div className="applicant-filter-actions"><button type="submit" className="evt-primary">조회</button>{hasFilters&&<Link href={resetHref}>검색 초기화</Link>}</div></form>
+ <ApplicantFilters slug={slug} query={query} events={events} cohort={cohort} hasFilters={hasFilters} resetHref={resetHref}/>
  {!slug&&<nav className="applicant-list-tabs" aria-label="신청자 목록 구분"><Link href={tabLink()} aria-current={query.archived!=='1'&&!query.nationality_group?'page':undefined}>신청자 목록</Link><Link href={tabLink('',true)} aria-current={query.archived==='1'?'page':undefined}>삭제된 신청자</Link>{[['korean','한국인'],['foreign','외국인'],['unknown','국적 미확인']].map(([value,label])=><Link key={value} href={tabLink(value)} aria-current={query.archived!=='1'&&query.nationality_group===value?'page':undefined}>{label}</Link>)}</nav>}
  {cohort&&<nav className="applicant-class-tabs" aria-label="기수 모집 반 구분">{[['','전체 반'],['thursday','목요일반'],['saturday','토요일반']].map(([value,label])=><Link key={value} href={classLink(value)} aria-current={(query.preferred_class??'')===value?'page':undefined}>{label}</Link>)}{!slug&&!query.event&&<small>반 선택 시 기수 모집 신청만 표시됩니다.</small>}</nav>}
  {!rows.length?<div className="ops-empty" role="status"><h3>{hasNarrowingFilters?'검색 조건에 맞는 신청자가 없습니다.':query.archived==='1'?'삭제된 신청자가 없습니다.':'아직 접수된 신청자가 없습니다.'}</h3><p>{hasNarrowingFilters?'이벤트·반·언어·검색어 조건을 확인하거나 전체 목록으로 돌아가세요.':'새 신청이 접수되거나 운영진이 신청자를 추가하면 이곳에 표시됩니다.'}</p>{hasNarrowingFilters&&<Link className="ops-link" href={`${base}${query.archived==='1'?'?archived=1':''}`}>조회 조건 모두 초기화</Link>}</div>:!slug?<ApplicantMore key={JSON.stringify(query)} rows={rows} count={count} query={query} archived={query.archived==='1'}/>:<ApplicantTable key={JSON.stringify({slug,query})} rows={rows} eventMode={!!slug} archived={!slug&&query.archived==='1'}/>}
