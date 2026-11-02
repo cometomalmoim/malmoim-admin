@@ -5,6 +5,7 @@ import Link from 'next/link';
 import type {ApplicationRow} from '@/lib/recruitment';
 import type {ApplicantQuery} from '@/lib/applicant-validation';
 import {ApplicantFilters} from './applicant-filters';
+import {ApplicantExportButton} from './applicant-export-button';
 import {ApplicantEditor} from './applicant-editor';
 import {ApplicantAdd} from './applicant-add';
 import './applicants.css';
@@ -18,7 +19,7 @@ export function ApplicantList({slug,title,rows,count,page,query={},events=[]}:{s
  const cohort=slug==='season9'||(!slug&&(!query.event||events.find(event=>event.id===query.event)?.slug==='season9'));
  const classLink=(value='')=>{const params=new URLSearchParams();for(const [key,v] of Object.entries(query))if(!['page','preferred_class'].includes(key)&&v)params.set(key,v);if(value)params.set('preferred_class',value);return `${base}${params.size?'?'+params:''}`;};
  const resetParams=new URLSearchParams();if(query.archived==='1')resetParams.set('archived','1');if(query.nationality_group)resetParams.set('nationality_group',query.nationality_group);if(query.preferred_class)resetParams.set('preferred_class',query.preferred_class);const resetHref=`${base}${resetParams.size?'?'+resetParams:''}`;
- return <section className="ops-panel"><div className="applicant-heading"><div><h2>{title} · 조회 {count}건</h2><p className="ops-muted">{slug?'이벤트별 상세 응답과 참여 이력을 확인합니다.':'전체 이벤트의 신청·유입경로를 비교합니다. 선발·입금 상태만 목록에서 수정하고, 나머지는 상세·수정에서 변경합니다.'} 입금 기록은 운영진이 수동 확인합니다.</p></div></div>
+ return <section className="ops-panel"><div className="applicant-heading"><div><h2>{title} · 조회 {count}건</h2><p className="ops-muted">{slug?'이벤트별 상세 응답과 참여 이력을 확인합니다.':'전체 이벤트의 신청·유입경로를 비교합니다. 선발·입금 상태만 목록에서 수정하고, 나머지는 상세·수정에서 변경합니다.'} 입금 기록은 운영진이 수동 확인합니다.</p></div>{!slug&&<ApplicantExportButton query={query} count={count}/>}</div>
  {!slug&&query.archived!=='1'&&<ApplicantAdd events={events.filter(event=>!event.is_archived)} initialEvent={query.event}/>}
  {slug&&<details className="applicant-add"><summary>+ 신청자 직접 추가</summary><ApplicantEditor slug={slug}/></details>}
  <ApplicantFilters slug={slug} query={query} events={events} cohort={cohort} hasFilters={hasFilters} resetHref={resetHref}/>

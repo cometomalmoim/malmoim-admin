@@ -9,7 +9,7 @@ export type RecruitmentResult =
   | { kind: "error" }
   | { kind: "missing" }
   | { kind: "ready"; events: RecruitmentEvent[]; event?: RecruitmentEvent; rows: ApplicationRow[]; count: number; page: number };
-export async function getRecruitment(slug?: string, page = 1, query:ApplicantQuery={},all=false): Promise<RecruitmentResult> {
+export async function getRecruitment(slug?: string, page = 1, query:ApplicantQuery={},all=false,options:{pageSize?:number;includeSms?:boolean}={}): Promise<RecruitmentResult> {
   // Recheck inside the data access boundary, not only the page or layout.
   if ((await getAdminAccess()).status !== "admin") return { kind: "error" };
   try {
@@ -23,7 +23,7 @@ export async function getRecruitment(slug?: string, page = 1, query:ApplicantQue
     const safePage = Number.isSafeInteger(page) && page > 0 ? Math.min(page, 100000) : 1;
     let request=client.from("event_application_language_list").select("id,name,contact,contact_type,preferred_class,status,created_at,participation_history,history_detail,source,birth_year,nationality,gender,payment_status,internal_note,revision,source_note,event_id,korean_level,english_level,utm_source,utm_medium,utm_campaign,is_archived,archive_revision",{count:'exact'});
     request=request.eq('is_archived',!slug&&query.archived==='1');
-    const pageSize=slug?25:20;
+    const pageSize=options.pageSize===500?500:slug?25:20;
     if(event)request=request.eq('event_id',event.id);else if(query.event)request=request.eq('event_id',query.event);
     const classEvent=event??events.find(row=>row.id===query.event);
     if((!classEvent||classEvent.slug==='season9')&&['thursday','saturday'].includes(query.preferred_class??''))request=request.eq('preferred_class',query.preferred_class!);
@@ -39,8 +39,8 @@ export async function getRecruitment(slug?: string, page = 1, query:ApplicantQue
     if(/^\d{4}$/.test(query.year??''))request=request.eq('birth_year',Number(query.year));
     const result=await request.order('created_at',{ascending:false}).order('source').order('id',{ascending:false}).range((safePage-1)*pageSize,safePage*pageSize-1);
     if (result.error) return { kind: "error" };
-    const sms=result.data.length?await client.from("event_sms_applicant_status").select("event_id,application_source,application_id,state,updated_at").in("application_id",result.data.map(row=>row.id)):null;
-    const sent=result.data.length?await client.from('sms_jobs').select('event_id,application_source,application_id,state,created_at,event_sms_templates(title)').in('application_id',result.data.map(row=>row.id)).in('state',['accepted','delivered']).not('template_id','is',null).order('created_at',{ascending:false}).limit(1000):null;
+    const sms=options.includeSms!==false&&result.data.length?await client.from("event_sms_applicant_status").select("event_id,application_source,application_id,state,updated_at").in("application_id",result.data.map(row=>row.id)):null;
+    const sent=options.includeSms!==false&&result.data.length?await client.from('sms_jobs').select('event_id,application_source,application_id,state,created_at,event_sms_templates(title)').in('application_id',result.data.map(row=>row.id)).in('state',['accepted','delivered']).not('template_id','is',null).order('created_at',{ascending:false}).limit(1000):null;
     return { kind: "ready", events, event, rows: (result.data as ApplicationRow[]).map(row=>({...row,sms_notices:(sent?.data??[]).filter(j=>j.application_id===row.id&&j.application_source===row.source&&j.event_id===row.event_id).map(j=>({title:((Array.isArray(j.event_sms_templates)?j.event_sms_templates[0]:j.event_sms_templates) as {title:string}|null)?.title??'안내 문자',state:j.state,at:j.created_at})).filter((j,index,all)=>all.findIndex(other=>other.title===j.title)===index).slice(0,3),sms_state:sms?.data?.find(j=>j.application_id===row.id&&j.application_source===row.source&&j.event_id===row.event_id)?.state,sms_updated_at:sms?.data?.find(j=>j.application_id===row.id&&j.application_source===row.source&&j.event_id===row.event_id)?.updated_at,event_slug:events.find(e=>e.id===row.event_id)?.slug,event_title:events.find(e=>e.id===row.event_id)?.title})), count: result.count ?? 0, page: safePage };
   } catch { return { kind: "error" }; }
 }
