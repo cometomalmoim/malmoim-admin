@@ -14,3 +14,5 @@
 .s9-site.s9-community .s9-header{min-height:0;flex-wrap:nowrap}
 .s9-site.s9-community .s9-community-fit .s9-kicker{color:#cfdfcb}
 .s9-site.s9-community .s9-hero-copy .s9-hero-facts{display:block;max-width:none;grid-template-columns:none;line-height:1.9}
+
+.s9-community-details .s9-recruitment-poster img{display:block;width:100%;height:auto;border-radius:12px}
