@@ -43,7 +43,7 @@ export const publicActivities: PublicActivity[] = [
     ],
     location: { ko: "서울청년센터 은평", en: "Seoul Youth Center Eunpyeong" },
     price: { ko: "6주 전체(총 6회) 50,000원", en: "KRW 50,000 total for all 6 weeks (6 sessions)" },
-    note: { ko: "정규 모집 마감 · 2026년 10월 31일 23:59 (한국시간)", en: "Regular application deadline · October 31, 2026, 23:59 KST" },
+    note: { ko: "신청 후 운영진 확인·선발을 거쳐 참가가 확정됩니다", en: "Participation is confirmed after organizer review and selection" },
     // Past activity photo avoids repeating the old Saturday time on the poster.
     image: "/season9/activity-01.jpg",
     imageCaption: { ko: "언어로 시작되는 여섯 번의 만남", en: "Six sessions. New connections." },
