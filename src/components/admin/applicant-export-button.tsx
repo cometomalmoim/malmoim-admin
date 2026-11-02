@@ -15,5 +15,5 @@ export function ApplicantExportButton({query,count}:{query:ApplicantQuery;count:
   }catch(error){setError(error instanceof Error?error.message:'다운로드하지 못했습니다. 다시 시도해주세요.');}
   finally{setBusy(false);}
  }
- return <div className="applicant-export"><button type="button" disabled={busy||count===0} onClick={()=>void download()}>{busy?'엑셀 준비 중…':`엑셀 다운로드 · ${count}명`}</button><small>조회한 조건의 전체 명단 · 엑셀 필터 포함</small>{error&&<p role="alert">{error}</p>}</div>;
+ return <div className="applicant-export"><button className="ops-link" type="button" disabled={busy||count===0} onClick={()=>void download()}>{busy?'엑셀 준비 중…':`엑셀 다운로드 · ${count}명`}</button><small>조회한 조건의 전체 명단 · 엑셀 필터 포함</small>{error&&<p role="alert">{error}</p>}</div>;
 }
