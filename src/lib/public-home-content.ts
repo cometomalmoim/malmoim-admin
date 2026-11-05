@@ -26,7 +26,7 @@ export const homeActivities = [
 export const homePrograms = [{
   id: 'season9', visible: true, title: words('말모임 9기', 'MALMOIM Season 9'),
   description: words('언어를 나누는 대화가 새로운 만남의 시작이 됩니다.', 'A conversation in another language can be the start of a new friendship.'),
-  image: homePhotos.group, duration: words('6주 프로그램', '6-week program'), fee: season9.fee,
+  image: homePhotos.group, duration: words('7주 프로그램', '7-week program'), fee: season9.fee,
   href: { ko: '/season9', en: '/season9/en' }, closesAt: season9.closesAt, intakeEnabled: season9.intakeEnabled,
 }] as const;
 export function isHomeProgramOpen(program: { visible: boolean; intakeEnabled: boolean; closesAt: string }, now: number) {
