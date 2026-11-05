@@ -7,7 +7,7 @@ import type { PublicEventReview } from '@/lib/review-validation';
 // Replace with organizer-approved real feedback later; these are program descriptions, not testimonials.
 const moments = [
  { language: '한국어', text: '소그룹으로 모여 활동지를 보며 영어와 한국어로 이야기해요. 서로 배우고 알려주는 시간이에요.' },
- { language: 'English', text: 'Korean and international participants take turns helping each other practise in small groups.' },
+ { language: 'English', text: 'Korean and international participants take turns helping each other practice in small groups.' },
  { language: '한국어', text: '유창하게 말하지 않아도 괜찮아요. 완벽한 문장보다는 함께 대화해보는 데 의미를 두고 있어요.' },
  { language: 'English', text: 'We start conversations with activity sheets and spend time together on cultural group activities.' },
 ];

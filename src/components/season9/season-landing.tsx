@@ -18,7 +18,7 @@ export function SeasonLanding({locale}:{locale:SeasonLocale}){
  const applyText=t('말모임 9기 신청하기','Apply for Season 9');
  const programs=[
  {name:'activity-sheets',title:t('영어로 나누는 대화','English conversation'),minutes:45,description:t('외국인 참여자가 이끄는 소그룹에서 활동지로 영어 대화를 나눠요.','International participants lead small-group English conversations using activity sheets.'),alt:t('활동지와 화이트보드를 두고 소그룹으로 대화하는 참여자들','Participants talking in a small group with activity sheets and a whiteboard')},
- {name:'korean-board',portrait:true,title:t('한국어로 서로 배우기','Korean practice'),minutes:45,description:t('한국인 참여자와 함께 한국어를 배우고 연습해요.','Practise Korean with Korean participants, guided by activity sheets.'),alt:t('한국어 단어가 적힌 화이트보드와 활동지를 보며 함께 배우는 모습','Participants using activity sheets and a whiteboard with Korean words')},
+ {name:'korean-board',portrait:true,title:t('한국어로 서로 배우기','Korean practice'),minutes:45,description:t('한국인 참여자와 함께 한국어를 배우고 연습해요.','Practice Korean with Korean participants, guided by activity sheets.'),alt:t('한국어 단어가 적힌 화이트보드와 활동지를 보며 함께 배우는 모습','Participants using activity sheets and a whiteboard with Korean words')},
  {name:'making-together',portrait:true,title:t('함께하는 그룹 활동','Shared group activities'),minutes:40,description:t('함께 만들고 활동하며 문화를 나눠요. 조 구성은 모집 상황에 따라 달라질 수 있어요.','Share activities and culture in small groups. Group composition may vary.'),alt:t('종이와 대나무 막대를 사용해 함께 연을 만드는 참여자들','Participants making kites together with paper and bamboo sticks')}
  ];
  const faq=[
