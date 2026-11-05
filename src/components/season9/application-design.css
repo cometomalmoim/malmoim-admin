@@ -90,3 +90,5 @@
  .s9-apply-site .s9-application-success{padding:24px 20px!important}
  .s9-apply-site .s9-application-success h2{font-size:23px}
 }
+
+.s9-apply-main>.s9-schedule-notice{padding:16px 20px;border:1px solid #c4e5e7;border-left:4px solid #087f8c;border-radius:10px;background:#edf7f7;color:#16464b;font-size:14px;line-height:1.75;word-break:keep-all}
