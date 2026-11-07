@@ -92,3 +92,5 @@
 }
 
 .s9-apply-main>.s9-schedule-notice{padding:16px 20px;border:1px solid #c4e5e7;border-left:4px solid #087f8c;border-radius:10px;background:#edf7f7;color:#16464b;font-size:14px;line-height:1.75;word-break:keep-all}
+
+.s9-class-cards label:has(input:disabled){opacity:.6;cursor:not-allowed}
