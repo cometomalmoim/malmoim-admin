@@ -16,3 +16,5 @@
 .s9-site.s9-community .s9-hero-copy .s9-hero-facts{display:block;max-width:none;grid-template-columns:none;line-height:1.9}
 
 .s9-community-details .s9-recruitment-poster img{display:block;width:100%;height:auto;border-radius:12px}
+
+.s9-schedule-notice{box-sizing:border-box;max-width:1180px;margin:20px auto;padding:16px 20px;border:1px solid #c4e5e7;border-left:4px solid #087f8c;border-radius:10px;background:#edf7f7;color:#16464b;font-size:14px;line-height:1.75;word-break:keep-all}.s9-compact .s9-schedule-notice{margin:16px 0}.s9-site>main>.s9-schedule-notice{width:calc(100% - 48px)}
