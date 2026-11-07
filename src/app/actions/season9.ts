@@ -18,6 +18,7 @@ export async function submitSeason9(_state: SubmissionState, form: FormData): Pr
   const value = (name:string,max=200) => String(form.get(name) ?? "").trim().slice(0,max);
   const name=value("s9-field-0",100), nationality=value("s9-field-1",100), birth=value("s9-field-2"), contact=value("s9-field-3"), preferred=value("s9-class");
   if (!name || !nationality || !contact || !["thursday","saturday"].includes(preferred)) return fail("이름·국적·연락처·희망 반을 확인해주세요. / Check your name, nationality, contact and preferred group.");
+  if(preferred==='saturday')return fail("토요일반 신청은 마감되었습니다. / Saturday registration is closed.");
   const requiredProfile=season9RequiredFields(form);
   if(!requiredProfile)return fail("성별·직업 또는 소속·참여 이유를 입력해주세요. / Please complete your gender choice, occupation or affiliation, and reason for joining.");
   const participation=season9ParticipationFields(form);
@@ -46,6 +47,7 @@ export async function compactSeason9Info():Promise<{open:boolean;unavailable?:bo
  try{const client=await createClient();const {data,error}=await client.rpc('season9_compact_registration_info_v2');return error?{open:false,unavailable:true}:{open:data?.open===true};}catch{return {open:false,unavailable:true};}
 }
 export async function submitCompactSeason9(_state:SubmissionState,form:FormData):Promise<SubmissionState>{
+ if(form.get('preferred_class')==='saturday')return {success:false,message:'토요일반 신청은 마감되었습니다. / Saturday registration is closed.'};
  const payload=compactSeason9Input(form);
  if(!payload)return {success:false,message:'입력 항목과 필수 동의를 확인해주세요. / Check your details and required consent.'};
  try{
