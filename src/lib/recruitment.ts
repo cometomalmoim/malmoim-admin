@@ -5,11 +5,12 @@ import { getAdminAccess } from "./auth";
 import { createClient } from "./supabase/server";
 export type RecruitmentEvent = { image_url?: string | null; id: string; slug: string; title: string; status: string; applications_open: boolean; closes_at: string | null; starts_at:string|null;ends_at:string|null;is_archived:boolean;archive_revision:number; visual_theme: 'default' | 'halloween' };
 export type ApplicationRow = { sms_notices?:{title:string;state:string;at:string}[];sms_state?:string;sms_updated_at?:string; gender?:string|null; korean_level?:string|null;english_level?:string|null; archive_revision:number;is_archived:boolean; id: string; name: string; contact: string; contact_type: string; preferred_class: string | null; participation_history: string | null; history_detail: string | null; status: string; created_at: string; source:string; birth_year:number|null; nationality:string|null; payment_status:string; internal_note:string; revision:number; source_note:string|null; event_id:string; event_slug?:string; event_title?:string; utm_source:string|null; utm_medium:string|null; utm_campaign:string|null };
+export type ApplicantClassCount = {day:string;group:string;count:number};
 export type RecruitmentResult =
   | { kind: "error" }
   | { kind: "missing" }
-  | { kind: "ready"; events: RecruitmentEvent[]; event?: RecruitmentEvent; rows: ApplicationRow[]; count: number; page: number };
-export async function getRecruitment(slug?: string, page = 1, query:ApplicantQuery={},all=false,options:{pageSize?:number;includeSms?:boolean}={}): Promise<RecruitmentResult> {
+  | { kind: "ready"; events: RecruitmentEvent[]; event?: RecruitmentEvent; rows: ApplicationRow[]; count: number; page: number; classCounts?:ApplicantClassCount[]|null };
+export async function getRecruitment(slug?: string, page = 1, query:ApplicantQuery={},all=false,options:{pageSize?:number;includeSms?:boolean;includeClassSummary?:boolean}={}): Promise<RecruitmentResult> {
   // Recheck inside the data access boundary, not only the page or layout.
   if ((await getAdminAccess()).status !== "admin") return { kind: "error" };
   try {
@@ -21,26 +22,40 @@ export async function getRecruitment(slug?: string, page = 1, query:ApplicantQue
     const event = events.find(e => e.slug === slug);
     if (slug&&!event) return { kind: "missing" };
     const safePage = Number.isSafeInteger(page) && page > 0 ? Math.min(page, 100000) : 1;
-    let request=client.from("event_application_language_list").select("id,name,contact,contact_type,preferred_class,status,created_at,participation_history,history_detail,source,birth_year,nationality,gender,payment_status,internal_note,revision,source_note,event_id,korean_level,english_level,utm_source,utm_medium,utm_campaign,is_archived,archive_revision",{count:'exact'});
-    request=request.eq('is_archived',!slug&&query.archived==='1');
     const pageSize=options.pageSize===500?500:slug?25:20;
-    if(event)request=request.eq('event_id',event.id);else if(query.event)request=request.eq('event_id',query.event);
-    const classEvent=event??events.find(row=>row.id===query.event);
-    if((!classEvent||classEvent.slug==='season9')&&['thursday','saturday'].includes(query.preferred_class??''))request=request.eq('preferred_class',query.preferred_class!);
-    for(const key of ['utm_source','utm_medium'] as const){const value=(query[key]??'').slice(0,150);if(value==='__unknown')request=request.or(`${key}.is.null,${key}.eq.`);else if(value)request=request.eq(key,value);}
-    for(const language of ['korean','english'] as const){const level=query[language]??'';if(!Object.hasOwn(applicantLanguageLevels,level))continue;const column=`${language}_level`;if(level==='unknown')request=request.or(`${column}.is.null,${column}.eq.`);else request=request.eq(column,languageStoredValue(language,level));}
-    const search=(query.q??'').slice(0,100).replace(/[^\p{L}\p{N}\s+@_-]/gu,'').trim();
+    const buildRequest=(filters:ApplicantQuery,countOnly=false)=>{
+      let request=client.from("event_application_language_list").select("id,name,contact,contact_type,preferred_class,status,created_at,participation_history,history_detail,source,birth_year,nationality,gender,payment_status,internal_note,revision,source_note,event_id,korean_level,english_level,utm_source,utm_medium,utm_campaign,is_archived,archive_revision",{count:'exact',head:countOnly});
+    request=request.eq('is_archived',!slug&&filters.archived==='1');
+    if(event)request=request.eq('event_id',event.id);else if(filters.event)request=request.eq('event_id',filters.event);
+    const classEvent=event??events.find(row=>row.id===filters.event);
+    if((!classEvent||classEvent.slug==='season9')&&['thursday','saturday'].includes(filters.preferred_class??''))request=request.eq('preferred_class',filters.preferred_class!);
+    for(const key of ['utm_source','utm_medium'] as const){const value=(filters[key]??'').slice(0,150);if(value==='__unknown')request=request.or(`${key}.is.null,${key}.eq.`);else if(value)request=request.eq(key,value);}
+    for(const language of ['korean','english'] as const){const level=filters[language]??'';if(!Object.hasOwn(applicantLanguageLevels,level))continue;const column=`${language}_level`;if(level==='unknown')request=request.or(`${column}.is.null,${column}.eq.`);else request=request.eq(column,languageStoredValue(language,level));}
+    const search=(filters.q??'').slice(0,100).replace(/[^\p{L}\p{N}\s+@_-]/gu,'').trim();
     if(search)request=request.or(`name.ilike.%${search}%,contact.ilike.%${search}%`);
-    if(Object.hasOwn(applicationStatuses,query.status??''))request=request.eq('status',query.status!);
-    if(Object.hasOwn(paymentStatuses,query.payment??''))request=request.eq('payment_status',query.payment!);
-    if(['korean','foreign','unknown'].includes(query.nationality_group??''))request=request.eq('nationality_group',query.nationality_group!);
-    const nationality=(query.nationality??'').slice(0,100).replace(/[%_,()]/g,'').trim();
+    if(Object.hasOwn(applicationStatuses,filters.status??''))request=request.eq('status',filters.status!);
+    if(Object.hasOwn(paymentStatuses,filters.payment??''))request=request.eq('payment_status',filters.payment!);
+    if(['korean','foreign','unknown'].includes(filters.nationality_group??''))request=request.eq('nationality_group',filters.nationality_group!);
+    const nationality=(filters.nationality??'').slice(0,100).replace(/[%_,()]/g,'').trim();
     if(nationality)request=request.ilike('nationality',`%${nationality}%`);
-    if(/^\d{4}$/.test(query.year??''))request=request.eq('birth_year',Number(query.year));
+    if(/^\d{4}$/.test(filters.year??''))request=request.eq('birth_year',Number(filters.year));
+      return request;
+    };
+    const request=buildRequest(query);
     const result=await request.order('created_at',{ascending:false}).order('source').order('id',{ascending:false}).range((safePage-1)*pageSize,safePage*pageSize-1);
     if (result.error) return { kind: "error" };
+    let classCounts:ApplicantClassCount[]|null|undefined;
+    if(options.includeClassSummary&&query.archived!=='1'&&all&&!slug&&events.find(row=>row.id===query.event)?.slug==='season9'){
+      const groups=['korean','foreign','unknown'];
+      const buckets=['thursday','saturday'].flatMap(day=>groups.map(group=>({day,group})));
+      const counts=await Promise.all(buckets.map(async bucket=>{
+        const response=await buildRequest({...query,preferred_class:bucket.day,nationality_group:bucket.group},true);
+        return response.error||response.count===null?null:{...bucket,count:response.count};
+      }));
+      classCounts=counts.some(value=>value===null)?null:counts as ApplicantClassCount[];
+    }
     const sms=options.includeSms!==false&&result.data.length?await client.from("event_sms_applicant_status").select("event_id,application_source,application_id,state,updated_at").in("application_id",result.data.map(row=>row.id)):null;
     const sent=options.includeSms!==false&&result.data.length?await client.from('sms_jobs').select('event_id,application_source,application_id,state,created_at,event_sms_templates(title)').in('application_id',result.data.map(row=>row.id)).in('state',['accepted','delivered']).not('template_id','is',null).order('created_at',{ascending:false}).limit(1000):null;
-    return { kind: "ready", events, event, rows: (result.data as ApplicationRow[]).map(row=>({...row,sms_notices:(sent?.data??[]).filter(j=>j.application_id===row.id&&j.application_source===row.source&&j.event_id===row.event_id).map(j=>({title:((Array.isArray(j.event_sms_templates)?j.event_sms_templates[0]:j.event_sms_templates) as {title:string}|null)?.title??'안내 문자',state:j.state,at:j.created_at})).filter((j,index,all)=>all.findIndex(other=>other.title===j.title)===index).slice(0,3),sms_state:sms?.data?.find(j=>j.application_id===row.id&&j.application_source===row.source&&j.event_id===row.event_id)?.state,sms_updated_at:sms?.data?.find(j=>j.application_id===row.id&&j.application_source===row.source&&j.event_id===row.event_id)?.updated_at,event_slug:events.find(e=>e.id===row.event_id)?.slug,event_title:events.find(e=>e.id===row.event_id)?.title})), count: result.count ?? 0, page: safePage };
+    return { kind: "ready", events, event, classCounts, rows: (result.data as ApplicationRow[]).map(row=>({...row,sms_notices:(sent?.data??[]).filter(j=>j.application_id===row.id&&j.application_source===row.source&&j.event_id===row.event_id).map(j=>({title:((Array.isArray(j.event_sms_templates)?j.event_sms_templates[0]:j.event_sms_templates) as {title:string}|null)?.title??'안내 문자',state:j.state,at:j.created_at})).filter((j,index,all)=>all.findIndex(other=>other.title===j.title)===index).slice(0,3),sms_state:sms?.data?.find(j=>j.application_id===row.id&&j.application_source===row.source&&j.event_id===row.event_id)?.state,sms_updated_at:sms?.data?.find(j=>j.application_id===row.id&&j.application_source===row.source&&j.event_id===row.event_id)?.updated_at,event_slug:events.find(e=>e.id===row.event_id)?.slug,event_title:events.find(e=>e.id===row.event_id)?.title})), count: result.count ?? 0, page: safePage };
   } catch { return { kind: "error" }; }
 }
