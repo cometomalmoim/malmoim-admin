@@ -129,3 +129,21 @@
 .ops-compact-applicants .applicant-table.is-global .applicant-display-name{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;overflow-wrap:anywhere;max-width:100%}
 
 .ops-compact-applicants .applicant-secondary-tools{grid-column:1/-1}
+
+/* Cohort overview: one compact control replaces separate class/nationality tabs. */
+.applicant-class-summary{margin:10px 0;padding:10px 12px;border:1px solid #dbe5df;border-radius:10px;background:#fafcfb}
+.applicant-class-summary-heading{display:flex;align-items:center;flex-wrap:wrap;gap:6px 12px;margin-bottom:8px}
+.applicant-class-summary-heading>strong{font-size:12px;color:#254a42}
+.applicant-class-summary-heading>small{font-size:10px;color:#728078;flex:1}
+.applicant-class-summary-heading>a{font-size:11px;color:#007f88;white-space:nowrap}
+.applicant-class-summary-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.applicant-class-summary-day{display:grid;grid-template-columns:auto repeat(3,minmax(0,1fr));align-items:stretch;gap:5px}
+.applicant-class-summary-day>a{display:flex;align-items:center;justify-content:space-between;gap:5px;padding:8px;border:1px solid #e1e7e3;border-radius:6px;background:white;text-decoration:none;color:#354e45;font-size:11px}
+.applicant-class-summary-day>a:hover{border-color:#94b9a8;background:#f0f7f3}
+.applicant-class-summary-day>a[aria-current=page]{border-color:#007f88;background:#e5f3f1;color:#006a73}
+.applicant-class-summary-day>a.applicant-class-summary-title{border-color:transparent;background:transparent;font-weight:600;padding-left:0}
+.applicant-class-summary-day strong{font-size:14px;white-space:nowrap}
+.applicant-class-summary-day strong small{font-size:10px;font-weight:400;margin-left:2px}
+.applicant-class-summary-selected{margin:8px 0 0;font-size:11px;color:#007f88}
+@media(max-width:1100px){.applicant-class-summary-grid{grid-template-columns:1fr}.applicant-class-summary-day{grid-template-columns:65px repeat(3,minmax(0,1fr))}}
+@media(max-width:480px){.applicant-class-summary-day{grid-template-columns:repeat(3,minmax(0,1fr))}.applicant-class-summary-day>a.applicant-class-summary-title{grid-column:1/-1;padding:2px 0}.applicant-class-summary-day>a{padding:7px 5px;font-size:10px}.applicant-class-summary-heading>small{flex-basis:100%}}
