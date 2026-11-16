@@ -1,0 +1,91 @@
+{
+  "date": "2026-11-17",
+  "source": "Existing published photos; descriptions based only on visible content. Activity dates and cohorts were preserved, not independently verified.",
+  "changes": [
+    {
+      "id": "4c5d7720-f4a3-4f61-a449-ed797456d334",
+      "before": {
+        "title": "테스트1",
+        "description": ""
+      },
+      "after": {
+        "title": "활동지로 나누는 소그룹 대화 | Small-group conversations",
+        "description": "활동지를 펼쳐 놓고 한 테이블에 둘러앉아 이야기를 나누는 말모임의 한 장면입니다.\nMembers gather around a table to share conversations with activity sheets."
+      },
+      "preserved": {
+        "date": "2026-10-29",
+        "category": "regular",
+        "cohort": 1,
+        "coverId": "f2f03594-fbbd-42bb-8882-314aa4575097"
+      }
+    },
+    {
+      "id": "418d2d27-3974-4680-b2af-3f7d579e4a47",
+      "before": {
+        "title": "테스트2",
+        "description": ""
+      },
+      "after": {
+        "title": "함께하는 언어 교류 | Language exchange together",
+        "description": "여러 테이블에 모여 서로의 이야기에 귀 기울이고 대화를 이어가는 말모임 활동 현장입니다.\nA look inside MALMOIM, with members sharing stories and conversations around the room."
+      },
+      "preserved": {
+        "date": "2026-10-16",
+        "category": "regular",
+        "cohort": 2,
+        "coverId": "5dc504fd-3a7b-40bc-97e7-76a51ffc30ee"
+      }
+    },
+    {
+      "id": "aa241bdc-183f-4698-b9ef-f0c7f879f4cd",
+      "before": {
+        "title": "테스트2",
+        "description": ""
+      },
+      "after": {
+        "title": "테이블마다 이어지는 이야기 | Conversations around every table",
+        "description": "테이블에 둘러앉아 활동지를 살펴보고 이야기를 나누는 참여자들의 모습을 담았습니다.\nMembers sit together with activity sheets, sharing conversations at each table."
+      },
+      "preserved": {
+        "date": "2025-11-20",
+        "category": "special",
+        "cohort": null,
+        "coverId": "31d5d3f6-86fe-496e-98b7-93af46c9f2fa"
+      }
+    },
+    {
+      "id": "6d22d16a-e648-40d9-a40f-ee6eefa708e3",
+      "before": {
+        "title": "테스트",
+        "description": ""
+      },
+      "after": {
+        "title": "야외에서 함께 남긴 순간 | A moment together outdoors",
+        "description": "야외에서 말모임 현수막을 함께 들고 남긴 단체사진입니다.\nMALMOIM members gather outdoors for a group photo with the community banner."
+      },
+      "preserved": {
+        "date": "2025-11-01",
+        "category": "special",
+        "cohort": null,
+        "coverId": "10ff82e4-8705-4e39-93ab-3a5d6c87bd68"
+      }
+    },
+    {
+      "id": "c44ddb94-7dae-495a-ac69-078e54da0060",
+      "before": {
+        "title": "테스트3",
+        "description": ""
+      },
+      "after": {
+        "title": "야외에서 함께 남긴 순간 | A moment together outdoors",
+        "description": "야외에서 말모임 현수막을 함께 들고 남긴 단체사진입니다.\nMALMOIM members gather outdoors for a group photo with the community banner."
+      },
+      "preserved": {
+        "date": "2025-10-17",
+        "category": "special",
+        "cohort": null,
+        "coverId": "901e5142-5375-469e-a58e-a3785295c4f9"
+      }
+    }
+  ]
+}

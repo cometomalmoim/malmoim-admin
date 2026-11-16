@@ -41,3 +41,24 @@ test('known operation failures expose safe reason codes, unknown exceptions rema
 
 test('real JPG PNG WebP survive multipart round trip regardless of extension case',async()=>{const sharp=require('sharp'),{normalizePhoto}=load('./image');for(const [format,mime,name] of [['jpeg','image/jpeg','SAFARI.JPG'],['png','image/png','photo.png'],['webp','image/webp','photo.webp']]){let uploaded=false;const f=fixture({upload:async(album,bytes)=>{const out=await normalizePhoto(bytes);assert.equal((await sharp(out).metadata()).format,'webp');uploaded=true;return {id};}});const bytes=await sharp({create:{width:24,height:16,channels:3,background:'#07838d'}})[format]().toBuffer();const form=new FormData();form.set('albumId',id);form.set('file',new File([bytes],name,{type:mime}));const r=await f.handler(new Request('http://localhost/api/admin/history-photos',{method:'POST',headers:{origin:'http://localhost'},body:form}));assert.equal(r.status,200);assert(uploaded);}});
 test('normalizer reasons have distinct safe status codes',async()=>{for(const [code,status] of [['INVALID_IMAGE',400],['PHOTO_PIXEL_LIMIT',400],['PHOTO_INPUT_TOO_LARGE',413],['PHOTO_OUTPUT_TOO_LARGE',413],['PHOTO_DECODER_UNAVAILABLE',503],['PHOTO_CONVERSION_FAILED',503]]){const f=fixture({upload:async()=>{throw Error(code);}});const form=new FormData();form.set('albumId',id);form.set('file',new File(['synthetic'],'one.png',{type:'image/png'}));const r=await f.handler(new Request('http://localhost/api/admin/history-photos',{method:'POST',headers:{origin:'http://localhost'},body:form}));assert.equal(r.status,status);assert.equal((await r.json()).code,code);}});
+
+test('bilingual public albums select route language for cards and slides without changing stored copy',()=>{
+ const {publicHistoryPhoto}=load('./public-photo');
+ const row={id,title:'함께하는 대화 | Conversations together',date:'2026-10-29',description:'함께 나눈 이야기입니다.\nStories shared around the table.',category:'regular',cohort:1,coverId:id,photos:[{id,src:'/api/history-photo-file?id='+id}]};
+ const snapshot=JSON.stringify(row),ko=publicHistoryPhoto(row,'ko'),en=publicHistoryPhoto(row,'en');
+ assert.equal(ko.title,'함께하는 대화');assert.equal(ko.description,'함께 나눈 이야기입니다.');
+ assert.equal(en.title,'Conversations together');assert.equal(en.description,'Stories shared around the table.');
+ assert.equal(en.slidePhotos[0].alt,'Conversations together, photo 1');assert.equal(en.alt,en.title);
+ assert.equal(JSON.stringify(row),snapshot);assert.equal(publicHistoryPhoto(row).title,row.title);
+ assert.equal(en.src,ko.src);assert.equal(en.date,row.date);assert.equal(en.cohort,1);
+});
+test('unmarked and incomplete bilingual copy retains operator text and all paragraphs',()=>{
+ const {albumCopy}=load('./album-copy');
+ for(const row of [
+  {title:'MALMOIM | MT',description:'First paragraph\nSecond paragraph'},
+  {title:'활동 제목',description:'첫 문단\n두 번째 문단'},
+  {title:'함께 | Together',description:'한 문단'},
+  {title:'함께 | Together',description:'한국어\nEnglish\nMore text'},
+  {title:'함께 | Together',description:'한국어\n'},
+ ])for(const locale of ['ko','en'])assert.equal(JSON.stringify(albumCopy(row,locale)),JSON.stringify(row));
+});
