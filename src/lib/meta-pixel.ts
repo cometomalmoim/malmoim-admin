@@ -1,5 +1,5 @@
 export const META_PIXEL_ID='1120189660978956';
-const landingPaths=new Set(['/season9','/season9/ko','/season9/en','/2026halloweenparty','/2026halloweenparty/en']);
+const landingPaths=new Set(['/season9','/season9/additional','/season9/ko','/season9/en','/2026halloweenparty','/2026halloweenparty/en']);
 export function isMetaLanding(path:string,hostname:string){return ['malmoim.com','www.malmoim.com'].includes(hostname)&&landingPaths.has(path);}
 export function isMetaSurface(path:string,hostname:string){return isMetaLanding(path,hostname)||(['malmoim.com','www.malmoim.com'].includes(hostname)&&['/season9/apply','/season9/en/apply','/season9/apply/en'].includes(path));}
 export type MetaQueue=((...args:unknown[])=>void)&{queue?:unknown[][];callMethod?:(...args:unknown[])=>void;push?:MetaQueue;loaded?:boolean;version?:string};
