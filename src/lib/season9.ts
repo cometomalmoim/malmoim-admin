@@ -12,3 +12,6 @@ export const season9ScheduleNotice={
  ko:'이번 9기는 시작 일정이 한 주 연기되어 목요일반은 11월 12일, 토요일반은 11월 14일에 시작합니다. 이번 기수는 특별히 주 1회, 총 7회로 진행됩니다.',
  en:'Season 9 will start one week later: Thursday, November 12, and Saturday, November 14. For this season, the program has been extended to seven weekly sessions.',
 } as const;
+
+// Additional recruitment offer confirmed by the organizers on November 17, 2026.
+export const season9Additional = { weeks: 6, fee: 42000 } as const;
