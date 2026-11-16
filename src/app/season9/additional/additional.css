@@ -4,3 +4,6 @@
 
 .extra-nav .extra-language{display:inline-flex;white-space:nowrap}.extra-english{word-break:normal;overflow-wrap:break-word}.extra-english .extra-hero h1{font-size:clamp(38px,4.1vw,57px);letter-spacing:-.045em;line-height:1.12}.extra-english .extra-cards h3{align-items:baseline;flex-wrap:wrap;letter-spacing:-.025em}.extra-english .extra-cards h3 small{margin-left:auto}.extra-english .extra-eyebrow{letter-spacing:.08em}.extra-english .extra-application-grid>div>p{max-width:360px}
 @media(max-width:760px){.extra-nav nav{gap:14px}.extra-english .extra-brand{font-size:19px}.extra-nav .extra-language{font-size:12px}.extra-english .extra-nav-cta{font-size:11px;padding:10px 12px}.extra-english .extra-hero h1{font-size:clamp(36px,9vw,54px)}.extra-english .extra-eyebrow{font-size:10px!important}.extra-english .extra-nav{gap:12px}.extra-english .extra-nav nav{gap:10px}}
+
+.extra-nav .extra-brand-logo{display:block;flex:0 0 160px;width:160px}.extra-nav .extra-brand-logo .brand-logo{width:100%;aspect-ratio:1522/690;overflow:hidden;background:#fff}.extra-nav .extra-brand-logo img{display:block;width:100%;height:auto;transform:translateY(-27%)}
+@media(max-width:760px){.extra-nav .extra-brand-logo{flex-basis:110px;width:110px}}

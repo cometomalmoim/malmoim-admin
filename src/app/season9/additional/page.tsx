@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { BrandLogo } from '@/components/brand-logo';
 import { CompactApplication } from '@/components/season9/compact-application';
 import { LanguageLink } from '@/components/season9/language-link';
 import { season9, season9Additional } from '@/lib/season9';
@@ -21,7 +22,7 @@ const experiences = [
 export default function Page() {
   return <div className="extra-page s9-site" lang="ko">
     <a className="extra-skip" href="#main">본문 바로가기</a>
-    <header className="extra-nav"><Link href="/" className="extra-brand">말모임<span>MALMOIM</span></Link><nav aria-label="페이지 안내"><a href="#experience">어떤 모임인가요?</a><a href="#details">참여 안내</a><span className="extra-language"><LanguageLink english={false} basePath="/season9/additional"/></span><a className="extra-nav-cta" href="#application">신청하기 ↗</a></nav></header>
+    <header className="extra-nav"><Link href="/" className="extra-brand extra-brand-logo" aria-label="말모임 홈"><BrandLogo compact/></Link><nav aria-label="페이지 안내"><a href="#experience">어떤 모임인가요?</a><a href="#details">참여 안내</a><span className="extra-language"><LanguageLink english={false} basePath="/season9/additional"/></span><a className="extra-nav-cta" href="#application">신청하기 ↗</a></nav></header>
     <main id="main">
       <section className="extra-hero extra-wrap"><div className="extra-hero-copy"><p className="extra-eyebrow">MALMOIM SEASON 09 · 추가 모집</p><h1>아직 나누지 못한<br/>이야기가 <em>있으니까.</em></h1><p className="extra-lead">영어로 대화하고, 서로의 문화를 나누고.<br/>이번 주의 새로운 만남, 말모임에서 시작해요.</p><a className="extra-button" href="#application">9기 추가 참여 신청하기 <span aria-hidden="true">↗</span></a><p className="extra-note">혼자 와도 괜찮아요. 함께할 마음이면 충분해요.</p><p className="extra-note">더 많은 외국인 멤버와 함께하기 위해 추가 모집합니다.<br/>남은 {season9Additional.weeks}주 · {season9Additional.fee.toLocaleString('ko-KR')}원</p></div><figure className="extra-hero-photo"><Image src="/season9/moments/conversation.webp" alt="테이블에 둘러앉아 웃으며 대화하는 말모임 참여자들" width={1600} height={1200} preload sizes="(max-width: 760px) 100vw, 55vw"/><figcaption>다른 언어, 새로운 친구.<br/><strong>우리의 대화는 계속됩니다.</strong></figcaption><span className="extra-stamp" aria-hidden="true">Come to MALMOIM<br/>Meet the world ↗</span></figure></section>
       <div className="extra-ribbon"><span>LESS SMALL TALK, MORE CONNECTION.</span><span>언어를 넘어, 사람과 사람 사이.</span><span aria-hidden="true">LESS SMALL TALK, MORE CONNECTION.</span></div>
