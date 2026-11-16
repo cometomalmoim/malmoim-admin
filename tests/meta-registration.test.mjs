@@ -62,7 +62,7 @@ test('9기 사진 활용 동의 없이는 DB 호출·전환 없음, 명시 동�
 });
 
 test('inline season9 landing paths dispatch only after compact DB success',async()=>{
- for(const path of ['/season9/ko','/season9/en']){const h=harness();h.ctx.path=path;assert.equal(await completeRegistration(h.w,registrationReceipt('season9',id,'ko'),h.ctx),true);}
+ for(const path of ['/season9/ko','/season9/en','/season9/additional','/season9/additional/en']){const h=harness();h.ctx.path=path;assert.equal(await completeRegistration(h.w,registrationReceipt('season9',id,'ko'),h.ctx),true);}
  const f=new FormData();for(const [key,value]of Object.entries({application_kind:'returning',name:'TEST',contact:'01000000001',contact_type:'phone',preferred_class:'saturday',privacy_consent:'on',fee_confirmed:'on',photo_consent:'on',submission_id:id,application_language:'en'}))f.set(key,value);
  for(const response of [{data:{accepted:true}},{data:{accepted:false}},{error:{message:'duplicate_application'}}]){const api=load('src/app/actions/season9.ts',actionMocks(response));const result=await api.submitCompactSeason9({},f);assert.equal(!!result.conversion,response.data?.accepted===true);}
 });

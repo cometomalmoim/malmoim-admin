@@ -2,13 +2,14 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
 import { CompactApplication } from '@/components/season9/compact-application';
+import { LanguageLink } from '@/components/season9/language-link';
 import { season9 } from '@/lib/season9';
 import './additional.css';
 
 const title = '말모임 9기 추가 모집 | 새로운 대화에 초대합니다';
 const description = '영어로 대화하고, 한국어를 나누고, 함께 친구가 되는 시간. 말모임 9기 추가 참여 안내와 신청을 확인하세요.';
 export const metadata: Metadata = {
-  title, description, alternates: { canonical: '/season9/additional' },
+  title, description, alternates: { canonical: '/season9/additional', languages: { ko: '/season9/additional', en: '/season9/additional/en' } },
   openGraph: { title, description, url: '/season9/additional', locale: 'ko_KR', images: [{ url: '/season9/moments/conversation.webp', width: 1600, height: 1200, alt: '함께 대화하는 말모임 참여자들' }] },
   twitter: { card: 'summary_large_image', title, description, images: ['/season9/moments/conversation.webp'] },
 };
@@ -20,7 +21,7 @@ const experiences = [
 export default function Page() {
   return <div className="extra-page s9-site" lang="ko">
     <a className="extra-skip" href="#main">본문 바로가기</a>
-    <header className="extra-nav"><Link href="/" className="extra-brand">말모임<span>MALMOIM</span></Link><nav aria-label="페이지 안내"><a href="#experience">어떤 모임인가요?</a><a href="#details">참여 안내</a><a className="extra-nav-cta" href="#application">신청하기 ↗</a></nav></header>
+    <header className="extra-nav"><Link href="/" className="extra-brand">말모임<span>MALMOIM</span></Link><nav aria-label="페이지 안내"><a href="#experience">어떤 모임인가요?</a><a href="#details">참여 안내</a><span className="extra-language"><LanguageLink english={false} basePath="/season9/additional"/></span><a className="extra-nav-cta" href="#application">신청하기 ↗</a></nav></header>
     <main id="main">
       <section className="extra-hero extra-wrap"><div className="extra-hero-copy"><p className="extra-eyebrow">MALMOIM SEASON 09 · 추가 모집</p><h1>아직 나누지 못한<br/>이야기가 <em>있으니까.</em></h1><p className="extra-lead">영어로 대화하고, 서로의 문화를 나누고.<br/>이번 주의 새로운 만남, 말모임에서 시작해요.</p><a className="extra-button" href="#application">9기 추가 참여 신청하기 <span aria-hidden="true">↗</span></a><p className="extra-note">혼자 와도 괜찮아요. 함께할 마음이면 충분해요.</p></div><figure className="extra-hero-photo"><Image src="/season9/moments/conversation.webp" alt="테이블에 둘러앉아 웃으며 대화하는 말모임 참여자들" width={1600} height={1200} preload sizes="(max-width: 760px) 100vw, 55vw"/><figcaption>다른 언어, 새로운 친구.<br/><strong>우리의 대화는 계속됩니다.</strong></figcaption><span className="extra-stamp" aria-hidden="true">Come to MALMOIM<br/>Meet the world ↗</span></figure></section>
       <div className="extra-ribbon"><span>LESS SMALL TALK, MORE CONNECTION.</span><span>언어를 넘어, 사람과 사람 사이.</span><span aria-hidden="true">LESS SMALL TALK, MORE CONNECTION.</span></div>
@@ -32,7 +33,7 @@ export default function Page() {
         ['이미 시작했는데 참여할 수 있나요?', '추가 신청 후 운영진이 합류 가능한 반과 일정을 확인해 안내해 드려요. 잔여 회차와 참가비는 참여 전 운영진에게 확인해 주세요.'],
         ['신청 후에는 어떻게 진행되나요?', '운영진 확인·선발 후 입력하신 연락처로 참가 확정과 납부 안내를 보내드려요. 현재 접수 가능 여부는 아래 신청 폼에서 확인할 수 있어요.'],
       ].map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</div></section>
-      <section id="application" className="extra-application"><div className="extra-wrap extra-application-grid"><div><p className="extra-eyebrow">LET’S MEET AT MALMOIM</p><h2>다음 이야기에는<br/><em>당신도 함께.</em></h2><p>기본 정보와 희망반을 남겨주세요.<br/>운영진이 확인 후 안내해 드릴게요.</p><Link className="extra-text-link" href="/inquiries/new?event=season9&lang=ko">궁금한 점 문의하기 ↗</Link><Link className="extra-text-link" href="/season9/en">English program guide ↗</Link></div><CompactApplication locale="ko"/></div></section>
+      <section id="application" className="extra-application"><div className="extra-wrap extra-application-grid"><div><p className="extra-eyebrow">LET’S MEET AT MALMOIM</p><h2>다음 이야기에는<br/><em>당신도 함께.</em></h2><p>기본 정보와 희망반을 남겨주세요.<br/>운영진이 확인 후 안내해 드릴게요.</p><Link className="extra-text-link" href="/inquiries/new?event=season9&lang=ko">궁금한 점 문의하기 ↗</Link><span className="extra-text-link"><LanguageLink english={false} basePath="/season9/additional"/></span></div><CompactApplication locale="ko"/></div></section>
     </main><footer className="extra-wrap extra-footer"><Link className="extra-brand" href="/">말모임<span>MALMOIM</span></Link><p>Come to MALMOIM, Meet the world.</p><a href="https://www.instagram.com/cometomalmoim/" target="_blank" rel="noopener noreferrer">Instagram ↗</a></footer>
   </div>;
 }
