@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Image from 'next/image';
 import Link from 'next/link';
+import { BrandLogo } from '@/components/brand-logo';
 import { CompactApplication } from '@/components/season9/compact-application';
 import { LanguageLink } from '@/components/season9/language-link';
 import { season9, season9Additional } from '@/lib/season9';
@@ -37,7 +38,7 @@ export default function Page() {
   return <div className="extra-page extra-english s9-site" lang="en">
     <a className="extra-skip" href="#main">Skip to content</a>
     <header className="extra-nav">
-      <Link href="/en" className="extra-brand">MALMOIM</Link>
+      <Link href="/en" className="extra-brand extra-brand-logo" aria-label="MALMOIM home"><BrandLogo compact/></Link>
       <nav aria-label="Page navigation">
         <a href="#experience">The experience</a><a href="#details">The details</a>
         <span className="extra-language"><LanguageLink english basePath="/season9/additional"/></span>
