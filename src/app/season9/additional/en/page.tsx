@@ -31,7 +31,7 @@ const faq = [
   ['Can I come on my own?', 'Absolutely. Join on your own and meet people through small-group conversations and shared activities.'],
   ['Do I need to speak Korean fluently?', 'You don’t need to be fluent in Korean. Bring your curiosity and a willingness to take part. Ask the organizers if you have questions about your language level.'],
   ['What will I do during the English part?', 'International members help lead small-group English conversations using activity sheets. You’ll also have time to practice Korean with Korean members. Contact the organizers about any preparation or language requirements.'],
-  ['Can I join after the season has started?', 'Yes. Join the remaining 6 weeks for KRW 42,000. The organizers will confirm which group you can join and your first session.'],
+  ['Can I join after the season has started?', 'Yes. Join the remaining 6 weeks for KRW 42,000. The Thursday group starts November 26 and the Saturday group starts November 28. Your place is confirmed after review.'],
   ['What happens after I apply?', 'The organizers review applications and send confirmation and payment guidance to the contact you provide. Submitting an application does not guarantee a place. The form below shows the current registration status.'],
 ];
 export default function Page() {
@@ -75,9 +75,9 @@ export default function Page() {
       </section>
       <section id="details" className="extra-details">
         <div className="extra-wrap extra-details-grid">
-          <div><p className="extra-eyebrow">YOUR NEXT CHAPTER</p><h2>Make room for<br/>a new connection.</h2><p>We’re welcoming more international members for the remaining 6 weeks of Season 9. Practice Korean, share your English and get to know new people. The organizers will confirm your group and first session.</p><Link className="extra-text-link" href="/inquiries/new?event=season9&lang=en">Ask about joining late ↗</Link></div>
+          <div><p className="extra-eyebrow">YOUR NEXT CHAPTER</p><h2>Make room for<br/>a new connection.</h2><p>We’re welcoming more international members for the remaining 6 weeks of Season 9. Practice Korean, share your English and get to know new people. Join the Thursday group from November 26 or the Saturday group from November 28.</p><Link className="extra-text-link" href="/inquiries/new?event=season9&lang=en">Ask about joining late ↗</Link></div>
           <dl>
-            <div><dt>When</dt><dd>Thursdays {season9.thursday.time}<br/>Saturdays {season9.saturday.time}<small>Once a week in your chosen group · Korea Standard Time</small></dd></div>
+            <div><dt>When</dt><dd>Thursday · starts November 26 · {season9.thursday.time}<br/>Saturday · starts November 28 · {season9.saturday.time}<small>Once a week in your chosen group · Korea Standard Time</small></dd></div>
             <div><dt>Where</dt><dd>Seoul Youth Center Eunpyeong<small>9, Tongil-ro 67-gil, Eunpyeong-gu, Seoul<br/>The organizers will notify you of any venue change.</small></dd></div>
             <div><dt>Fee</dt><dd>KRW {season9Additional.fee.toLocaleString('en-US')}<small>For the remaining {season9Additional.weeks} weeks · once a week in your chosen group.</small></dd></div>
             <div><dt>Next steps</dt><dd>Apply → review → confirmation & payment guidance<small>Your place is confirmed after review. Refunds are not available after the program starts.</small></dd></div>
@@ -90,7 +90,7 @@ export default function Page() {
       </section>
       <section id="application" className="extra-application">
         <div className="extra-wrap extra-application-grid">
-          <div><p className="extra-eyebrow">LET’S MEET AT MALMOIM</p><h2>Your next conversation<br/><em>starts here.</em></h2><p>Tell us a little about yourself and your preferred group. The organizers will review your application and get in touch.</p><p className="extra-note">KRW 42,000 for the remaining 6 weeks. The organizers will confirm your group and first session after reviewing your application.</p><Link className="extra-text-link" href="/inquiries/new?event=season9&lang=en">Have a question? Ask us ↗</Link><span className="extra-text-link"><LanguageLink english basePath="/season9/additional"/></span></div>
+          <div><p className="extra-eyebrow">LET’S MEET AT MALMOIM</p><h2>Your next conversation<br/><em>starts here.</em></h2><p>Tell us a little about yourself and your preferred group. The organizers will review your application and get in touch.</p><p className="extra-note">KRW 42,000 for the remaining 6 weeks. Thursday starts November 26; Saturday starts November 28. The organizers will confirm your place after reviewing your application.</p><Link className="extra-text-link" href="/inquiries/new?event=season9&lang=en">Have a question? Ask us ↗</Link><span className="extra-text-link"><LanguageLink english basePath="/season9/additional"/></span></div>
           <CompactApplication locale="en" additional/>
         </div>
       </section>
