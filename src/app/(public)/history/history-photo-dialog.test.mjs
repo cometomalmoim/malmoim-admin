@@ -5,7 +5,7 @@ import { test } from 'node:test';
 import { runInNewContext } from 'node:vm';
 import ts from 'typescript';
 const require = createRequire(import.meta.url);
-function setup(count = 10) {
+function setup(count = 10, extra = {}) {
   let index = 0; const hooks = [];
   const react = { ...require('react'), useEffect() {}, useId: () => 'test-id',
     useState(initial) { const i = index++; if (!(i in hooks)) hooks[i] = initial; return [hooks[i], value => { hooks[i] = typeof value === 'function' ? value(hooks[i]) : value; }]; },
@@ -15,7 +15,7 @@ function setup(count = 10) {
   const { outputText } = ts.transpileModule(readFileSync(new URL('./history-photo-dialog.tsx', import.meta.url), 'utf8'), { compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022, jsx: ts.JsxEmit.ReactJSX } });
   runInNewContext(outputText, { exports: loaded.exports, module: loaded, Array, Math, require: name => name === '@/components/public-translation' ? {Localized:({children})=>children} : name === 'react' ? react : name === 'next/image' ? { default: () => null } : name === './history-data' ? { displayDate: value => value } : require(name) });
   let closed = 0;
-  const photo = { id: 'mock', category: 'regular', cohort: 9, title: '입력한 제목', date: '2026-01-01', description: '입력한 설명', src: 'blob:mock-cover', alt: '대표', additionalPhotos: Array.from({ length: count - 1 }, (_, i) => ({ src: `blob:mock-${i}`, alt: `추가 ${i}` })) };
+  const photo = { id: 'mock', category: 'regular', cohort: 9, title: '입력한 제목', date: '2026-01-01', description: '입력한 설명', src: 'blob:mock-cover', alt: '대표', additionalPhotos: Array.from({ length: count - 1 }, (_, i) => ({ src: `blob:mock-${i}`, alt: `추가 ${i}` })), ...extra };
   const flatten = node => !node || typeof node !== 'object' ? [] : Array.isArray(node) ? node.flatMap(flatten) : [node, ...flatten(node.props?.children)];
   function render() { index = 0; return flatten(loaded.exports.HistoryPhotoDialog({ photo, close: () => closed++ })); }
   function button(label) { return render().find(node => node.type === 'button' && node.props['aria-label'] === label); }
@@ -57,4 +57,14 @@ test('close button and native Escape cancellation call close', () => {
 test('one photo has no navigation buttons and ignores swipe', () => {
   const view = setup(1); assert.equal(view.button('다음 사진'), undefined);
   view.swipe(-80); assert.equal(view.position(), '사진 1 / 1');
+});
+
+test('archive detail shows poster context and follows the selected photo source',()=>{
+ const view=setup(2,{archive:{periodLabel:'2026.04.16–05.21',posterSrc:'/history/instagram/season-6-poster.webp',posterUrl:'https://www.instagram.com/cometomalmoim/p/DWOCZWLjPW4/'},slidePhotos:[{src:'/one.webp',alt:'one',sourceUrl:'https://www.instagram.com/cometomalmoim/p/one/'},{src:'/two.webp',alt:'two',sourceUrl:'https://www.instagram.com/cometomalmoim/p/two/'}]});
+ let nodes=view.render();assert.ok(nodes.some(n=>n.props?.children==='2026.04.16–05.21'));
+ assert.equal(nodes.some(n=>n.type==='time'),false);
+ assert.ok(nodes.some(n=>n.type==='a'&&n.props.href.endsWith('/one/')));
+ view.button('다음 사진').props.onClick();nodes=view.render();
+ assert.ok(nodes.some(n=>n.type==='a'&&n.props.href.endsWith('/two/')));
+ for(const n of nodes.filter(n=>n.type==='a')){assert.equal(n.props.rel,'noopener noreferrer');assert.equal(n.props.target,'_blank');}
 });

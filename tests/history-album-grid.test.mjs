@@ -7,3 +7,7 @@ const render=(photos,props={})=>renderToStaticMarkup(React.createElement(History
 test('three or ten images in one album occupy exactly one card and use its first photo',()=>{for(const count of [3,10]){const html=render([album(1,count)]);assert.equal((html.match(/class="history-photo-card"/g)??[]).length,1);assert.match(html,/src="\/album-1-0.webp"/);assert.doesNotMatch(html,/src="\/album-1-1.webp"/);}});
 test('nine and twelve albums remain nine and twelve cards rather than flattened photo counts',()=>{for(const count of [9,12])assert.equal((render(Array.from({length:count},(_,i)=>album(i))).match(/class="history-photo-card"/g)??[]).length,count);});
 test('management controls stay absent for visitors and appear once per authorized album',()=>{const photos=[album(1),album(2,10)];assert.doesNotMatch(render(photos),/class="history-photo-edit"/);assert.equal((render(photos,{onEditAlbum:()=>{},managedIds:['album-1','album-2']}).match(/class="history-photo-edit"/g)??[]).length,2);});
+test('season archive shows poster schedule instead of treating the sorting anchor as an activity date',()=>{
+ const photo={...album(1),date:'2025-07-26',archive:{periodLabel:'Jul 26–Aug 30, 2025',posterSrc:'/history/instagram/season-1-poster.webp',posterUrl:'https://www.instagram.com/cometomalmoim/p/DMVJ670JUav/'}};
+ const html=render([photo]);assert.match(html,/Jul 26–Aug 30, 2025/);assert.match(html,/포스터 일정/);assert.doesNotMatch(html,/<time\b/);
+});
