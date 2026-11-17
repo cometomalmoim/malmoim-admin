@@ -36,8 +36,8 @@ function CategoryGallery({ category, photos,onEditAlbum,managedIds }: { category
     </div>
     <div className="history-gallery">
       {visible.map((photo) => <article className="history-photo-card" key={photo.id}>
-        <button type="button" className="history-photo-open" aria-label={`${photo.title} 사진 상세 보기`} onClick={() => setDetail(photo)}><Image unoptimized={photo.unoptimized} src={photo.slidePhotos?.[0]?.src??photo.src} alt={photo.slidePhotos?.[0]?.alt??photo.alt} width={540} height={540} sizes="(max-width: 540px) 28vw, (max-width: 1100px) 29vw, 360px" /></button>
-        <h3 data-i18n-skip>{photo.title}</h3>{onEditAlbum&&managedIds.includes(photo.id)&&<button type="button" className="history-photo-edit" onClick={()=>onEditAlbum(photo.id)}>수정</button>}<time dateTime={photo.date}>{displayDate(photo.date)}</time><p data-i18n-skip>{photo.description}</p>
+        <button type="button" className="history-photo-open" aria-label={`${photo.title} 사진 상세 보기`} onClick={() => setDetail(photo)}><Image unoptimized={photo.unoptimized} src={photo.slidePhotos?.[0]?.src??photo.src} alt={photo.slidePhotos?.[0]?.alt??photo.alt} width={540} height={540} sizes="(max-width: 540px) 28vw, (max-width: 1100px) 29vw, 360px" />{(photo.slidePhotos?.length??1+(photo.additionalPhotos?.length??0))>1&&<span className="history-photo-count" aria-hidden="true">+{(photo.slidePhotos?.length??1+(photo.additionalPhotos?.length??0))-1}</span>}</button>
+        <h3 data-i18n-skip>{photo.title}</h3>{onEditAlbum&&managedIds.includes(photo.id)&&<button type="button" className="history-photo-edit" onClick={()=>onEditAlbum(photo.id)}>수정</button>}<>{photo.archive?<p className="history-photo-period"><span>포스터 일정</span><span data-i18n-skip>{photo.archive.periodLabel}</span></p>:<time dateTime={photo.date}>{displayDate(photo.date)}</time>}</><p data-i18n-skip>{photo.description}</p>
       </article>)}
     </div>
     {detail && <HistoryPhotoDialog key={detail.id} photo={detail} close={() => setDetail(null)} />}

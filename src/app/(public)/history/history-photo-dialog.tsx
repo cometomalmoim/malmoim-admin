@@ -15,7 +15,7 @@ export function HistoryPhotoDialog({ photo, close, initialIndex=0 }: { photo: Hi
   const gesture = useRef<{ id: number; x: number; y: number } | null>(null);
   const titleId = useId();
   const descriptionId = useId();
-  const photos = photo.slidePhotos ?? [{ src: photo.src, alt: photo.alt }, ...(photo.additionalPhotos ?? [])];
+  const photos: {src:string;alt:string;sourceUrl?:string}[] = photo.slidePhotos ?? [{ src: photo.src, alt: photo.alt }, ...(photo.additionalPhotos ?? [])];
   useEffect(() => {
     const node = dialog.current;
     const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -30,7 +30,7 @@ export function HistoryPhotoDialog({ photo, close, initialIndex=0 }: { photo: Hi
     e.stopPropagation();
     if (photos.length > 1 && (e.key === "ArrowLeft" || e.key === "ArrowRight")) { e.preventDefault(); move(e.key === "ArrowLeft" ? -1 : 1); }
     if (e.key !== "Tab") return;
-    const buttons = Array.from(dialog.current?.querySelectorAll<HTMLButtonElement>("button:not(:disabled)") ?? []);
+    const buttons = Array.from(dialog.current?.querySelectorAll<HTMLElement>("button:not(:disabled), a[href]") ?? []);
     const first = buttons[0]; const last = buttons.at(-1);
     if (!first || !last) return;
     if (e.shiftKey && (document.activeElement === first || document.activeElement === dialog.current)) { e.preventDefault(); last.focus(); }
@@ -55,6 +55,10 @@ export function HistoryPhotoDialog({ photo, close, initialIndex=0 }: { photo: Hi
       {photos.length > 1 && <button type="button" onClick={() => move(1)} aria-label="다음 사진">다음 →</button>}
     </div>
     {photos.length > 1 && <div className="history-photo-thumbnails" role="group" aria-label="활동 사진 선택">{photos.map((item, i) => <button type="button" key={`${i}-${item.src}`} aria-label={`${i + 1}번 사진 보기`} aria-pressed={index === i} onClick={() => setIndex(i)}><Image unoptimized src={item.src} alt="" width={120} height={80} /></button>)}</div>}
-    <time dateTime={photo.date}>{displayDate(photo.date)}</time><p id={descriptionId} className="history-photo-description" data-i18n-skip>{photo.description}</p>
+    <>{photo.archive?<p className="history-photo-period"><span>포스터 일정</span><span data-i18n-skip>{photo.archive.periodLabel}</span></p>:<time dateTime={photo.date}>{displayDate(photo.date)}</time>}</><p id={descriptionId} className="history-photo-description" data-i18n-skip>{photo.description}</p>
+    {(photo.archive||photos[index].sourceUrl)&&<nav className="history-photo-sources" aria-label="사진 출처">
+      {photos[index].sourceUrl&&<a href={photos[index].sourceUrl} target="_blank" rel="noopener noreferrer">인스타그램 사진 원본 ↗</a>}
+      {photo.archive&&<><a href={photo.archive.posterSrc} target="_blank" rel="noopener noreferrer">확인한 일정 포스터 ↗</a><a href={photo.archive.posterUrl} target="_blank" rel="noopener noreferrer">포스터 게시물 원본 ↗</a></>}
+    </nav>}
   </dialog>}</Localized>;
 }

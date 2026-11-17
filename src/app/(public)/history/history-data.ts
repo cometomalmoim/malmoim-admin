@@ -2,11 +2,12 @@ export type HistoryPhoto = {
   id: string;
   unoptimized?: boolean; // Private media must bypass the shared Next image cache.
   title: string;
-  date: string; // YYYY-MM-DD: 실제 활동일
+  date: string; // Actual activity date, or a sorting anchor when archive.periodLabel is present.
   description: string;
   src: string; // 공개 및 초상 사용 동의가 확인된 로컬 이미지 경로
   alt: string;
-  slidePhotos?: { src: string; alt: string }[]; // Optional explicit order; legacy photos keep existing behavior.
+  archive?: { periodLabel: string; posterUrl: string; posterSrc: string };
+  slidePhotos?: { src: string; alt: string; sourceUrl?: string }[]; // Optional explicit order; legacy photos keep existing behavior.
   additionalPhotos?: { src: string; alt: string }[]; // 공개 동의가 확인된 동일 활동의 추가 사진
 } & ({ category: "regular"; cohort: number } | { category: "special" | "other" });
 

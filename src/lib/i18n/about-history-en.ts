@@ -1,5 +1,10 @@
 // Korean source text is the stable lookup key. Keep additions paired with English.
 export const aboutHistoryEnglish:Record<string,string> = {
+  "포스터 일정": "Poster schedule",
+  "사진 출처": "Photo sources",
+  "인스타그램 사진 원본 ↗": "Original Instagram photo ↗",
+  "확인한 일정 포스터 ↗": "View schedule poster ↗",
+  "포스터 게시물 원본 ↗": "Original poster post ↗",
   "더 보기": "Read more",
   "게시물": "Posts",
   "정규 활동": "Regular activities",

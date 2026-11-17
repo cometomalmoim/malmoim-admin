@@ -1,5 +1,9 @@
 # History gallery content update — 2026-11-17 KST
 
+> Superseded as the final solution by the Instagram source import in `instagram/README.md`.
+> These five entries were original test albums, not the requested Instagram history.
+> They are preserved as private drafts; the real source-based season archive replaces them.
+
 ## Completed
 
 The operator requested replacing the existing test posts with actual photo-based
