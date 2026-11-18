@@ -32,7 +32,7 @@ const faq = [
   ['Do I need to speak Korean fluently?', 'You don’t need to be fluent in Korean. Bring your curiosity and a willingness to take part. Ask the organizers if you have questions about your language level.'],
   ['What will I do during the English part?', 'International members help lead small-group English conversations using activity sheets. You’ll also have time to practice Korean with Korean members. Contact the organizers about any preparation or language requirements.'],
   ['Can I join after the season has started?', 'Yes. Join the remaining 6 weeks for KRW 42,000. The Thursday group starts November 26 and the Saturday group starts November 28. Your place is confirmed after review.'],
-  ['What happens after I apply?', 'The organizers review applications and send confirmation and payment guidance to the contact you provide. Submitting an application does not guarantee a place. The form below shows the current registration status.'],
+  ['What happens after I apply?', 'The organizers review applications and send confirmation and payment guidance to the contact you provide. Submitting an application does not guarantee a place. The form above shows the current registration status.'],
 ];
 export default function Page() {
   return <div className="extra-page extra-english s9-site" lang="en">
@@ -59,6 +59,12 @@ export default function Page() {
           <figcaption>Different languages. New friends.<br/><strong>There’s more to talk about.</strong></figcaption>
           <span className="extra-stamp" aria-hidden="true">Come to MALMOIM<br/>Meet the world ↗</span>
         </figure>
+      </section>
+      <section id="application" className="extra-application">
+        <div className="extra-wrap extra-application-grid">
+          <div><p className="extra-eyebrow">LET’S MEET AT MALMOIM</p><h2>Your next conversation<br/><em>starts here.</em></h2><p>Tell us a little about yourself and your preferred group. The organizers will review your application and get in touch.</p><p className="extra-note">KRW 42,000 for the remaining 6 weeks. Thursday starts November 26; Saturday starts November 28. The organizers will confirm your place after reviewing your application.</p><Link className="extra-text-link" href="/inquiries/new?event=season9&lang=en">Have a question? Ask us ↗</Link><span className="extra-text-link"><LanguageLink english basePath="/season9/additional"/></span></div>
+          <CompactApplication locale="en" additional/>
+        </div>
       </section>
       <div className="extra-ribbon"><span>LESS SMALL TALK, MORE CONNECTION.</span><span>PRACTICE KOREAN. SHARE YOUR WORLD.</span><span aria-hidden="true">LESS SMALL TALK, MORE CONNECTION.</span></div>
       <section id="experience" className="extra-wrap extra-experience">
@@ -87,12 +93,6 @@ export default function Page() {
       <section className="extra-wrap extra-faq">
         <div><p className="extra-eyebrow">BEFORE WE SAY HELLO</p><h2>A few things you<br/>might be wondering.</h2></div>
         <div>{faq.map(([question, answer]) => <details key={question}><summary>{question}</summary><p>{answer}</p></details>)}</div>
-      </section>
-      <section id="application" className="extra-application">
-        <div className="extra-wrap extra-application-grid">
-          <div><p className="extra-eyebrow">LET’S MEET AT MALMOIM</p><h2>Your next conversation<br/><em>starts here.</em></h2><p>Tell us a little about yourself and your preferred group. The organizers will review your application and get in touch.</p><p className="extra-note">KRW 42,000 for the remaining 6 weeks. Thursday starts November 26; Saturday starts November 28. The organizers will confirm your place after reviewing your application.</p><Link className="extra-text-link" href="/inquiries/new?event=season9&lang=en">Have a question? Ask us ↗</Link><span className="extra-text-link"><LanguageLink english basePath="/season9/additional"/></span></div>
-          <CompactApplication locale="en" additional/>
-        </div>
       </section>
     </main>
     <footer className="extra-wrap extra-footer"><Link className="extra-brand" href="/en">MALMOIM</Link><p>Come to MALMOIM, Meet the world.</p><a href="https://www.instagram.com/cometomalmoim/" target="_blank" rel="noopener noreferrer">Instagram ↗</a></footer>
