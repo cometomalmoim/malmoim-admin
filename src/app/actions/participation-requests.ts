@@ -4,6 +4,8 @@ import {createClient} from '@/lib/supabase/server';
 import {getAdminAccess} from '@/lib/auth';
 import {participationInput,requestId,requestToken,requestStatuses,sessionInput,type ParticipationInfo} from '@/lib/participation-requests';
 import {revalidatePath} from 'next/cache';
+import {after} from 'next/server';
+import {processSmsQueue} from '@/lib/sms-worker';
 export type ParticipationState={code:string;token?:string};
 export async function participationInfo():Promise<ParticipationInfo> {
  try{const db=createPublicClient(),r=await db.rpc('community_participation_info');if(!r.error&&r.data)return {available:true,...r.data};}catch{}
@@ -12,7 +14,12 @@ export async function participationInfo():Promise<ParticipationInfo> {
 export async function submitParticipation(_state:ParticipationState,form:FormData):Promise<ParticipationState> {
  const p=participationInput(form);if(!p)return {code:'invalid'};
  try{const db=createPublicClient();const r=await db.rpc('submit_community_request',{p_kind:p.kind,p_token:p.token,p_name:p.name,p_contact_type:p.contactType,p_contact:p.contact,p_locale:p.locale,p_session:p.sessionId,p_details:p.details,p_consent:true});
- if(r.error)return {code:'error'};if(r.data==='saved'){revalidatePath('/admin','layout');return {code:'saved',token:p.token};}return {code:['closed','full','duplicate','rate_limited','invalid'].includes(r.data)?r.data:'error'};
+ if(r.error)return {code:'error'};if(r.data==='saved'){
+  if(p.kind==='daily'){
+   try{after(async()=>{try{await processSmsQueue(db);}catch{/* Keep a saved application successful if SMS is unavailable. */}});}catch{/* Application receipt is already committed. */}
+  }
+  revalidatePath('/admin','layout');return {code:'saved',token:p.token};
+ }return {code:['closed','full','duplicate','rate_limited','invalid'].includes(r.data)?r.data:'error'};
  }catch{return {code:'error'};}
 }
 export type ParticipationReceipt={kind:string;name:string;status:string;message:string;created_at:string;locale:string;session:{title:string;starts_at:string;location:string;fee:number}|null};
